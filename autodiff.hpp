@@ -11,6 +11,7 @@ namespace autodiff {
 
 template <typename T> class Tape;
 template <typename T> class Var;
+template <typename T> class DualVar;
 
 enum Operation {
     NOP,
@@ -104,6 +105,7 @@ public:
 
     void setIdx(size_t const & _idx) { idx = _idx; }
 
+
 private:
     T const value = 0;
     size_t const left = 0;
@@ -119,6 +121,30 @@ private:
         //  contained in the tape
         idx = pushedVar.idx;
     }
+};
+
+
+template <typename T>
+class DualVar {
+public:
+    DualVar() = default;
+    
+    DualVar(
+        T const & _real,
+        T const & _inf
+    ):
+        real{_real},
+        inf{_inf} {}
+
+    std::string getValue() const { return "(" + std::to_string(real) + ", " + 
+                                        std::to_string(inf) + ")"; }
+    T getReal() const { return real; }
+    T getInf() const { return inf; }
+
+
+private:
+    T const real = 0;
+    T const inf = 0;
 };
 
 template <typename T>
@@ -177,8 +203,30 @@ Var<T> operator+(T const & lhs, Var<T> const & rhs) {
 }
 
 
+
+/*------------------------------------------------------------*/
+/* forward accumulation                                       */
+/*------------------------------------------------------------*/
+
+
+template <typename T>
+DualVar<T> operator+(DualVar<T> const & lhs, DualVar<T> const & rhs){
+    return DualVar<T>(lhs.getReal() + rhs.getReal(), rhs.getInf() + lhs.getInf());
+}
+
+template <typename T>
+DualVar<T> operator+(DualVar<T> const & lhs, T const & rhs){
+    return DualVar<T> (lhs.getReal() + rhs, lhs.getInf());
+}
+
+template <typename T>
+DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs){
+    return DualVar<T> (lhs + rhs.getReal(), rhs.getInf());
+}
+
+
 /***************************************************************/
-/* SUB */
+/* SUB                                                         */
 /***************************************************************/
 template <typename T>
 Var<T> operator-(Var<T> const & lhs, Var<T> const & rhs) {
@@ -195,8 +243,29 @@ Var<T> operator-(Var<T> const & lhs, Var<T> const & rhs) {
     return var;
 }
 
+
+/*------------------------------------------------------------*/
+/* forward accumulation                                       */
+/*------------------------------------------------------------*/
+
+
+template <typename T>
+DualVar<T> operator-(DualVar<T> const & lhs, DualVar<T> const & rhs){
+    return DualVar<T>(lhs.getReal() - rhs.getReal(), lhs.getInf() - rhs.getInf());
+}
+
+template <typename T>
+DualVar<T> operator-(DualVar<T> const & lhs, T const & rhs){
+    return DualVar<T> (lhs.getReal() - rhs, lhs.getInf());
+}
+
+template <typename T>
+DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs){
+    return DualVar<T> (lhs - rhs.getReal(), -rhs.getInf());
+}
+
 /***************************************************************/
-/* MUL */
+/* MUL                                                         */
 /***************************************************************/
 template <typename T>
 Var<T> operator*(Var<T> const & lhs, Var<T> const & rhs) {
@@ -213,8 +282,29 @@ Var<T> operator*(Var<T> const & lhs, Var<T> const & rhs) {
     return var;
 }
 
+/*------------------------------------------------------------*/
+/* forward accumulation                                       */
+/*------------------------------------------------------------*/
+
+
+template <typename T>
+DualVar<T> operator*(DualVar<T> const & lhs, DualVar<T> const & rhs){
+    return DualVar<T>(lhs.getReal() * rhs.getReal(), 
+        lhs.getReal() * rhs.getInf() + lhs.getInf() * rhs.getReal());
+}
+
+template <typename T>
+DualVar<T> operator*(DualVar<T> const & lhs, T const & rhs){
+    return DualVar<T> (lhs.getReal() * rhs, rhs * lhs.getInf());
+}
+
+template <typename T>
+DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs){
+    return DualVar<T> (lhs * rhs.getReal(), lhs * rhs.getInf());
+}
+
 /***************************************************************/
-/* DIV */
+/* DIV                                                         */
 /***************************************************************/
 template <typename T>
 Var<T> operator/(Var<T> const & lhs, Var<T> const & rhs) {
@@ -230,6 +320,28 @@ Var<T> operator/(Var<T> const & lhs, Var<T> const & rhs) {
 
     return var;
 }
+
+/*------------------------------------------------------------*/
+/* forward accumulation                                       */
+/*------------------------------------------------------------*/
+
+
+template <typename T>
+DualVar<T> operator/(DualVar<T> const & lhs, DualVar<T> const & rhs){
+    return DualVar<T>(lhs.getReal() / rhs.getReal(), 
+        (lhs.getInf() * rhs.getReal() + lhs.getReal() * rhs.getInf()) / (rhs.getReal() * rhs.getReal()));
+}
+
+template <typename T>
+DualVar<T> operator/(DualVar<T> const & lhs, T const & rhs){
+    return DualVar<T> (lhs.getReal() / rhs, lhs.getInf() * rhs / (rhs * rhs));
+}
+
+template <typename T>
+DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs){
+    return DualVar<T> (lhs / rhs.getReal(), lhs * rhs.getInf() / (rhs.getReal() * rhs.getReal()));
+}
+
 
 }; // namespace autodiff
 
