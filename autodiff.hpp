@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <cmath>
 
 namespace autodiff {
 
@@ -340,6 +341,63 @@ DualVar<T> operator/(DualVar<T> const & lhs, T const & rhs){
 template <typename T>
 DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs){
     return DualVar<T> (lhs / rhs.getReal(), lhs * rhs.getInf() / (rhs.getReal() * rhs.getReal()));
+}
+
+
+/***************************************************************/
+/* MISC                                                        */
+/***************************************************************/
+/*-------------------------------------------------------------*/
+/* forward accumulation                                        */
+/*-------------------------------------------------------------*/
+
+template <typename T>
+inline DualVar<T> abs(const DualVar<T> & arg){
+    int sign_real = (arg.getReal() > 0) ? 1 : ((arg.getReal() < 0) ? -1 : 0);
+    return DualVar<T> (std::abs(arg.getReal()), arg.getInf() * sign_real);
+}
+
+template <typename T>
+inline DualVar<T> cos(const DualVar<T> & arg){
+    return DualVar<T> (std::cos(arg.getReal()), - arg.getInf() * std::sin(arg.getReal()));
+}
+
+template <typename T>
+inline DualVar<T> sin(const DualVar<T> & arg){
+    return DualVar<T> (std::sin(arg.getReal()), arg.getInf() * std::cos(arg.getReal()));
+}
+
+template <typename T>
+inline DualVar<T> tan(const DualVar<T> & arg){
+    return DualVar<T> (std::tan(arg.getReal()), 
+        arg.getInf() / (std::cos(arg.getReal()) * std::cos(arg.getReal())));
+}
+
+template <typename T>
+inline DualVar<T> log(const DualVar<T> & arg){
+    return DualVar<T> (std::log(arg.getReal()), arg.getInf() / arg.getReal());
+}
+
+
+/* When raising a dual number to the power of another dual number, you get
+   (a+b𝜀)^(c+d𝜀) = a^c + a^(c-1)*(a*d*ln(a) + c*b)𝜀                         */
+template <typename T>
+inline DualVar<T> pow(DualVar<T> & base, DualVar<T> & exp){
+    return DualVar<T> (std::pow(base.getReal(), exp.getReal()), std::pow(base.getReal(), exp.getReal() - 1) * 
+        (base.getReal() * exp.getInf() * std::log(base.getReal()) + exp.getReal() * base.getInf()));
+}
+
+template <typename T>
+inline DualVar<T> pow(T const & base, DualVar<T> & exp){
+    return DualVar<T> (std::pow(base, exp.getReal()), 
+        std::pow(base, exp.getReal()) * exp.getInf() * std::log(base));
+}
+
+template <typename T>
+inline DualVar<T> pow(DualVar<T> & base, T const & exp){
+    return DualVar<T> (std::pow(base.getReal(), exp), 
+        std::pow(base.getReal(), exp - 1) * exp * base.getInf());
+    
 }
 
 

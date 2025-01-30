@@ -1,17 +1,20 @@
 #include <iostream>
 #include "autodiff.hpp"
-#include "utils.hpp"
+
+
 
 int main() {
-    autodiff::Var a{1.0};
-    autodiff::Var b{1.0};
-    autodiff::Var c{2.0+a};
-    autodiff::Var d{c*a};
-    autodiff::Var e{d/b};
+    autodiff::DualVar a(4.0, 6.0);
+    autodiff::DualVar b(6.0, 2.0);
 
-    std::cout << e.getIdx() << std::endl;
+    std::cout << (autodiff::log(a)).getValue() << std::endl;
+    std::cout << (autodiff::pow(a, b)).getValue() << std::endl;
+    std::cout << (autodiff::pow(a, 3.0)).getValue() << std::endl;
+    std::cout << (autodiff::pow(3.0, a)).getValue() << std::endl;
 
-    utils::saveGraphToFile(e, "output_graph.png");
+    std::cout << autodiff::sin(b).getValue() << std::endl;
+    std::cout << autodiff::cos(b).getValue() << std::endl;
+    std::cout << autodiff::tan(b).getValue() << std::endl;
 
     return 0;
 }
