@@ -144,26 +144,6 @@ private:
     T const inf = 0;
 };
 
-template <typename T>
-static Var<T> const & create_var_and_push(
-    T const & value,
-    size_t lhs_idx,
-    size_t rhs_idx,
-    Operation const & op
-) {
-    auto & tape = Tape<T>::getTape();
-
-    Var<T> const & var =
-        tape.push_var(Var<T>{
-            value,
-            lhs_idx,
-            rhs_idx,
-            op
-        });
-
-    return var;
-}
-
 
 template <typename T>
 static Var<T> const & create_var_and_push(
