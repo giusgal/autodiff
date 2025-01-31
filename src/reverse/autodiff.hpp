@@ -35,7 +35,6 @@ private:
         std::set<size_t> & visited,
         size_t idx);
 
-
     size_t node_idx;
     Tape<T> & tape_ref;
 };
@@ -73,17 +72,26 @@ void Var<T>::backward() {
 
     build_topo(topo, visited, node_idx);
 
-    // for(auto & el: topo) {
-    //     std::cout << el << std::endl;
-    // }
+    // compute gradients
+    tape_ref[node_idx].grad = T{1};
+
+    // iterate in the topo vector from the end
+    for(auto iter = topo.rbegin(); iter != topo.rend(); ++iter) {
+        Node<T> & cur = tape_ref[*iter];
+        if(!cur.is_leaf()) {
+            cur.grad_fn();
+        }
+    }
 }
 
 /*Var-Operators*****/
 template <typename T>
 Var<T> operator+(Var<T> const & lhs, Var<T> const & rhs) {
     Tape<T> & tape = lhs.get_tape_ref();
-    Node<T> & lhs_node = tape[lhs.get_node_idx()];
-    Node<T> & rhs_node = tape[rhs.get_node_idx()];
+    size_t lhs_idx = lhs.get_node_idx();
+    size_t rhs_idx = rhs.get_node_idx();
+    Node<T> & lhs_node = tape[lhs_idx];
+    Node<T> & rhs_node = tape[rhs_idx];
 
     Var<T> new_var = tape.var(
         lhs_node.value + rhs_node.value,
@@ -91,13 +99,17 @@ Var<T> operator+(Var<T> const & lhs, Var<T> const & rhs) {
         rhs_node.idx,
         Op::SUM
     );
-    Node<T> & new_node = tape[new_var.get_node_idx()];
+    size_t new_idx = new_var.get_node_idx();
 
-    auto grad_fn = [&lhs_node, &rhs_node, &new_node]() -> void {
+    auto grad_fn = [lhs_idx, rhs_idx, new_idx, &tape]() -> void {
+        Node<T> & lhs_node = tape[lhs_idx];
+        Node<T> & rhs_node = tape[rhs_idx];
+        Node<T> & new_node = tape[new_idx];
+
         lhs_node.grad += new_node.grad /* *T{1} */;
         rhs_node.grad += new_node.grad /* *T{1} */;
     };
-    new_node.grad_fn = grad_fn;
+    tape[new_idx].grad_fn = grad_fn;
 
     return new_var;
 }
@@ -105,29 +117,59 @@ Var<T> operator+(Var<T> const & lhs, Var<T> const & rhs) {
 template <typename T>
 Var<T> operator*(Var<T> const & lhs, Var<T> const & rhs) {
     Tape<T> & tape = lhs.get_tape_ref();
-    Node<T> const & lhs_node = tape[lhs.get_node_idx()];
-    Node<T> const & rhs_node = tape[rhs.get_node_idx()];
+    size_t lhs_idx = lhs.get_node_idx();
+    size_t rhs_idx = rhs.get_node_idx();
+    Node<T> & lhs_node = tape[lhs_idx];
+    Node<T> & rhs_node = tape[rhs_idx];
 
-    return tape.var(
+    Var<T> new_var = tape.var(
         lhs_node.value * rhs_node.value,
         lhs_node.idx,
         rhs_node.idx,
         Op::MUL
     );
+    size_t new_idx = new_var.get_node_idx();
+
+    auto grad_fn = [lhs_idx, rhs_idx, new_idx, &tape]() -> void {
+        Node<T> & lhs_node = tape[lhs_idx];
+        Node<T> & rhs_node = tape[rhs_idx];
+        Node<T> & new_node = tape[new_idx];
+
+        lhs_node.grad += new_node.grad * rhs_node.value;
+        rhs_node.grad += new_node.grad * lhs_node.value;
+    };
+    tape[new_idx].grad_fn = grad_fn;
+
+    return new_var;
 }
 
 template <typename T>
 Var<T> operator-(Var<T> const & lhs, Var<T> const & rhs) {
     Tape<T> & tape = lhs.get_tape_ref();
-    Node<T> const & lhs_node = tape[lhs.get_node_idx()];
-    Node<T> const & rhs_node = tape[rhs.get_node_idx()];
+    size_t lhs_idx = lhs.get_node_idx();
+    size_t rhs_idx = rhs.get_node_idx();
+    Node<T> & lhs_node = tape[lhs_idx];
+    Node<T> & rhs_node = tape[rhs_idx];
 
-    return tape.var(
+    Var<T> new_var = tape.var(
         lhs_node.value - rhs_node.value,
         lhs_node.idx,
         rhs_node.idx,
         Op::SUB
     );
+    size_t new_idx = new_var.get_node_idx();
+
+    auto grad_fn = [lhs_idx, rhs_idx, new_idx, &tape]() -> void {
+        Node<T> & lhs_node = tape[lhs_idx];
+        Node<T> & rhs_node = tape[rhs_idx];
+        Node<T> & new_node = tape[new_idx];
+
+        lhs_node.grad += new_node.grad;
+        rhs_node.grad += (-1)*new_node.grad;
+    };
+    tape[new_idx].grad_fn = grad_fn;
+
+    return new_var;
 }
 
 template <typename T>
