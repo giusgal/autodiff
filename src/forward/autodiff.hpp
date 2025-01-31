@@ -20,6 +20,11 @@ public:
     DualVar() = default;
     
     DualVar(
+        T const & _real
+    ):
+        real{_real} {}
+
+    DualVar(
         T const & _real,
         T const & _inf
     ):
@@ -31,9 +36,11 @@ public:
     T getReal() const { return real; }
     T getInf() const { return inf; }
 
+    void setInf(T _inf) { inf = _inf; }
+
 private:
     T const real = 0;
-    T const inf = 0;
+    T inf = 0;
 };
 
 /***************************************************************/
@@ -180,6 +187,33 @@ DualVar<T> relu(DualVar<T> const & arg){
     } else {
         return DualVar<T> (0, 0);
     }
+}
+
+autodiff::DualVar<double> derivative(std::function<autodiff::DualVar<double>(autodiff::DualVar<double>)>f, double x0){
+    autodiff::DualVar<double> res = f(DualVar<double>(x0, 1.0));
+    return res;
+}
+
+std::vector<double> gradient(std::function<autodiff::DualVar<double>(std::vector<autodiff::DualVar<double>>)>f, 
+    std::vector<double> x) {
+
+        std::vector<DualVar<double>> xd;
+        std::vector<double> res;
+        
+        xd.reserve(size(x));
+        res.reserve(size(x));
+
+        for(int i = 0; i < size(x); i++){
+            xd.push_back(DualVar<double>(x[i], 0.0));
+        }
+
+        for(int i = 0; i < size(x); i++){
+            xd[i].setInf(1.0);
+            res.push_back(f(xd).getInf());
+            xd[i].setInf(0.0);
+        }
+        
+        return res;
 }
 
 }
