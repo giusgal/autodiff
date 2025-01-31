@@ -1,6 +1,4 @@
 CXX = g++
-CXXFLAGS = -g
-LDFLAGS = -lcgraph -lgvc
 
 TARGET = test
 SRCS = test.cpp
