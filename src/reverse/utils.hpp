@@ -11,76 +11,75 @@ namespace utils {
 template <typename T>
 static void
 buildGraph(
-    autodiff::Var<T> const & cur,
+    autodiff::Node<T> const & node,
+    autodiff::Tape<T> & tape,
     Agraph_t *g)
 {
-    if(cur.getIdx() == 0 ||
-        cur.getOperation() == autodiff::Operation::NOP)
-    {
+    if(node.idx == 0 /* || node.op == autodiff::Op::NOP */) {
         return;
     }
 
     std::string cur_id =
-        std::to_string(reinterpret_cast<uintptr_t>(&cur));
+        std::to_string(reinterpret_cast<uintptr_t>(&node));
     Agnode_t *n_cur =
         agnode(g, const_cast<char*>(cur_id.c_str()), true);
     agsafeset(n_cur,
         const_cast<char*>("shape"),
-        const_cast<char*>("record"),
+        const_cast<char*>("Mrecord"),
         const_cast<char*>(""));
     std::string label = 
-        "{" + std::to_string(cur.getValue())
+        "{" 
+        + std::string("grad: ") + std::to_string(node.grad)
+        + std::string("| val: ") + std::to_string(node.value)
+        + std::string("| id: ") + std::to_string(node.idx)
         + "|"
-        + autodiff::getStrFromOp(cur.getOperation()) + "}";
+        + autodiff::get_str_from_op(node.op)
+        + "}";
     agsafeset(n_cur,
         const_cast<char*>("label"),
         const_cast<char*>(label.c_str()),
         "");
 
-    autodiff::Var<T> const & cur_left{
-        (autodiff::Tape<T>::getTape())[cur.getLeft()]
-    };
-    autodiff::Var<T> const & cur_right{
-        (autodiff::Tape<T>::getTape())[cur.getRight()]
-    };
+    autodiff::Node<T> const & node_left = tape[node.left_child];
+    autodiff::Node<T> const & node_right = tape[node.right_child];
 
-    if(cur_left.getIdx() != 0) {
+    if(node_left.idx != 0) {
         std::string cur_left_id =
-            std::to_string(reinterpret_cast<uintptr_t>(&cur_left));
+            std::to_string(reinterpret_cast<uintptr_t>(&node_left));
         Agnode_t *n_left =
             agnode(g, const_cast<char*>(cur_left_id.c_str()), true);
         agsafeset(n_left,
             const_cast<char*>("label"),
-            const_cast<char*>(std::to_string(cur_left.getValue()).c_str()),
+            const_cast<char*>(std::to_string(node_left.value).c_str()),
             "");
 
         Agedge_t *edge =
             agedge(g, n_left, n_cur, 0, 1);
     }
 
-    if(cur_right.getIdx() != 0) {
+    if(node_right.idx != 0) {
         std::string cur_right_id =
-            std::to_string(reinterpret_cast<uintptr_t>(&cur_right));
+            std::to_string(reinterpret_cast<uintptr_t>(&node_right));
         Agnode_t *n_right =
             agnode(g, const_cast<char*>(cur_right_id.c_str()), true);
         agsafeset(n_right,
             const_cast<char*>("label"),
-            const_cast<char*>(std::to_string(cur_right.getValue()).c_str()),
+            const_cast<char*>(std::to_string(node_right.value).c_str()),
             "");
 
         Agedge_t *edge =
             agedge(g, n_right, n_cur, 0, 1);
     }
 
-    buildGraph(cur_left, g);
-    buildGraph(cur_right, g);
+    buildGraph(node_left, tape, g);
+    buildGraph(node_right, tape, g);
 }
 
 template <typename T>
 void
 saveGraphToFile(
-    autodiff::Var<T> const &root,
-    std::string const &file_name)
+    autodiff::Var<T> const & root,
+    std::string const & file_name)
 {
     GVC_t *gvc = gvContext();
     Agraph_t *g = agopen(const_cast<char*>(""),
@@ -91,7 +90,8 @@ saveGraphToFile(
         const_cast<char*>("BT"),
         const_cast<char*>(""));
 
-    buildGraph(root, g);
+    autodiff::Tape<T> & tape = root.get_tape_ref();
+    buildGraph(tape[root.get_node_idx()], tape, g);
 
     gvLayout(gvc, g, "dot");
     gvRenderFilename(gvc, g, "png", file_name.c_str());

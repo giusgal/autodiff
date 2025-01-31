@@ -1,414 +1,236 @@
-#ifndef __AUTODIFF__H__
-#define __AUTODIFF__H__
+#ifndef __AUTODIFF__HPP__
+#define __AUTODIFF__HPP__
 
-#include <array>
-#include <iostream>
 #include <cstddef>
-#include <string>
+#include <functional>
+#include <iostream>
+#include <set>
 #include <vector>
-#include <cmath>
+
+#include "Node.hpp"
 
 namespace autodiff {
 
 template <typename T> class Tape;
 template <typename T> class Var;
 
-enum Operation {
-    NOP,
-    SUM,
-    SUB,
-    MUL,
-    DIV
-};
-
-std::string getStrFromOp(Operation const & op) {
-    switch(op) {
-        case Operation::SUM:
-            return "+";
-            break;
-        case Operation::SUB:
-            return "-";
-            break;
-        case Operation::MUL:
-            return "*";
-            break;
-        case Operation::DIV:
-            return "/";
-            break;
-        default:
-            return "NOP";
-            break;
-    }
-}
-
-// Singleton Tape
-template <typename T>
-class Tape {
-public:
-    static Tape<T> & getTape() {
-        static Tape<T> instance;
-        return instance;
-    }
-
-    Var<T> const & push_var(Var<T> const & var) {
-        tape.emplace_back(var);
-        tape.back().setIdx(tape.size()-1);
-        return tape.back();
-    }
-
-    size_t size() const {
-        return tape.size();
-    } 
-
-    Var<T> & operator[](size_t idx) {
-        return tape[idx];
-    }
-
-private:
-    // Disable some predefined operator/constructors
-    //Tape(Tape<T> const &) = delete;
-    //void operator=(Tape<T> const &) = delete;
-
-    Tape() {
-        // Push a dummy variable as the first element
-        push_var(Var<T>{});
-    }
-
-    std::vector<Var<T>> tape;
-};
-
+/*Var**************************************************************************/
 template <typename T>
 class Var {
 public:
-    Var() = default;
-    
-    Var(
-        T const & _value,
-        size_t const & _left,
-        size_t const & _right,
-        Operation const & _op
-    ):
-        value{_value},
-        left{_left},
-        right{_right},
-        op{_op} {}
+    Var(size_t _n, Tape<T> & _t): node_idx{_n}, tape_ref{_t} {}
 
-    Var(T const & _value): value{_value} {
-        addToTape();
-    }
+    size_t get_node_idx() const { return node_idx; }
+    Tape<T> & get_tape_ref() const { return tape_ref; }
 
-    T getValue() const { return value; }
-    size_t getLeft() const { return left; }
-    size_t getRight() const { return right; }
-    size_t getIdx() const { return idx; }
-    Operation getOperation() const { return op; }
+    void backward();
 
-    void setIdx(size_t const & _idx) { idx = _idx; }
-
+    // TODO: delete constructors/operators or do
+    //  something different
 private:
-    T const value = 0;
-    size_t const left = 0;
-    size_t const right = 0;
-    size_t idx = 0;
-    Operation const op = Operation::NOP;
 
-    void addToTape() {
-        auto & tape = Tape<T>::getTape();
-        auto pushedVar = tape.push_var(*this);
-        // Modify the idx of this variable in order to
-        //  follow the one of the "alias" variable
-        //  contained in the tape
-        idx = pushedVar.idx;
-    }
+    /* Helper functions */
+    void build_topo(
+        std::vector<size_t> & topo,
+        std::set<size_t> & visited,
+        size_t idx);
+
+
+    size_t node_idx;
+    Tape<T> & tape_ref;
 };
 
-
 template <typename T>
-class DualVar {
-public:
-    DualVar() = default;
-    
-    DualVar(
-        T const & _real,
-        T const & _inf
-    ):
-        real{_real},
-        inf{_inf} {}
+void Var<T>::build_topo(
+    std::vector<size_t> & topo,
+    std::set<size_t> & visited,
+    size_t idx)
+{
+    if(visited.find(idx) == visited.end()) {
+        visited.emplace(idx);
+        
+        size_t left_child_idx = tape_ref[idx].left_child;
+        size_t right_child_idx = tape_ref[idx].right_child;
 
-    std::string getValue() const { return "(" + std::to_string(real) + ", " + 
-                                        std::to_string(inf) + ")"; }
-    T getReal() const { return real; }
-    T getInf() const { return inf; }
+        if(left_child_idx != 0) {
+            build_topo(topo, visited, left_child_idx);
+        }
 
-private:
-    T const real = 0;
-    T const inf = 0;
-};
+        if(right_child_idx != 0) {
+            build_topo(topo, visited, right_child_idx);
+        }
 
-
-template <typename T>
-static Var<T> const & create_var_and_push(
-    T const & value,
-    size_t lhs_idx,
-    size_t rhs_idx,
-    Operation const & op
-) {
-    auto & tape = Tape<T>::getTape();
-
-    Var<T> const & var =
-        tape.push_var(Var<T>{
-            value,
-            lhs_idx,
-            rhs_idx,
-            op
-        });
-
-    return var;
+        topo.push_back(idx);
+    }
 }
 
-/***************************************************************/
-/* SUM */
-/***************************************************************/
+
+template <typename T>
+void Var<T>::backward() {
+    // topological sort
+    std::vector<size_t> topo;
+    std::set<size_t> visited;
+
+    build_topo(topo, visited, node_idx);
+
+    // for(auto & el: topo) {
+    //     std::cout << el << std::endl;
+    // }
+}
+
+/*Var-Operators*****/
 template <typename T>
 Var<T> operator+(Var<T> const & lhs, Var<T> const & rhs) {
-    return create_var_and_push(
-        lhs.getValue() + rhs.getValue(),
-        lhs.getIdx(),
-        rhs.getIdx(),
-        Operation::SUM
+    Tape<T> & tape = lhs.get_tape_ref();
+    Node<T> & lhs_node = tape[lhs.get_node_idx()];
+    Node<T> & rhs_node = tape[rhs.get_node_idx()];
+
+    Var<T> new_var = tape.var(
+        lhs_node.value + rhs_node.value,
+        lhs_node.idx,
+        rhs_node.idx,
+        Op::SUM
     );
+    Node<T> & new_node = tape[new_var.get_node_idx()];
+
+    auto grad_fn = [&lhs_node, &rhs_node, &new_node]() -> void {
+        lhs_node.grad += new_node.grad /* *T{1} */;
+        rhs_node.grad += new_node.grad /* *T{1} */;
+    };
+    new_node.grad_fn = grad_fn;
+
+    return new_var;
 }
-
-template <typename T>
-Var<T> operator+(Var<T> const & lhs, T const & rhs) {
-    Var<T> const & rhs_var = create_var_and_push(
-        rhs,
-        0,
-        0,
-        Operation::NOP
-    );
-
-    return create_var_and_push(
-        lhs.getValue() + rhs_var.getValue(),
-        lhs.getIdx(),
-        rhs_var.getIdx(),
-        Operation::SUM
-    );
-}
-
-template <typename T>
-Var<T> operator+(T const & lhs, Var<T> const & rhs) {
-    return operator+(rhs, lhs);
-}
-
-/*------------------------------------------------------------*/
-/* forward accumulation                                       */
-/*------------------------------------------------------------*/
-
-template <typename T>
-DualVar<T> operator+(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() + rhs.getReal(), rhs.getInf() + lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator+(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() + rhs, lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs + rhs.getReal(), rhs.getInf());
-}
-
-
-/***************************************************************/
-/* SUB */
-/***************************************************************/
-
-template <typename T>
-Var<T> operator-(Var<T> const & lhs, Var<T> const & rhs) {
-    auto & tape = Tape<T>::getTape();
-
-    Var<T> const & var =
-        tape.push_var(Var<T>{
-            lhs.getValue() - rhs.getValue(),
-            lhs.getIdx(),
-            rhs.getIdx(),
-            Operation::SUB
-        });
-
-    return var;
-}
-
-/*------------------------------------------------------------*/
-/* forward accumulation                                       */
-/*------------------------------------------------------------*/
-
-template <typename T>
-DualVar<T> operator-(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() - rhs.getReal(), lhs.getInf() - rhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator-(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() - rhs, lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs - rhs.getReal(), -rhs.getInf());
-}
-
-/***************************************************************/
-/* MUL */
-/***************************************************************/
 
 template <typename T>
 Var<T> operator*(Var<T> const & lhs, Var<T> const & rhs) {
-    auto & tape = Tape<T>::getTape();
+    Tape<T> & tape = lhs.get_tape_ref();
+    Node<T> const & lhs_node = tape[lhs.get_node_idx()];
+    Node<T> const & rhs_node = tape[rhs.get_node_idx()];
 
-    Var<T> const & var =
-        tape.push_var(Var<T>{
-            lhs.getValue() * rhs.getValue(),
-            lhs.getIdx(),
-            rhs.getIdx(),
-            Operation::MUL
-        });
-
-    return var;
-}
-
-/*------------------------------------------------------------*/
-/* forward accumulation                                       */
-/*------------------------------------------------------------*/
-
-template <typename T>
-DualVar<T> operator*(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() * rhs.getReal(), 
-        lhs.getReal() * rhs.getInf() + lhs.getInf() * rhs.getReal());
+    return tape.var(
+        lhs_node.value * rhs_node.value,
+        lhs_node.idx,
+        rhs_node.idx,
+        Op::MUL
+    );
 }
 
 template <typename T>
-DualVar<T> operator*(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() * rhs, rhs * lhs.getInf());
-}
+Var<T> operator-(Var<T> const & lhs, Var<T> const & rhs) {
+    Tape<T> & tape = lhs.get_tape_ref();
+    Node<T> const & lhs_node = tape[lhs.get_node_idx()];
+    Node<T> const & rhs_node = tape[rhs.get_node_idx()];
 
-template <typename T>
-DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs * rhs.getReal(), lhs * rhs.getInf());
+    return tape.var(
+        lhs_node.value - rhs_node.value,
+        lhs_node.idx,
+        rhs_node.idx,
+        Op::SUB
+    );
 }
-
-/***************************************************************/
-/* DIV */
-/***************************************************************/
 
 template <typename T>
 Var<T> operator/(Var<T> const & lhs, Var<T> const & rhs) {
-    auto & tape = Tape<T>::getTape();
+    Tape<T> & tape = lhs.get_tape_ref();
+    Node<T> const & lhs_node = tape[lhs.get_node_idx()];
+    Node<T> const & rhs_node = tape[rhs.get_node_idx()];
 
-    Var<T> const & var =
-        tape.push_var(Var<T>{
-            lhs.getValue() / rhs.getValue(),
-            lhs.getIdx(),
-            rhs.getIdx(),
-            Operation::DIV
-        });
-
-    return var;
-}
-
-/*------------------------------------------------------------*/
-/* forward accumulation                                       */
-/*------------------------------------------------------------*/
-
-template <typename T>
-DualVar<T> operator/(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() / rhs.getReal(), 
-        (lhs.getInf() * rhs.getReal() + lhs.getReal() * rhs.getInf()) / (rhs.getReal() * rhs.getReal()));
-}
-
-template <typename T>
-DualVar<T> operator/(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() / rhs, lhs.getInf() * rhs / (rhs * rhs));
-}
-
-template <typename T>
-DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs / rhs.getReal(), lhs * rhs.getInf() / (rhs.getReal() * rhs.getReal()));
-}
-
-/***************************************************************/
-/* MISC                                                        */
-/***************************************************************/
-/*-------------------------------------------------------------*/
-/* forward accumulation                                        */
-/*-------------------------------------------------------------*/
-
-template <typename T>
-inline DualVar<T> abs(DualVar<T> const & arg){
-    int sign_real = (arg.getReal() > 0) ? 1 : ((arg.getReal() < 0) ? -1 : 0);
-    return DualVar<T> (std::abs(arg.getReal()), arg.getInf() * sign_real);
-}
-
-template <typename T>
-inline DualVar<T> cos(DualVar<T> const & arg){
-    return DualVar<T> (std::cos(arg.getReal()), - arg.getInf() * std::sin(arg.getReal()));
-}
-
-template <typename T>
-inline DualVar<T> sin(DualVar<T> const & arg){
-    return DualVar<T> (std::sin(arg.getReal()), arg.getInf() * std::cos(arg.getReal()));
-}
-
-template <typename T>
-inline DualVar<T> tan(DualVar<T> const & arg){
-    return DualVar<T> (std::tan(arg.getReal()), 
-        arg.getInf() / (std::cos(arg.getReal()) * std::cos(arg.getReal())));
-}
-
-template <typename T>
-inline DualVar<T> log(DualVar<T> const & arg){
-    return DualVar<T> (std::log(arg.getReal()), arg.getInf() / arg.getReal());
+    return tape.var(
+        lhs_node.value / rhs_node.value,
+        lhs_node.idx,
+        rhs_node.idx,
+        Op::DIV
+    );
 }
 
 
-/* When raising a dual number to the power of another dual number, you get
-   (a+b𝜀)^(c+d𝜀) = a^c + a^(c-1)*(a*d*ln(a) + c*b)𝜀                         */
-template <typename T>
-inline DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp){
-    return DualVar<T> (std::pow(base.getReal(), exp.getReal()), std::pow(base.getReal(), exp.getReal() - 1) * 
-        (base.getReal() * exp.getInf() * std::log(base.getReal()) + exp.getReal() * base.getInf()));
-}
-
-template <typename T>
-inline DualVar<T> pow(T const & base, DualVar<T> const & exp){
-    return DualVar<T> (std::pow(base, exp.getReal()), 
-        std::pow(base, exp.getReal()) * exp.getInf() * std::log(base));
-}
-
-template <typename T>
-inline DualVar<T> pow(DualVar<T> const & base, T const & exp){
-    return DualVar<T> (std::pow(base.getReal(), exp), 
-        std::pow(base.getReal(), exp - 1) * exp * base.getInf());
-}
+/*Var**************************************************************************/
 
 
-template <typename T>
-bool operator==(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    if (lhs.getReal() == rhs.getReal() and lhs.getInf() == rhs.getInf()){ return true; }
-    return false;
-}
 
+
+
+
+/*Tape*************************************************************************/
 template <typename T>
-DualVar<T> relu(DualVar<T> const & arg){
-    if (arg.getReal() > 0){
-        return DualVar<T> (arg.getReal(), 1);
-    } else {
-        return DualVar<T> (0, 0);
+class Tape {
+public:
+    Tape();
+
+    void clear();
+    size_t size() const;
+
+    Var<T> var(T const &);
+    Var<T> var(T const &, size_t, size_t, Op const &);
+
+    Node<T> & operator[](size_t idx) {
+        return nodes[idx];
     }
+
+    /*
+     * It doesn't make sense for the tape
+     *  to be copyed/moved
+     * */
+    Tape(Tape<T> const &) = delete;
+    Tape<T> & operator=(Tape<T> const &) = delete;
+    Tape(Tape<T> &&) = delete;
+    Tape<T> & operator=(Tape<T> &&) = delete;
+private:
+    std::vector<Node<T>> nodes;
+};
+
+template <typename T>
+Tape<T>::Tape() {
+    // insert a dummy node as the first node
+    nodes.emplace_back();
 }
 
+template <typename T>
+void Tape<T>::clear() {
+    nodes.clear();
+    // insert a dummy node as the first node
+    nodes.emplace_back();
 }
 
+template <typename T>
+size_t Tape<T>::size() const {
+    return nodes.size();
+}
 
-#endif // __AUTODIFF__H__
+template <typename T>
+Var<T> Tape<T>::var(T const & _v) {
+    size_t idx = nodes.size();
+
+    nodes.emplace_back(_v,idx,0,0,Op::NOP);
+
+    return Var<T>{
+        idx,
+        *this
+    };
+}
+
+template <typename T>
+Var<T> Tape<T>::var(
+    T const & _v,
+    size_t _lc,
+    size_t _rc,
+    Op const & _o)
+{
+    size_t idx = nodes.size();
+
+    nodes.emplace_back(_v,idx,_lc,_rc,_o);
+
+    return Var<T>{
+        idx,
+        *this
+    };
+}
+
+/*Tape*************************************************************************/
+
+
+}; // autodiff
+
+
+#endif // __AUTODIFF__HPP__
