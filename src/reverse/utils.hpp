@@ -15,7 +15,7 @@ buildGraph(
     autodiff::Tape<T> & tape,
     Agraph_t *g)
 {
-    if(node.idx == 0 || node.op == autodiff::Op::NOP) {
+    if(node.idx == 0 /* || node.op == autodiff::Op::NOP */) {
         return;
     }
 
@@ -25,12 +25,16 @@ buildGraph(
         agnode(g, const_cast<char*>(cur_id.c_str()), true);
     agsafeset(n_cur,
         const_cast<char*>("shape"),
-        const_cast<char*>("record"),
+        const_cast<char*>("Mrecord"),
         const_cast<char*>(""));
     std::string label = 
-        "{" + std::to_string(node.value)
+        "{" 
+        + std::string("grad: ") + std::to_string(node.grad)
+        + std::string("| val: ") + std::to_string(node.value)
+        + std::string("| id: ") + std::to_string(node.idx)
         + "|"
-        + autodiff::get_str_from_op(node.op) + "}";
+        + autodiff::get_str_from_op(node.op)
+        + "}";
     agsafeset(n_cur,
         const_cast<char*>("label"),
         const_cast<char*>(label.c_str()),
