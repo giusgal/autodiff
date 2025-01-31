@@ -1,5 +1,6 @@
 #include <iostream>
 #include "autodiff.hpp"
+#include "utils.hpp"
 
 int main() {
 
@@ -13,6 +14,8 @@ int main() {
     autodiff::Var w = x+y*z;
 
     std::cout << tape.size() << std::endl;
+
+    utils::saveGraphToFile(w, "output_graph.png");
 
     return 0;
 }
