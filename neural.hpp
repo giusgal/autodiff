@@ -9,42 +9,49 @@
 #include <vector>
 #include "autodiff.hpp"
 
-#define randomDouble ((double) rand() / (RAND_MAX))
-namespace neural {
+#define randomDouble ((double)rand() / (RAND_MAX))
+// namespace neural {
 
 using namespace autodiff;
+//typedef Var<double> Value;
+typedef DualVar<double> Value;
 
 template <typename T>
-class Neuron{
+class Neuron
+{
 public:
-    std::vector<Var<T>> w;
-    Var<T> b;
+    std::vector<Value> w;
+    Value b;
 
-    Neuron(int nin) : b(randomUniform()) {
-        for(int i = 0; i < nin; i++){
-            w.emplace_back(randomUniform());
+    Neuron(int nin) : b(Value(randomDouble, randomDouble))
+    {
+        for (int i = 0; i < nin; i++)
+        {
+            w.emplace_back(Value(randomDouble, randomDouble));
         }
     }
 
-
-    Var<T> operator()(const std::vector<Var<T>>& x)const{
-        Var<T> act = b;
-        for(size_t i = 0; i < w.size(); i++){
-           //act = act + (w(i) * x(i));  not yet defined
-           break;
+    Value operator()(const std::vector<Value> &x) const
+    {
+        Value act = b;
+        for (size_t i = 0; i < w.size(); i++)
+        {
+            act = act + (w[i] * x[i]); // not yet defined
+            break;
         }
-       // return act.tanh(val); to be implemented in the Var class
-       return act;
+        return autodiff::relu(act); //to be implemented in the Var class
     }
 
-    std::vector<Var<T>> parameters() const {
-        std::vector<Var<T>> params = w;
+    std::vector<Value> parameters() const
+    {
+        std::vector<Value> params = w;
         params.push_back(b);
         return params;
     }
 
-    private:
-    static double randomUniform() {
+private:
+    static double randomUniform()
+    {
         static std::random_device rd;
         static std::mt19937 gen(rd());
         static std::uniform_real_distribution<double> dist(-1.0, 1.0);
@@ -52,37 +59,81 @@ public:
     }
 };
 
-typedef Var<double> Value;
-
-class Layer {
+class Layer
+{
 public:
     std::vector<Neuron<double>> neurons;
 
-    Layer(int nin, int nout) {
-        for (int i = 0; i < nout; ++i) {
+    Layer(int nin, int nout)
+    {
+        for (int i = 0; i < nout; ++i)
+        {
             neurons.emplace_back(nin);
         }
     }
 
-    std::vector<Value> operator()(const std::vector<Value>& x) const {
+    /*
+    std::vector<Value> operator()(const std::vector<Value> &x) const
+    {
         std::vector<Value> outs;
-        for (const auto& neuron : neurons) {
+        for (const auto &neuron : neurons)
+        {
             outs.push_back(neuron(x));
         }
         return outs.size() == 1 ? std::vector<Value>{outs[0]} : outs;
     }
-
-    std::vector<Value> parameters() const {
+    std::vector<Value> parameters() const
+    {
         std::vector<Value> params;
-        for (const auto& neuron : neurons) {
+        for (const auto &neuron : neurons)
+        {
             auto p = neuron.parameters();
             params.insert(params.end(), p.begin(), p.end());
         }
         return params;
     }
-};  
+    */
 
+};
+    /*
+    class MLP
+    {
+        std::vector<Layer> layers;
 
-}; // namespace neural
+    public:
+        MLP(const int nin, const std::vector<int> &nouts)
+        {
+            std::vector<int> sz = {nin};
+            sz.insert(sz.end(), nouts.begin(), nouts.end());
+            for (size_t i = 0; i < nouts.size(); i++)
+            {
+                layers.emplace_back(sz[i], sz[i + 1]);
+            }
+        }
+
+        std::vector<Value> operator()(const std::vector<Value> &x) const
+        {
+            std::vector<Value> out = x;
+            for (const auto &layer : layers)
+            {
+                out = layer(out);
+            }
+            return out;
+        }
+
+        std::vector<Value> parameters() const
+        {
+            std::vector<Value> params;
+            for (const auto &layer : layers)
+            {
+                auto p = layer.parameters();
+                params.insert(params.end(), p.begin(), p.end());
+            }
+            return params;
+        }
+    };
+*/
+
+//}; // namespace neural
 
 #endif //__NEURAL__H__
