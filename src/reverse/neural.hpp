@@ -17,11 +17,12 @@
 using namespace autodiff;
 using Value = autodiff::Var<double>;
 
+Tape<double> tape;
+
 template <typename T>
 class Neuron
 {
 public:
-    Tape<double> tape;
     std::vector<Value> w;
     Value b;
 
@@ -32,6 +33,13 @@ public:
             w.emplace_back(tape.var(randomDouble));
         }
     }
+
+    // Move constructor (fixes the issue)
+    Neuron(Neuron&& other) noexcept
+        : w(std::move(other.w)), b(std::move(other.b)) {}
+
+    // Copy constructor (optional, for debugging)
+    Neuron(const Neuron& other) = default;
 
     Value operator()(const std::vector<Value> &x) const
     {
@@ -61,20 +69,19 @@ private:
     }
 };
 
-
+template <typename T>
 class Layer
 {
 public:
-    std::vector<Neuron<double>> neurons;
+    std::vector<Neuron<T>> neurons;
 
     Layer(int nin, int nout)
     {
         for (int i = 0; i < nout; ++i)
         {
-            neurons.emplace_back(nin);
+            neurons.push_back(Neuron<T>(nin));
         }
     }
-
     std::vector<Value> operator()(const std::vector<Value> &x) const
     {
         std::vector<Value> outs;
@@ -94,7 +101,7 @@ public:
         }
         return params;
     }
-    
+   
 
 };
 /*

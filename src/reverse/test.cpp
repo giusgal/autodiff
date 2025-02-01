@@ -13,18 +13,8 @@ int main() {
 
     autodiff::Var x = tape.var(1.0);
     autodiff::Var y = tape.var(2.0);
-    autodiff::Var z = tape.var(2.0);
-    autodiff::Var w = x/x+y*z;
-    autodiff::Var k = w;
 
     // std::cout << tape.size() << std::endl;
-
-    utils::saveGraphToFile(k, "output_graph.png");
-
-    w.backward();
-
-    Neuron<double> a(10);
-
     autodiff::Var z = tape.var(3.0);
     autodiff::Var w = x*x+y*z;
 
@@ -35,8 +25,14 @@ int main() {
     std::cout << "∂w/∂x = " << x.grad() << std::endl;
     std::cout << "∂w/∂y = " << y.grad() << std::endl;
     std::cout << "∂w/∂z = " << z.grad() << std::endl;
+    std::cout << "z = " << z.val() << std::endl;
 
     utils::saveGraphToFile(w, "output_graph.png");
+
+    Neuron<double> a(10);
+    Layer<double> b(2, 4);
+    //for(auto& e : b.parameters())
+      //  std::cout << e.grad() << std::endl;
 
     return 0;
 }
