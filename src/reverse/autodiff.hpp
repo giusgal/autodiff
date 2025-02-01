@@ -25,6 +25,7 @@ public:
 
     void backward();
     T const & grad() const;
+    T const & val() const;
 
     // TODO: delete constructors/operators or do
     //  something different
@@ -88,6 +89,11 @@ void Var<T>::backward() {
 template <typename T>
 T const & Var<T>::grad() const {
     return tape_ref[node_idx].grad;
+}
+
+template <typename T>
+T const & Var<T>::val() const {
+    return tape_ref[node_idx].value;
 }
 
 /*Var-Operators*****/
