@@ -24,6 +24,7 @@ public:
     Tape<T> & get_tape_ref() const { return tape_ref; }
 
     void backward();
+    T const & grad() const;
 
     // TODO: delete constructors/operators or do
     //  something different
@@ -82,6 +83,11 @@ void Var<T>::backward() {
             cur.grad_fn();
         }
     }
+}
+
+template <typename T>
+T const & Var<T>::grad() const {
+    return tape_ref[node_idx].grad;
 }
 
 /*Var-Operators*****/
