@@ -226,10 +226,12 @@ public:
      * It doesn't make sense for the tape
      *  to be copyed/moved
      * */
+    
     Tape(Tape<T> const &) = delete;
     Tape<T> & operator=(Tape<T> const &) = delete;
     Tape(Tape<T> &&) = delete;
     Tape<T> & operator=(Tape<T> &&) = delete;
+    
 private:
     std::vector<Node<T>> nodes;
 };
