@@ -52,7 +52,12 @@ struct Node {
         left_child{_lc},
         right_child{_rc},
         op{_o},
+        grad{0},
         grad_fn{} {}
+
+    bool is_leaf() const {
+        return (left_child == 0) && (right_child == 0);
+    }
 
     T value = 0;
     size_t idx = 0;
