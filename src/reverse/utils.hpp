@@ -10,7 +10,7 @@ namespace utils {
 
 template <typename T>
 static void
-buildGraph(
+build_graph(
     autodiff::Node<T> const & node,
     autodiff::Tape<T> & tape,
     Agraph_t *g)
@@ -71,13 +71,13 @@ buildGraph(
             agedge(g, n_right, n_cur, 0, 1);
     }
 
-    buildGraph(node_left, tape, g);
-    buildGraph(node_right, tape, g);
+    build_graph(node_left, tape, g);
+    build_graph(node_right, tape, g);
 }
 
 template <typename T>
 void
-saveGraphToFile(
+save_graph_to_file(
     autodiff::Var<T> const & root,
     std::string const & file_name)
 {
@@ -91,7 +91,7 @@ saveGraphToFile(
         const_cast<char*>(""));
 
     autodiff::Tape<T> & tape = root.get_tape_ref();
-    buildGraph(tape[root.get_node_idx()], tape, g);
+    build_graph(tape[root.get_node_idx()], tape, g);
 
     gvLayout(gvc, g, "dot");
     gvRenderFilename(gvc, g, "png", file_name.c_str());

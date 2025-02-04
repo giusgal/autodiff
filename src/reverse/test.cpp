@@ -8,20 +8,23 @@ int main() {
 
     // std::cout << tape.size() << std::endl;
 
-    autodiff::Var x = tape.var(1.0);
-    autodiff::Var y = tape.var(2.0);
-    autodiff::Var z = tape.var(3.0);
-    autodiff::Var w = x*x+y*z;
+    auto x = tape.var(3.0);
+    auto y = tape.var(4.0);
+    // auto z = tape.var(3.0);
+    auto z = x*y;
+    auto s = (x*x+z)*z;
 
     // std::cout << tape.size() << std::endl;
 
-    w.backward();
+    // (x*x+z)*x*y => x*x*x*y + x*x*y*y => 3x^2*y + 2x*y^2 = 6 + 8 = 14
 
-    std::cout << "∂w/∂x = " << x.grad() << std::endl;
-    std::cout << "∂w/∂y = " << y.grad() << std::endl;
-    std::cout << "∂w/∂z = " << z.grad() << std::endl;
+    s.backward();
 
-    utils::saveGraphToFile(w, "output_graph.png");
+    std::cout << "∂s/∂x = " << x.grad() << std::endl;
+    std::cout << "∂s/∂y = " << y.grad() << std::endl;
+    std::cout << "∂s/∂z = " << z.grad() << std::endl;
+
+    utils::save_graph_to_file(s, "output_graph.png");
 
     return 0;
 }

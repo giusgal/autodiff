@@ -2,8 +2,6 @@
 #define __AUTODIFF__HPP__
 
 #include <cstddef>
-#include <functional>
-#include <iostream>
 #include <set>
 #include <vector>
 
@@ -29,23 +27,17 @@ public:
     // TODO: delete constructors/operators or do
     //  something different
 private:
-
     /* Helper functions */
-    void build_topo(
-        std::vector<size_t> & topo,
-        std::set<size_t> & visited,
-        size_t idx);
+    void build_topo(std::vector<size_t> & topo, std::set<size_t> & visited,
+            size_t idx);
 
     size_t node_idx;
     Tape<T> & tape_ref;
 };
 
 template <typename T>
-void Var<T>::build_topo(
-    std::vector<size_t> & topo,
-    std::set<size_t> & visited,
-    size_t idx)
-{
+void Var<T>::build_topo(std::vector<size_t> & topo, std::set<size_t> & visited, 
+        size_t idx) {
     if(visited.find(idx) == visited.end()) {
         visited.emplace(idx);
         
@@ -64,7 +56,6 @@ void Var<T>::build_topo(
     }
 }
 
-
 template <typename T>
 void Var<T>::backward() {
     // topological sort
@@ -76,13 +67,15 @@ void Var<T>::backward() {
     // compute gradients
     tape_ref[node_idx].grad = T{1};
 
-    // iterate in the topo vector from the end
     for(auto iter = topo.rbegin(); iter != topo.rend(); ++iter) {
         Node<T> & cur = tape_ref[*iter];
         if(!cur.is_leaf()) {
             cur.grad_fn();
         }
     }
+
+    // clear the tape
+    // tape_ref.clear();
 }
 
 template <typename T>
@@ -191,14 +184,7 @@ Var<T> operator/(Var<T> const & lhs, Var<T> const & rhs) {
         Op::DIV
     );
 }
-
-
 /*Var**************************************************************************/
-
-
-
-
-
 
 /*Tape*************************************************************************/
 template <typename T>
@@ -259,12 +245,7 @@ Var<T> Tape<T>::var(T const & _v) {
 }
 
 template <typename T>
-Var<T> Tape<T>::var(
-    T const & _v,
-    size_t _lc,
-    size_t _rc,
-    Op const & _o)
-{
+Var<T> Tape<T>::var(T const & _v, size_t _lc, size_t _rc, Op const & _o) {
     size_t idx = nodes.size();
 
     nodes.emplace_back(_v,idx,_lc,_rc,_o);
@@ -274,7 +255,6 @@ Var<T> Tape<T>::var(
         *this
     };
 }
-
 /*Tape*************************************************************************/
 
 
