@@ -23,6 +23,7 @@ public:
 
     void backward();
     T const & grad() const;
+    T const & val() const;
 
     // TODO: delete constructors/operators or do
     //  something different
@@ -81,6 +82,11 @@ void Var<T>::backward() {
 template <typename T>
 T const & Var<T>::grad() const {
     return tape_ref[node_idx].grad;
+}
+
+template <typename T>
+T const & Var<T>::val() const {
+    return tape_ref[node_idx].value;
 }
 
 /*Var-Operators*****/
@@ -206,10 +212,12 @@ public:
      * It doesn't make sense for the tape
      *  to be copyed/moved
      * */
+    
     Tape(Tape<T> const &) = delete;
     Tape<T> & operator=(Tape<T> const &) = delete;
     Tape(Tape<T> &&) = delete;
     Tape<T> & operator=(Tape<T> &&) = delete;
+    
 private:
     std::vector<Node<T>> nodes;
 };

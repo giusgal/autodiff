@@ -1,6 +1,9 @@
 #include <iostream>
 #include "autodiff.hpp"
 #include "utils.hpp"
+#include "neural.hpp"
+
+using namespace std;
 
 int main() {
 
@@ -10,7 +13,6 @@ int main() {
 
     auto x = tape.var(3.0);
     auto y = tape.var(4.0);
-    // auto z = tape.var(3.0);
     auto z = x*y;
     auto s = (x*x+z)*z;
 
