@@ -30,31 +30,31 @@ finite_diff(
 
 template <typename T>
 T f(T x, T y, T z) {
-    return x*y+x*y;
+    return (x*y).exp();
 }
 
 int main() {
     TapeD tape;
 
     VarD x = tape.var(3.0);
-    VarD y = tape.var(4.0);
+    VarD y = tape.var(1.0);
     VarD z = tape.var(5.0);
 
-    double out = f(x.value(), y.value(), z.value());
-    auto [dx, dy, dz] = finite_diff(
-        f<double>,
-        {x.value(), y.value(), z.value()},
-        0.00001
-    );
+    // double out = f(x.value(), y.value(), z.value());
+    // auto [dx, dy, dz] = finite_diff(
+    //     f<double>,
+    //     {x.value(), y.value(), z.value()},
+    //     0.00001
+    // );
 
     VarD out_b = f(x,y,z);
     out_b.backward();
 
-    std::cout << "ORIGINAL: \n";
-    std::cout << " value: " << out << std::endl;
-    std::cout << " dx: " << dx << std::endl;
-    std::cout << " dy: " << dy << std::endl;
-    std::cout << " dz: " << dz << std::endl;
+    // std::cout << "ORIGINAL: \n";
+    // std::cout << " value: " << out << std::endl;
+    // std::cout << " dx: " << dx << std::endl;
+    // std::cout << " dy: " << dy << std::endl;
+    // std::cout << " dz: " << dz << std::endl;
 
     std::cout << "AUTODIFF: \n";
     std::cout << " value: " << out_b.value() << std::endl;
