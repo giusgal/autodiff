@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Node.hpp"
-#include "Functions.hpp"
+// #include "Functions.hpp"
 
 namespace autodiff {
 namespace reverse {
@@ -18,17 +18,29 @@ public:
         return nodes_.size()-1;
     }
 
+    // TODO: (maybe) avoid templates
     // TODO: constraints on NodeType
     template <typename NodeType>
     size_t new_node(T const & value, size_t first) {
-        nodes_.emplace_back(std::make_unique<NodeType>(value, first));
+        nodes_.emplace_back(
+            std::make_unique<NodeType>(
+                value,
+                nodes_[first].get()
+            )
+        );
         return nodes_.size()-1;
     }
 
     // TODO: constraints on NodeType
     template <typename NodeType>
     size_t new_node(T const & value, size_t first, size_t second) {
-        nodes_.emplace_back(std::make_unique<NodeType>(value, first, second));
+        nodes_.emplace_back(
+            std::make_unique<NodeType>(
+                value,
+                nodes_[first].get(),
+                nodes_[second].get()
+            )
+        );
         return nodes_.size()-1;
     }
 
@@ -44,7 +56,14 @@ public:
     }
 
     void backward(size_t root) {
-        // TODO
+        // set root node's gradient to default value
+        nodes_[root]->update_grad(T{1});
+
+        // nodes are already in topological order
+        auto iter = nodes_.rbegin() + (nodes_.size() - root - 1);
+        for(; iter != nodes_.rend(); ++iter) {
+            (*iter)->backward();
+        }
     }
 
     T get_node_grad(size_t idx) {

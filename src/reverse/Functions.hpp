@@ -7,9 +7,9 @@ namespace autodiff {
 namespace reverse {
 
 template <typename T>
-class SumNode : public BinaryNode<T> {
+class AddNode : public BinaryNode<T> {
 public:
-    SumNode(T const & value, NodePtr<T> first, NodePtr<T> second):
+    AddNode(T const & value, NodePtr<T> first, NodePtr<T> second):
      BinaryNode<T>(value, first, second) {}
 
     void backward() override {
