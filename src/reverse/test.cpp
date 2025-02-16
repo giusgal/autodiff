@@ -16,7 +16,6 @@ finite_diff(
     std::array<double, 3> const & input,
     double h
 ) {
-
     std::array<double, 3> output{};
 
     output[0] =
@@ -31,7 +30,7 @@ finite_diff(
 
 template <typename T>
 T f(T x, T y, T z) {
-    return x*y+x;
+    return x*y+x*y;
 }
 
 int main() {
