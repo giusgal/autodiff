@@ -1,76 +1,65 @@
-#ifndef __NODE__HPP__
-#define __NODE__HPP__
-
-#include <functional>
-#include <string>
+#ifndef __NODE_HPP__
+#define __NODE_HPP__
 
 namespace autodiff {
+namespace reverse {
 
 template <typename T> class Node;
-
-enum Op {
-    NOP,
-    SUM,
-    SUB,
-    MUL,
-    DIV
-};
-
-inline std::string get_str_from_op(Op const & op) {
-    switch(op) {
-        case Op::SUM:
-            return "+";
-            break;
-        case Op::SUB:
-            return "-";
-            break;
-        case Op::MUL:
-            return "*";
-            break;
-        case Op::DIV:
-            return "/";
-            break;
-        default:
-            return "NOP";
-            break;
-    }
-}
+template <typename T> class IndNode;
+template <typename T> class UnaryNode;
+template <typename T> class BinaryNode;
 
 template <typename T>
-struct Node {
-    // Node(T const & _v): value{_v} {}
-    Node() = default;
-    Node(
-        T const & _v,
-        size_t _i,
-        size_t _lc,
-        size_t _rc,
-        Op const & _o
-    ):
-        value{_v},
-        idx{_i},
-        left_child{_lc},
-        right_child{_rc},
-        op{_o},
-        grad{0},
-        grad_fn{} {}
+using NodePtr = Node<T> * const;
 
-    bool is_leaf() const {
-        return (left_child == 0) && (right_child == 0);
-    }
+// TODO: (maybe) forward() function for lazy evaluation
+template <typename T>
+class Node {
+public:
+    Node(T const & value, size_t idx): value_(value), grad_(), idx_(idx) {}
 
-    T value = 0;
-    size_t idx = 0;
-    size_t left_child = 0;
-    size_t right_child = 0;
-    Op op = Op::NOP;
+    virtual void backward() = 0;
+    virtual ~Node() = default;
+protected:
+    T value_;
+    T grad_;
+    size_t idx_;
+};
 
-    /* gradient */
-    T grad = 0;
-    std::function<void()> grad_fn{};
+template <typename T>
+class IndNode : public Node<T> {
+public:
+    IndNode(T const & value, size_t idx): Node<T>(value, idx) {}
+    
+    // backward on a leaf node does nothing
+    void backward() override {}
 };
 
 
-}; // autodiff
+template <typename T>
+class UnaryNode : public Node<T> {
+public:
+    UnaryNode(T const & value, size_t idx, NodePtr first):
+     Node<T>(value, idx), first_(first) {}
 
-#endif // __NODE__HPP__
+    virtual void backward() = 0;
+protected:
+    NodePtr first_;
+};
+
+template <typename T>
+class BinaryNode: public Node<T> {
+public:
+    BinaryNode(T const & value, size_t idx, NodePtr first, NodePtr second):
+     Node<T>(value, idx), first_(first), second_(second) {}
+
+    virtual void backward() = 0;
+protected:
+    NodePtr first_;
+    NodePtr second_;
+};
+
+}; // namespace reverse
+}; // namespace autodiff 
+
+#endif // __NODE_HPP__
