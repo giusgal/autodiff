@@ -9,24 +9,24 @@ namespace reverse {
 template <typename T>
 class SumNode : public BinaryNode<T> {
 public:
-    SumNode(T const & value, size_t idx, NodePtr first, NodePtr second):
-     BinaryNode<T>(value, idx, first, second) {}
+    SumNode(T const & value, NodePtr<T> first, NodePtr<T> second):
+     BinaryNode<T>(value, first, second) {}
 
     void backward() override {
-        first_->grad_ += this->grad_;
-        second_->grad_ += this->grad_;
+        this->first_->update_grad(this->grad_);
+        this->second_->update_grad(this->grad_);
     } 
 };
 
 template <typename T>
 class ProdNode : public BinaryNode<T> {
 public:
-    ProdNode(T const & value, size_t idx, NodePtr first, NodePtr second):
-     BinaryNode<T>(value, idx, first, second) {}
+    ProdNode(T const & value, NodePtr<T> first, NodePtr<T> second):
+     BinaryNode<T>(value, first, second) {}
 
     void backward() override {
-        first_->grad_ += this->grad_ * second_->value_;
-        second_->grad_ += this->grad_ * first_->value_;
+        this->first_->update_grad(this->grad_ * this->second_->value_);
+        this->second_->update_grad(this->grad_ * this->first_->value_);
     }
 };
 

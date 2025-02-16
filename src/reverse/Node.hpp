@@ -16,20 +16,29 @@ using NodePtr = Node<T> * const;
 template <typename T>
 class Node {
 public:
-    Node(T const & value, size_t idx): value_(value), grad_(), idx_(idx) {}
+    Node(T const & value): value_(value), grad_() {}
 
     virtual void backward() = 0;
     virtual ~Node() = default;
+
+    T value() const {
+        return value_;
+    }
+    T grad() const {
+        return grad_;
+    }
+    void update_grad(T const & grad) {
+        grad_ += grad;
+    }
 protected:
     T value_;
     T grad_;
-    size_t idx_;
 };
 
 template <typename T>
 class IndNode : public Node<T> {
 public:
-    IndNode(T const & value, size_t idx): Node<T>(value, idx) {}
+    IndNode(T const & value): Node<T>(value) {}
     
     // backward on a leaf node does nothing
     void backward() override {}
@@ -39,24 +48,24 @@ public:
 template <typename T>
 class UnaryNode : public Node<T> {
 public:
-    UnaryNode(T const & value, size_t idx, NodePtr first):
-     Node<T>(value, idx), first_(first) {}
+    UnaryNode(T const & value, NodePtr<T> first):
+     Node<T>(value), first_(first) {}
 
-    virtual void backward() = 0;
+    // virtual void backward() = 0;
 protected:
-    NodePtr first_;
+    NodePtr<T> first_;
 };
 
 template <typename T>
 class BinaryNode: public Node<T> {
 public:
-    BinaryNode(T const & value, size_t idx, NodePtr first, NodePtr second):
-     Node<T>(value, idx), first_(first), second_(second) {}
+    BinaryNode(T const & value, NodePtr<T> first, NodePtr<T> second):
+     Node<T>(value), first_(first), second_(second) {}
 
-    virtual void backward() = 0;
+    // virtual void backward() = 0;
 protected:
-    NodePtr first_;
-    NodePtr second_;
+    NodePtr<T> first_;
+    NodePtr<T> second_;
 };
 
 }; // namespace reverse
