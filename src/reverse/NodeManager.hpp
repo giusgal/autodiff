@@ -14,37 +14,47 @@ template <typename T>
 class NodeManager {
 public:
     size_t new_node(T const & value) {
-        nodes.emplace_back(std::make_unique<IndNode<T>>(value));
-        return nodes.size()-1;
+        nodes_.emplace_back(std::make_unique<IndNode<T>>(value));
+        return nodes_.size()-1;
     }
 
     // TODO: constraints on NodeType
     template <typename NodeType>
     size_t new_node(T const & value, size_t first) {
-        nodes.emplace_back(std::make_unique<NodeType>(value, first));
-        return nodes.size()-1;
+        nodes_.emplace_back(std::make_unique<NodeType>(value, first));
+        return nodes_.size()-1;
     }
 
     // TODO: constraints on NodeType
     template <typename NodeType>
     size_t new_node(T const & value, size_t first, size_t second) {
-        nodes.emplace_back(std::make_unique<NodeType>(value, first, second));
-        return nodes.size()-1;
+        nodes_.emplace_back(std::make_unique<NodeType>(value, first, second));
+        return nodes_.size()-1;
     }
 
     void clear() {
-        nodes.clear();
+        nodes_.clear();
+    }
+    void reserve(size_t dim) {
+        nodes_.reserve(dim);
     }
 
     size_t size() const {
-        return nodes.size();
+        return nodes_.size();
     }
 
-    void reserve(size_t dim) {
-        nodes.reserve(dim);
+    void backward(size_t root) {
+        // TODO
+    }
+
+    T get_node_grad(size_t idx) {
+        return nodes_[idx]->grad();
+    }
+    T get_node_value(size_t idx) {
+        return nodes_[idx]->value();
     }
 private:
-    std::vector<std::unique_ptr<Node<T>>> nodes;
+    std::vector<std::unique_ptr<Node<T>>> nodes_;
 };
 
 }; // namespace reverse
