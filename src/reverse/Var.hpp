@@ -34,11 +34,22 @@ public:
         #ifdef AUTODIFF_REVERSE_VAR_CHECK_MANAGER
         // TODO
         #endif
-        T lhs_value = manager_ptr_->get_node_value(node_idx_);
-        T rhs_value = manager_ptr_->get_node_value(rhs.node_idx_);
-
         size_t new_node_idx = manager_ptr_-> template new_node<AddNode<T>>(
-            lhs_value+rhs_value,
+            node_idx_,
+            rhs.node_idx_
+        );
+
+        return Var<T>(
+            new_node_idx,
+            manager_ptr_
+        );
+    }
+
+    Var<T> operator*(Var<T> const & rhs) {
+        #ifdef AUTODIFF_REVERSE_VAR_CHECK_MANAGER
+        // TODO
+        #endif
+        size_t new_node_idx = manager_ptr_-> template new_node<ProdNode<T>>(
             node_idx_,
             rhs.node_idx_
         );

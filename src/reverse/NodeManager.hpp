@@ -21,10 +21,9 @@ public:
     // TODO: (maybe) avoid templates
     // TODO: constraints on NodeType
     template <typename NodeType>
-    size_t new_node(T const & value, size_t first) {
+    size_t new_node(size_t first) {
         nodes_.emplace_back(
             std::make_unique<NodeType>(
-                value,
                 nodes_[first].get()
             )
         );
@@ -33,10 +32,9 @@ public:
 
     // TODO: constraints on NodeType
     template <typename NodeType>
-    size_t new_node(T const & value, size_t first, size_t second) {
+    size_t new_node(size_t first, size_t second) {
         nodes_.emplace_back(
             std::make_unique<NodeType>(
-                value,
                 nodes_[first].get(),
                 nodes_[second].get()
             )

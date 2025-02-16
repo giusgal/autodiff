@@ -25,16 +25,18 @@ int main() {
     
     TapeD tape;
 
-    VarD x = tape.var(1.0);
-    VarD y = tape.var(2.0);
+    VarD x = tape.var(3.0);
+    VarD y = tape.var(4.0);
+    VarD z = tape.var(5.0);
 
-    VarD out = x+y;
+    VarD out = x*y+z;
 
     out.backward();
 
     std::cout << out.value() << std::endl;
     std::cout << x.grad() << std::endl;
     std::cout << y.grad() << std::endl;
+    std::cout << z.grad() << std::endl;
     
     return 0;
 }
