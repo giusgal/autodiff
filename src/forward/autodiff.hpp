@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <numeric>
+#include <functional>
+#include <Eigen/Dense>
 
 namespace autodiff {
 
@@ -42,6 +45,7 @@ private:
     T const real = 0;
     T inf = 0;
 };
+
 
 /***************************************************************/
 /* SUM */
@@ -153,7 +157,7 @@ inline DualVar<T> log(DualVar<T> const & arg){
     return DualVar<T> (std::log(arg.getReal()), arg.getInf() / arg.getReal());
 }
 
-
+//TODO: exp function
 /* When raising a dual number to the power of another dual number, you get
    (a+b𝜀)^(c+d𝜀) = a^c + a^(c-1)*(a*d*ln(a) + c*b)𝜀                         */
 template <typename T>
@@ -216,6 +220,74 @@ std::vector<double> gradient(std::function<autodiff::DualVar<double>(std::vector
         return res;
 }
 
+Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
+                        Eigen::VectorXd x0, Eigen::VectorXd *eval) {
+    
+    
+    std::vector<DualVar<double>> inputs, res;
+    int M = eval->size();
+    int N = x0.size();
+    inputs.reserve(N);
+
+    // Initialize inputs with the values from x0 and seed value set to zero
+    for (int i = 0; i < N; i ++) {
+        inputs.emplace_back(DualVar<double>(x0[i], 0.0));
+    }
+
+    Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(M, N);
+
+    // Compute each column of the Jacobian
+    for (int i = 0; i < N; i++) {
+        inputs[i].setInf(1.0);
+        res = f(inputs);
+        for (int j = 0; j < M; ++j) {
+            jacobian(j, i) = res[j].getInf();
+        }
+        inputs[i].setInf(0.0);
+    }
+
+    for (int i = 0; i < M; i++) {
+        (*eval)[i] = res[i].getReal();
+    }
+        
+
+    return jacobian;
+}
+
+Eigen::VectorXd solve(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
+                        Eigen::VectorXd x0, int M) {
+
+        // Vector containing real values from the evaluation of f at point x = x0
+        Eigen::VectorXd f_eval = Eigen::VectorXd::Zero(M);
+        
+        // Matrix containing all partial derivatives of function f at point x = x0
+        Eigen::MatrixXd J = jacobian(f, x0, &f_eval);
+        
+        // Solve the linear system J * u = f_eval for u
+        return J.fullPivLu().solve(f_eval);
+}
+
+Eigen::VectorXd newton(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
+                        Eigen::VectorXd x0, int M, int maxit=1000, double tol=1e-6){
+
+        Eigen::VectorXd x, x1;
+        x = x0;
+        int i = 0;
+        for(; i < maxit; i++){
+            std::cout << "iteration: " << i << std::endl;
+            x1 = solve(f, x, M);
+            x = x - x1;
+            std::cout << "new guess:\n" << x << std::endl;
+            x1 = x1.cwiseAbs();
+            double err = std::accumulate(x1.data(), x1.data() + x1.size(), 0.0);
+            if (err < tol)
+                break;
+        }
+        std::cout << "number of iterations: " << i << std::endl; 
+        std::cout << "x:\n" << x << std::endl;
+        return x;
+    }
+    
 }
 
 
