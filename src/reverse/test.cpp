@@ -1,56 +1,66 @@
 #include <iostream>
-#include "autodiff.hpp"
-#include "utils.hpp"
-#include "neural.hpp"
+#include <functional>
+#include <array>
 
-using namespace std;
+// #include "NodeManager.hpp"
+#include "Tape.hpp"
+
+using namespace autodiff::reverse;
+using VarD = Var<double>;
+using TapeD = Tape<double>;
+
+
+std::array<double, 3>
+finite_diff(
+    std::function<double(double, double, double)> f,
+    std::array<double, 3> const & input,
+    double h
+) {
+    std::array<double, 3> output{};
+
+    output[0] =
+        (f(input[0]+h,input[1],input[2])-f(input[0]-h,input[1],input[2]))/(2*h);
+    output[1] =
+        (f(input[0],input[1]+h,input[2])-f(input[0],input[1]-h,input[2]))/(2*h);
+    output[2] =
+        (f(input[0],input[1],input[2]+h)-f(input[0],input[1],input[2]-h))/(2*h);
+
+    return output;
+}
+
+template <typename T>
+T f(T x, T y, T z) {
+    return (x*y).exp();
+}
+
 int main() {
-    autodiff::Var a{1.0};
-    autodiff::Var b{1.0};
-    autodiff::Var c{2.0+a};
-    autodiff::Var d{c*a};
-    autodiff::Var e{d/b};
-    autodiff::Var f{e + d};
+    TapeD tape;
+
+    VarD x = tape.var(3.0);
+    VarD y = tape.var(1.0);
+    VarD z = tape.var(5.0);
+
+    // double out = f(x.value(), y.value(), z.value());
+    // auto [dx, dy, dz] = finite_diff(
+    //     f<double>,
+    //     {x.value(), y.value(), z.value()},
+    //     0.00001
+    // );
+
+    VarD out_b = f(x,y,z);
+    out_b.backward();
+
+    // std::cout << "ORIGINAL: \n";
+    // std::cout << " value: " << out << std::endl;
+    // std::cout << " dx: " << dx << std::endl;
+    // std::cout << " dy: " << dy << std::endl;
+    // std::cout << " dz: " << dz << std::endl;
+
+    std::cout << "AUTODIFF: \n";
+    std::cout << " value: " << out_b.value() << std::endl;
+    std::cout << " dx: " << x.grad() << std::endl;
+    std::cout << " dy: " << y.grad() << std::endl;
+    std::cout << " dz: " << z.grad() << std::endl;
     
-    std::cout << f.getIdx() << std::endl;
-    Neuron<double> neuron(10);
-    for(auto& p: neuron.parameters())
-        cout << p.getValue() << endl;
-
-    //Layer layer(4, 3);
-    //layer.parameters();
-
-    utils::saveGraphToFile(f, "output_graph.png");
-
-    /*
-    autodiff::DualVar a(4.0, 6.0);
-    autodiff::DualVar b(6.0, 2.0);
-    autodiff::DualVar c(-2.0, -1.0);
-    autodiff::DualVar d(2.0, -1.0);
-    autodiff::DualVar e(-2.0, 1.0);
-    autodiff::DualVar f(4.0, 6.0);
-
-    std::cout << (autodiff::log(a)).getValue() << std::endl;
-    std::cout << (autodiff::pow(a, b)).getValue() << std::endl;
-    std::cout << (autodiff::pow(a, 3.0)).getValue() << std::endl;
-    std::cout << (autodiff::pow(3.0, a)).getValue() << std::endl;
-
-    std::cout << autodiff::sin(b).getValue() << std::endl;
-    std::cout << autodiff::cos(b).getValue() << std::endl;
-    std::cout << autodiff::tan(b).getValue() << std::endl;
-
-    std::cout << "ABS VALUE" << std::endl;
-    std::cout << autodiff::abs(c).getValue() << std::endl;
-    std::cout << autodiff::abs(d).getValue() << std::endl;
-    std::cout << autodiff::abs(d).getValue() << std::endl;
-
-    std::cout << "RELU, ==" << std::endl;
-    std::cout << autodiff::relu(c).getValue() << std::endl;
-    std::cout << autodiff::relu(d).getValue() << std::endl;
-    std::cout << autodiff::relu(e).getValue() << std::endl;
-    std::cout << (b == a) << std::endl;
-    std::cout << (a == f) << std::endl;
-
-    */
     return 0;
 }

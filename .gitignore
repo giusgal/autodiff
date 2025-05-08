@@ -1,0 +1,7 @@
+*.o
+test
+*.png
+*.jpg
+*.bkp
+*.dtmp
+.vscode/*
