@@ -10,6 +10,7 @@
 #include <numeric>
 #include <functional>
 #include <Eigen/Dense>
+#include <stdexcept>
 
 namespace autodiff {
 
@@ -132,7 +133,7 @@ DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs){
 
 template <typename T>
 inline DualVar<T> abs(DualVar<T> const & arg){
-    int sign_real = (arg.getReal() > 0) ? 1 : ((arg.getReal() < 0) ? -1 : 0);
+    int sign_real = (arg.getReal() >= 0) ? 1 : ((arg.getReal() < 0) ? -1 : 0);
     return DualVar<T> (std::abs(arg.getReal()), arg.getInf() * sign_real);
 }
 
@@ -165,6 +166,7 @@ inline DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp){
     return DualVar<T> (std::pow(base.getReal(), exp.getReal()), std::pow(base.getReal(), exp.getReal() - 1) * 
         (base.getReal() * exp.getInf() * std::log(base.getReal()) + exp.getReal() * base.getInf()));
 }
+
 
 template <typename T>
 inline DualVar<T> pow(T const & base, DualVar<T> const & exp){
@@ -221,11 +223,11 @@ std::vector<double> gradient(std::function<autodiff::DualVar<double>(std::vector
 }
 
 Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, Eigen::VectorXd *eval) {
+                        Eigen::VectorXd x0, Eigen::VectorXd &eval) {
     
     
     std::vector<DualVar<double>> inputs, res;
-    int M = eval->size();
+    int M = eval.size();
     int N = x0.size();
     inputs.reserve(N);
 
@@ -237,17 +239,19 @@ Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<
     Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(M, N);
 
     // Compute each column of the Jacobian
+    // For each column of the jacobian, we are evaluating the function at point x0
     for (int i = 0; i < N; i++) {
         inputs[i].setInf(1.0);
         res = f(inputs);
-        for (int j = 0; j < M; ++j) {
+        for (int j = 0; j < M; j++) {
             jacobian(j, i) = res[j].getInf();
         }
         inputs[i].setInf(0.0);
     }
 
+    // recycle the last function evaluation
     for (int i = 0; i < M; i++) {
-        (*eval)[i] = res[i].getReal();
+        eval[i] = res[i].getReal();
     }
         
 
@@ -255,36 +259,71 @@ Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<
 }
 
 Eigen::VectorXd solve(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, int M) {
-
-        // Vector containing real values from the evaluation of f at point x = x0
-        Eigen::VectorXd f_eval = Eigen::VectorXd::Zero(M);
+                        Eigen::VectorXd x0, int M, Eigen::VectorXd &f_eval) {
         
         // Matrix containing all partial derivatives of function f at point x = x0
-        Eigen::MatrixXd J = jacobian(f, x0, &f_eval);
+        Eigen::MatrixXd J = jacobian(f, x0, f_eval);
         
+        for (auto xi : f_eval) {
+            if (std::isinf(xi) or isnan(xi)) throw std::overflow_error("function valuation is NaN");
+        }
+
+        for (auto xi : f_eval) {
+            assert(not(isnan(xi)));
+        }
         // Solve the linear system J * u = f_eval for u
         return J.fullPivLu().solve(f_eval);
 }
 
 Eigen::VectorXd newton(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, int M, int maxit=1000, double tol=1e-6){
+                        Eigen::VectorXd x0, int M, int maxit=1000, double tol=1e-6, bool v = false){
 
-        Eigen::VectorXd x, x1;
+        Eigen::VectorXd x, x1, eval(M);
         x = x0;
         int i = 0;
         for(; i < maxit; i++){
-            std::cout << "iteration: " << i << std::endl;
-            x1 = solve(f, x, M);
+            try{
+                x1 = solve(f, x, M, eval);
+            }
+            catch (const std::overflow_error & e){
+                std::cout << e.what() << std::endl;
+                i = maxit;
+                break;
+            }
             x = x - x1;
-            std::cout << "new guess:\n" << x << std::endl;
+            if (v) {
+                std::cout << "iteration: " << i << std::endl;
+                std::cout << "new guess:\n" << x << std::endl;
+            }
             x1 = x1.cwiseAbs();
-            double err = std::accumulate(x1.data(), x1.data() + x1.size(), 0.0);
-            if (err < tol)
+            eval = eval.cwiseAbs();
+            double step_size = std::accumulate(x1.data(), x1.data() + x1.size(), 0.0);
+            double residual = std::accumulate(eval.data(), eval.data() + eval.size(), 0.0);
+            if (step_size < tol && residual < tol)
                 break;
         }
-        std::cout << "number of iterations: " << i << std::endl; 
-        std::cout << "x:\n" << x << std::endl;
+        if (i == maxit) {
+            throw std::runtime_error("Unable to converge");
+        }
+        if (v) {
+            std::cout << "number of iterations: " << i << std::endl; 
+            std::cout << "x:\n" << x << std::endl;
+        }
+        for (auto xi : eval) {
+            assert(not (isnan(xi) || isinf(xi)));
+        }
+        // double check
+        std::vector<DualVar<double>> x_d(x.size()), x_d1(x.size());
+        for(auto xi : x) {
+            x_d.push_back(xi);
+        }
+        auto res_c = f(x_d);
+        auto x2 = x + x1;
+
+        for(auto xi : x2) {
+            x_d1.push_back(xi);
+        }
+        auto res_c2 = f(x_d1);
         return x;
     }
     
