@@ -90,7 +90,11 @@ public:
     }
 
 private:
+    // The index of the node which is "tracked" by this variable
     size_t node_idx_;
+
+    // A pointer to the manager object which contains the node
+    //  tracked by this variable
     NodeManagerPtr<T> manager_ptr_;
 };
 
