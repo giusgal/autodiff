@@ -13,194 +13,246 @@
 #include <stdexcept>
 
 namespace autodiff {
-
-template <typename T> class Tape;
-template <typename T> class Var;
-template <typename T> class DualVar;
+namespace forward {
 
 template <typename T>
 class DualVar {
 public:
     DualVar() = default;
     
-    DualVar(
-        T const & _real
-    ):
-        real{_real} {}
+    DualVar(T const & real):
+        real_{real} {}
 
-    DualVar(
-        T const & _real,
-        T const & _inf
-    ):
-        real{_real},
-        inf{_inf} {}
+    DualVar(T const & real, T const & inf):
+        real_{real}, inf_{inf} {}
 
-    std::string getValue() const { return "(" + std::to_string(real) + ", " + 
-                                        std::to_string(inf) + ")"; }
-    T getReal() const { return real; }
-    T getInf() const { return inf; }
+    std::string getValue() const {
+        return "(" + std::to_string(real_) + ", " + 
+            std::to_string(inf_) + ")";
+    }
 
-    void setInf(T _inf) { inf = _inf; }
+    T getReal() const { return real_; }
+    T getInf() const { return inf_; }
+
+    void setInf(T inf) { inf_ = inf; }
+
+    /***************************************************************/
+    /* NEGATE */
+    /***************************************************************/
+    DualVar<T> operator-() const {
+        return DualVar<T>(-real_, -inf_);
+    }
+
+    /***************************************************************/
+    /* SUM */
+    /***************************************************************/
+    DualVar<T> operator+(DualVar<T> const & rhs) const {
+        return DualVar<T>(real_ + rhs.real_, rhs.inf_ + inf_);
+    }
+
+    DualVar<T> operator+(T const & rhs) const {
+        return DualVar<T>(real_ + rhs, inf_);
+    }
+
+    /***************************************************************/
+    /* SUB */
+    /***************************************************************/
+    DualVar<T> operator-(DualVar<T> const & rhs) const {
+        return DualVar<T>(real_ - rhs.real_, inf_ - rhs.inf_);
+    }
+
+    DualVar<T> operator-(T const & rhs) const {
+        return DualVar<T>(real_ - rhs, inf_);
+    }
+
+    /***************************************************************/
+    /* MUL */
+    /***************************************************************/
+    DualVar<T> operator*(DualVar<T> const & rhs) const {
+        return DualVar<T>(real_ * rhs.real_,
+                real_ * rhs.inf_ + inf_ * rhs.real_);
+    }
+
+    DualVar<T> operator*(T const & rhs) const {
+        return DualVar<T>(real_ * rhs, rhs * inf_);
+    }
+
+    /***************************************************************/
+    /* DIV */
+    /***************************************************************/
+    DualVar<T> operator/(DualVar<T> const & rhs) const {
+    return DualVar<T>(real_ / rhs.real_,
+        (inf_ * rhs.real_ + real_ * rhs.inf_) / (rhs.real_ * rhs.real_));
+    }
+
+    DualVar<T> operator/(T const & rhs) const {
+        return DualVar<T>(real_ / rhs, inf_ * rhs / (rhs * rhs));
+    }
+
+    template <typename U>
+    friend DualVar<U> operator/(U const & lhs, DualVar<U> const & rhs);
+
+    /***************************************************************/
+    /* MISC                                                        */
+    /***************************************************************/
+    template <typename U>
+    friend DualVar<U> abs(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> cos(DualVar<U> const & arg);
+    
+    template <typename U>
+    friend DualVar<U> sin(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> tan(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> log(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> exp(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> pow(DualVar<U> const & base, DualVar<U> const & exp);
+
+    template <typename U>
+    friend DualVar<U> pow(U const & base, DualVar<U> const & exp);
+
+    template <typename U>
+    friend DualVar<U> pow(DualVar<U> const & base, U const & exp);
+
+    template <typename U>
+    friend DualVar<U> relu(DualVar<U> const & arg);
+
+    bool operator==(DualVar<T> const & rhs) {
+        return (real_ == rhs.real_) && (inf_ == rhs.inf_);
+    }
 
 private:
-    T const real = 0;
-    T inf = 0;
+    T const real_ = 0;
+    T inf_ = 0;
 };
 
 
 /***************************************************************/
 /* SUM */
 /***************************************************************/
-
 template <typename T>
-DualVar<T> operator+(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() + rhs.getReal(), rhs.getInf() + lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator+(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() + rhs, lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs + rhs.getReal(), rhs.getInf());
+DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs) {
+    return rhs+lhs;
 }
 
 
 /***************************************************************/
 /* SUB */
 /***************************************************************/
-
 template <typename T>
-DualVar<T> operator-(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() - rhs.getReal(), lhs.getInf() - rhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator-(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() - rhs, lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs - rhs.getReal(), -rhs.getInf());
+DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs) {
+    return -(rhs-lhs);
 }
 
 /***************************************************************/
 /* MUL */
 /***************************************************************/
-
 template <typename T>
-DualVar<T> operator*(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() * rhs.getReal(), 
-        lhs.getReal() * rhs.getInf() + lhs.getInf() * rhs.getReal());
-}
-
-template <typename T>
-DualVar<T> operator*(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() * rhs, rhs * lhs.getInf());
-}
-
-template <typename T>
-DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs * rhs.getReal(), lhs * rhs.getInf());
+DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs) {
+    return rhs*lhs;
 }
 
 /***************************************************************/
 /* DIV */
 /***************************************************************/
-
 template <typename T>
-DualVar<T> operator/(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    return DualVar<T>(lhs.getReal() / rhs.getReal(), 
-        (lhs.getInf() * rhs.getReal() + lhs.getReal() * rhs.getInf()) / (rhs.getReal() * rhs.getReal()));
-}
-
-template <typename T>
-DualVar<T> operator/(DualVar<T> const & lhs, T const & rhs){
-    return DualVar<T> (lhs.getReal() / rhs, lhs.getInf() * rhs / (rhs * rhs));
-}
-
-template <typename T>
-DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs){
-    return DualVar<T> (lhs / rhs.getReal(), lhs * rhs.getInf() / (rhs.getReal() * rhs.getReal()));
+DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs) {
+    return DualVar<T> (lhs / rhs.real_, lhs * rhs.inf_ / (rhs.real_ * rhs.real_));
 }
 
 /***************************************************************/
 /* MISC                                                        */
 /***************************************************************/
-
 template <typename T>
-inline DualVar<T> abs(DualVar<T> const & arg){
-    int sign_real = (arg.getReal() >= 0) ? 1 : ((arg.getReal() < 0) ? -1 : 0);
-    return DualVar<T> (std::abs(arg.getReal()), arg.getInf() * sign_real);
+DualVar<T> abs(DualVar<T> const & arg) {
+    int sign_real = (arg.real_ >= 0) ? 1 : -1;
+    return DualVar<T> (std::abs(arg.real_), arg.inf_ * sign_real);
 }
 
 template <typename T>
-inline DualVar<T> cos(DualVar<T> const & arg){
-    return DualVar<T> (std::cos(arg.getReal()), - arg.getInf() * std::sin(arg.getReal()));
+DualVar<T> cos(DualVar<T> const & arg) {
+    return DualVar<T> (std::cos(arg.real_)
+            - arg.inf_ * std::sin(arg.real_));
 }
 
 template <typename T>
-inline DualVar<T> sin(DualVar<T> const & arg){
-    return DualVar<T> (std::sin(arg.getReal()), arg.getInf() * std::cos(arg.getReal()));
+DualVar<T> sin(DualVar<T> const & arg) {
+    return DualVar<T> (std::sin(arg.real_),
+            arg.inf_ * std::cos(arg.real_));
 }
 
 template <typename T>
-inline DualVar<T> tan(DualVar<T> const & arg){
-    return DualVar<T> (std::tan(arg.getReal()), 
-        arg.getInf() / (std::cos(arg.getReal()) * std::cos(arg.getReal())));
+DualVar<T> tan(DualVar<T> const & arg) {
+    return DualVar<T> (std::tan(arg.real_), 
+        arg.inf_ / (std::cos(arg.real_) * std::cos(arg.real_)));
 }
 
 template <typename T>
-inline DualVar<T> log(DualVar<T> const & arg){
-    return DualVar<T> (std::log(arg.getReal()), arg.getInf() / arg.getReal());
+DualVar<T> log(DualVar<T> const & arg) {
+    return DualVar<T>(std::log(arg.real_), arg.inf_ / arg.real_);
 }
 
-//TODO: exp function
+template <typename T>
+DualVar<T> exp(DualVar<T> const & arg) {
+    return DualVar<T>(std::exp(arg.real_), arg.inf_*std::exp(arg.real_));
+}
+
 /* When raising a dual number to the power of another dual number, you get
    (a+b𝜀)^(c+d𝜀) = a^c + a^(c-1)*(a*d*ln(a) + c*b)𝜀                         */
 template <typename T>
-inline DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp){
-    return DualVar<T> (std::pow(base.getReal(), exp.getReal()), std::pow(base.getReal(), exp.getReal() - 1) * 
-        (base.getReal() * exp.getInf() * std::log(base.getReal()) + exp.getReal() * base.getInf()));
-}
-
-
-template <typename T>
-inline DualVar<T> pow(T const & base, DualVar<T> const & exp){
-    return DualVar<T> (std::pow(base, exp.getReal()), 
-        std::pow(base, exp.getReal()) * exp.getInf() * std::log(base));
-}
-
-template <typename T>
-inline DualVar<T> pow(DualVar<T> const & base, T const & exp){
-    return DualVar<T> (std::pow(base.getReal(), exp), 
-        std::pow(base.getReal(), exp - 1) * exp * base.getInf());
+DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp) {
+    return DualVar<T>(
+        std::pow(
+            base.real_,
+            exp.real_
+        ),
+        std::pow(
+            base.real_,
+            exp.real_ - 1) * (base.real_ * exp.inf_
+                * std::log(base.real_) + exp.real_ * base.inf_
+        )
+    );
 }
 
 template <typename T>
-bool operator==(DualVar<T> const & lhs, DualVar<T> const & rhs){
-    if (lhs.getReal() == rhs.getReal() and lhs.getInf() == rhs.getInf()){ return true; }
-    return false;
+DualVar<T> pow(T const & base, DualVar<T> const & exp) {
+    return DualVar<T>(
+        std::pow(base, exp.real_),
+        std::pow(base, exp.real_) * exp.inf_ * std::log(base)
+    );
 }
 
 template <typename T>
-DualVar<T> relu(DualVar<T> const & arg){
-    if (arg.getReal() > 0){
-        return DualVar<T> (arg.getReal(), 1);
+DualVar<T> pow(DualVar<T> const & base, T const & exp) {
+    return DualVar<T>(
+        std::pow(base.real_, exp), 
+        std::pow(base.real_, exp - 1) * exp * base.inf_
+    );
+}
+
+template <typename T>
+DualVar<T> relu(DualVar<T> const & arg) {
+    if (arg.real_ > 0){
+        return DualVar<T>(arg.real_, 1);
     } else {
-        return DualVar<T> (0, 0);
+        return DualVar<T>(0, 0);
     }
 }
 
-autodiff::DualVar<double> derivative(std::function<autodiff::DualVar<double>(autodiff::DualVar<double>)>f, double x0){
-    autodiff::DualVar<double> res = f(DualVar<double>(x0, 1.0));
+DualVar<double> derivative(std::function<DualVar<double>(DualVar<double>)>f, double x0){
+    DualVar<double> res = f(DualVar<double>(x0, 1.0));
     return res;
 }
 
-std::vector<double> gradient(std::function<autodiff::DualVar<double>(std::vector<autodiff::DualVar<double>>)>f, 
+std::vector<double> gradient(std::function<DualVar<double>(std::vector<DualVar<double>>)>f, 
     std::vector<double> x) {
 
         std::vector<DualVar<double>> xd;
@@ -222,10 +274,8 @@ std::vector<double> gradient(std::function<autodiff::DualVar<double>(std::vector
         return res;
 }
 
-Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, Eigen::VectorXd &eval) {
-    
-    
+Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, Eigen::VectorXd x0, Eigen::VectorXd &eval) {
+
     std::vector<DualVar<double>> inputs, res;
     int M = eval.size();
     int N = x0.size();
@@ -327,7 +377,7 @@ Eigen::VectorXd newton(std::function<std::vector<DualVar<double>>(std::vector<Du
         return x;
     }
     
-}
-
+}; // namespace forward
+}; // namespace autodiff
 
 #endif // __AUTODIFF__H__
