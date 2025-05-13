@@ -27,7 +27,7 @@ public:
         real_{real}, inf_{inf} {}
 
     std::string getValue() const {
-        return "(" + std::to_string(real_) + ", " + 
+        return "(" + std::to_string(real_) + ", " +
             std::to_string(inf_) + ")";
     }
 
