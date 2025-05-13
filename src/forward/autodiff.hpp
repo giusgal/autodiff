@@ -265,11 +265,11 @@ Eigen::VectorXd solve(std::function<std::vector<DualVar<double>>(std::vector<Dua
         Eigen::MatrixXd J = jacobian(f, x0, f_eval);
         
         for (auto xi : f_eval) {
-            if (std::isinf(xi) or isnan(xi)) throw std::overflow_error("function valuation is NaN");
+            if (std::isinf(xi) or std::isnan(xi)) throw std::overflow_error("function valuation is NaN");
         }
 
         for (auto xi : f_eval) {
-            assert(not(isnan(xi)));
+            assert(not(std::isnan(xi)));
         }
         // Solve the linear system J * u = f_eval for u
         return J.fullPivLu().solve(f_eval);
@@ -310,7 +310,7 @@ Eigen::VectorXd newton(std::function<std::vector<DualVar<double>>(std::vector<Du
             std::cout << "x:\n" << x << std::endl;
         }
         for (auto xi : eval) {
-            assert(not (isnan(xi) || isinf(xi)));
+            assert(not (std::isnan(xi) || std::isinf(xi)));
         }
         // double check
         std::vector<DualVar<double>> x_d(x.size()), x_d1(x.size());
