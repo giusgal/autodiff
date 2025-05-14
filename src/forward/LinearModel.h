@@ -1,7 +1,10 @@
 #ifndef LINEARMODEL_H
 #define LINEARMODEL_H
 
-#include "autodiff.hpp"
+#include "DualOps.h"
+#include "Differentiator.h"
+#include "DualOps.h"
+#include "DualVar.h"
 #include <iostream>
 #include <vector>
 #include <random>
