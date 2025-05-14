@@ -9,6 +9,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include "../optimizer/Optimizer.h"
 #include <cmath>
 
 using namespace autodiff::forward;
@@ -31,12 +32,12 @@ inline std::vector<std::pair<double, double>> generate_data(const int N, const d
 
 /* this classe is for an example of a simple regression*/
 class LinearModel{
-private:
+protected:
     double w;
     double b;
-    double lr;
     int epochs;
     int batch_size;
+    Optimizer* optimizer;
 
     DualVar<double> loss_func(const std::vector<std::pair<double, double>>& batch,
                                 DualVar<double> w_,
@@ -59,10 +60,10 @@ private:
     }
 
     public:
-    LinearModel(double lr = 0.01, int epochs = 50, int batch_size = 10)
-        :w(0.0), b(0.0), lr(lr), epochs(epochs), batch_size(batch_size){}
+    LinearModel(Optimizer* optimizer, int epochs = 50, int batch_size = 10)
+        :w(0.0), b(0.0), epochs(epochs), batch_size(batch_size), optimizer(optimizer){}
 
-    void fit(std::vector<std::pair<double, double>>& data)
+    virtual void fit(std::vector<std::pair<double, double>>& data)
     {
         std::vector<double> params = {w, b};
         std::default_random_engine rng(0);
@@ -79,15 +80,15 @@ private:
                 {
                     return loss_func(batch, p[0], p[1]);
                 }, params);
-                for (int j = 0; j < params.size(); j++)
-                    params[j] -= lr * grad[j];
+
+                optimizer->update(params, grad);
             }
 
-            auto loss_val = loss_func(data,
+            /*auto loss_val = loss_func(data,
                 DualVar<double>(params[0], 0.0),
                 DualVar<double>(params[1], 0.0)).getReal();
 
-            /*std::cout << "Epoch " << epoch
+            std::cout << "Epoch " << epoch
                 << " | loss: " << loss_val
                 << " | w: " << params[0]
                 << " | b: " << params[1] << std::endl;*/

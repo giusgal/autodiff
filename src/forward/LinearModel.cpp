@@ -1,14 +1,15 @@
 #include "LinearModel.h"
 #include <chrono>
 #include <iostream>
-
+#include "../optimizer/SGD.h"
 #include "LinearModelParallel.h"
 
 int main() {
     auto data = generate_data(100, 5.0, -2.0);  // true model: y = 2x - 1
     // LinearModel serial execution time
-    LinearModel model(0.01, 200, 20);            // lr, epochs, batch_size
-    LinearModelParallel modelParallel(0.01, 1000, 20);
+    Optimizer* optimizer = new SGD(0.01);
+    LinearModel model(optimizer, 200, 20);            // lr, epochs, batch_size
+    LinearModelParallel modelParallel(optimizer, 1000, 20);
 
 
     auto t0 = std::chrono::high_resolution_clock::now();
