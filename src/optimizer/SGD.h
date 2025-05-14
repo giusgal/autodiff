@@ -3,6 +3,7 @@
 #define SGD_H
 #include "Optimizer.h"
 
+/* the simplest gradient descent */
 class SGD : public Optimizer
 {
     const double lr;

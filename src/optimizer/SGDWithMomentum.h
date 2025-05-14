@@ -8,6 +8,7 @@
 
 #include "Optimizer.h"
 
+/*same sgd but with momentum technique*/
 class SGDWithMomentum : public Optimizer
 {
     const double lr;
@@ -20,6 +21,7 @@ public:
     {
         for (size_t i = 0; i < params.size(); i++)
         {
+            /*the beta and velocity is to gain momentum, a velocity for each parameter to update*/
             velocity[i] = beta * velocity[i] + lr * grads[i];
             params[i] -= velocity[i];
         }
