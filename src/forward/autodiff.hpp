@@ -9,7 +9,7 @@
 #include <cmath>
 #include <numeric>
 #include <functional>
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
 #include <stdexcept>
 
 namespace autodiff {

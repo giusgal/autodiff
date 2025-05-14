@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <cmath>
 
-using namespace autodiff;
+using namespace autodiff::forward;
 
 inline std::vector<std::pair<double, double>> generate_data(const int N, const double true_w, const double true_b)
 {

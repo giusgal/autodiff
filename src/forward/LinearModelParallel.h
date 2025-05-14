@@ -1,7 +1,3 @@
-//
-// Created by sheldon on 5/13/25.
-//
-
 #ifndef LINEARMODELPARALLEL_H
 #define LINEARMODELPARALLEL_H
 class LinearModelParallel{
