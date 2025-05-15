@@ -1,7 +1,6 @@
 #include <iostream>
 #include <functional>
 #include <Eigen/Core>
-#include "autodiff.hpp"
 #include "EigenSupport.hpp"
 #include "../../examples/newton/Newton.hpp"
 
