@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include "autodiff.hpp"
 #include "EigenSupport.hpp"
-#include "Newton.hpp"
+#include "../../examples/newton/Newton.hpp"
 
 #define DIM 3
 #define FN_OUTPUTS 2

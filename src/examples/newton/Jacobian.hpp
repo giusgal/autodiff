@@ -34,8 +34,9 @@ template <typename T>
 class ForwardJac final : 
 public JacobianBase<T>
 {
-  using NumVecType = typename ForwardJac::NumVecType;
-  using RealVec = typename ForwardJac::RealVec;
+  using dv = typename ForwardJac::dv;
+  using FwArgType = typename ForwardJac::FwArgType;
+  using FwRetType = typename ForwardJac::FwRetType;
   using NLSType = typename ForwardJac::NLSType;
   using JacType = typename ForwardJac::JacType;
 
@@ -50,23 +51,24 @@ public:
   void compute(const RealVec &x0, RealVec &real_eval) {
 
     // create dual vector to feed the function as input
-    NumVecType x0d(this->_M), full_eval(this->_M);
+    FwArgType x0d(this->_M);
+    FwRetType eval(this->_M);
     for(int i = 0; i < this->_M; i++) {
-      x0d[i] = autodiff::forward::DualVar(x0[i], 0.0);
+      x0d[i] = dv(x0[i], 0.0);
     }
 
     for (int i = 0; i < this->_N; i++) {
       x0d[i].setInf(1.0);
-      full_eval = this->_fn(x0d);
+      eval = this->_fn(x0d);
       for (int j = 0; j < this->_M; j++) {
-        this->_J(j, i) = full_eval[j].getInf();
+        this->_J(j, i) = eval[j].getInf();
       }
       x0d[i].setInf(0.0);
     }
     // write the value of fn in real_eval pointer
     
     for (int i = 0; i < this->_M; i++) {
-      real_eval[i] = full_eval[i].getReal();
+      real_eval[i] = eval[i].getReal();
     }
   
   }

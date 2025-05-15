@@ -29,7 +29,7 @@ public:
     _J{ForwardJac<double>(opts.dim_in, opts.dim_out, std::forward<const NLSType &>(fn))} {};
 
   
-  RealVec solve(RealVec &x0) {
+  RealVec solve(const RealVec &x0) {
     RealVec x(_opts.dim_in), x1(_opts.dim_in), resid(_opts.dim_in);
     x = x0;
 
