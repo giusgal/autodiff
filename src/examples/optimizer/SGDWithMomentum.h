@@ -17,7 +17,8 @@ class SGDWithMomentum : public Optimizer
 public:
     SGDWithMomentum(double lr, double beta, size_t param_size)
         : lr(lr), beta(beta), velocity(param_size, 0.0){}
-    void update(std::vector<double>& params, const std::vector<double>& grads) override
+
+    void update(std::vector<double>& params, const std::vector<double> grads) override
     {
         for (size_t i = 0; i < params.size(); i++)
         {
