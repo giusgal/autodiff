@@ -10,6 +10,8 @@ int main() {
     Optimizer* optimizer = new SGD(0.01);
     LinearModel model(optimizer, 200, 20);            // lr, epochs, batch_size
     LinearModelParallel modelParallel(optimizer, 1000, 20);
+    //the parallel model is faster but needs more epochs of training ,but it
+    //destroyes the convergence property, make the combined gradient big less stocastic.
 
 
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -17,13 +19,12 @@ int main() {
     auto t1 = std::chrono::high_resolution_clock::now();
     auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
     std::cout << "Serial training took: " << duration1.count() << " microseconds" << std::endl;
-
+    model.print_parameters();
     t0 = std::chrono::high_resolution_clock::now();
     modelParallel.fit(data);
     t1 = std::chrono::high_resolution_clock::now();
     auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
     std::cout << "Parallel training took: " << duration2.count() << " microseconds" << std::endl;
     std::cout << "Speed Up is " << static_cast<double>(1.0 * duration1 / duration2) << std::endl;
-
     return 0;
 }

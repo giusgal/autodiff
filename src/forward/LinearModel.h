@@ -93,10 +93,16 @@ protected:
                 << " | w: " << params[0]
                 << " | b: " << params[1] << std::endl;*/
         }
-        std::cout << " | w: " << params[0]
-                << " | b: " << params[1] << std::endl;
+        //std::cout << " | w: " << params[0]
+          //      << " | b: " << params[1] << std::endl;
         w = params[0];
         b = params[1];
+    }
+
+    void print_parameters()const
+    {
+        std::cout << "w: " << w
+                << " | b: " << b << std::endl;
     }
 
     double predict(double x) const

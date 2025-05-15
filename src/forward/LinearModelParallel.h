@@ -68,7 +68,7 @@ class LinearModelParallel : public LinearModel{
     // Commit final parameters
     w = params[0];
     b = params[1];
-    std::cout << "| w: " << w << " | b: " << b << std::endl;
+    //std::cout << "| w: " << w << " | b: " << b << std::endl;
 }
 
 };
