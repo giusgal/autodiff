@@ -1,6 +1,5 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "autodiff.hpp"
 #include "NewtonTraits.hpp"
 
 
@@ -39,6 +38,7 @@ public JacobianBase<T>
   using FwRetType = typename ForwardJac::FwRetType;
   using NLSType = typename ForwardJac::NLSType;
   using JacType = typename ForwardJac::JacType;
+  using RealVec = typename ForwardJac::RealVec;
 
 public:
   ForwardJac(

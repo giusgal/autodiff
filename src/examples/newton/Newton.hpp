@@ -1,6 +1,7 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "autodiff.hpp"
+#include "../../autodiff/forward/autodiff.hpp"
+#include "../../autodiff/forward/EigenSupport.hpp"
 #include "NewtonTraits.hpp"
 #include "Jacobian.hpp"
 

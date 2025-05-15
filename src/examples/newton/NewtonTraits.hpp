@@ -15,15 +15,17 @@ public:
   using dv = autodiff::forward::DualVar<T>;
   using FwArgType = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
   using FwRetType = FwArgType;
-  using FwNLSType = std::function<FwArgType(const FwArgType &)>;
+  using FwNLSType = std::function<FwRetType(const FwArgType &)>;
 
-  using var = autodiff::reverse::Var<T>;
-  using RevArgType = Eigen::Matrix<var, Eigen::Dynamic, 1>;
-  using RevRetType = RevArgType;
-  using RevNLSType = std::function<FwArgType(const FwArgType &)>;
+  // using var = autodiff::reverse::Var<T>;
+  // using RevArgType = Eigen::Matrix<var, Eigen::Dynamic, 1>;
+  // using RevRetType = RevArgType;
+  // using RevNLSType = std::function<RevRetType(const RevArgType &)>;
 
   using RealVec = Eigen::Matrix<T, Eigen::Dynamic, 1>;
   using JacType = Eigen::MatrixXd;
+
+
   using NLSType = FwNLSType;
 
 };
