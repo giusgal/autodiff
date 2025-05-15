@@ -1,7 +1,7 @@
 #ifndef LINEARMODEL_H
 #define LINEARMODEL_H
 
-#include "../../autodiff/forward/autodiff.hpp"
+#include "../../autodiff/forward/DualVar.hpp"
 #include <iostream>
 #include <vector>
 #include <random>

@@ -1,5 +1,5 @@
-#ifndef __AUTODIFF__H__
-#define __AUTODIFF__H__
+#ifndef __DUALVAR__HPP__
+#define __DUALVAR__HPP__
 
 #include <array>
 #include <iostream>
@@ -293,4 +293,4 @@ std::vector<double> gradient(std::function<DualVar<double>(std::vector<DualVar<d
 }; // namespace forward
 }; // namespace autodiff
 
-#endif // __AUTODIFF__H__
+#endif // __DUALVAR__HPP__

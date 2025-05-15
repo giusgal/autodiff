@@ -1,6 +1,6 @@
 #ifndef EIGENSUPPORT_HPP_
 #define EIGENSUPPORT_HPP_
-#include "autodiff.hpp"
+#include "DualVar.hpp"
 #include <Eigen/Core>
 
 namespace Eigen {
