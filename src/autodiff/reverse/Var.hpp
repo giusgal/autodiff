@@ -18,6 +18,8 @@ using NodeManagerPtr = NodeManager<T>*;
 template <typename T>
 class Var {
 public:
+    Var() = default;
+
     Var(size_t node_idx, NodeManagerPtr<T> manager_ptr):
      node_idx_(node_idx), manager_ptr_(manager_ptr) {}
 
@@ -35,7 +37,7 @@ public:
     }
 
     /******** OPERATORS *******/
-    Var<T> operator+(Var<T> const & rhs) {
+    Var<T> operator+(Var<T> const & rhs) const {
         size_t new_node_idx = manager_ptr_-> template new_node<AddNode<T>>(
             node_idx_,
             rhs.node_idx_
@@ -47,7 +49,7 @@ public:
         );
     }
 
-    Var<T> operator-(Var<T> const & rhs) {
+    Var<T> operator-(Var<T> const & rhs) const {
         size_t new_node_idx = manager_ptr_-> template new_node<SubNode<T>>(
             node_idx_,
             rhs.node_idx_
@@ -59,7 +61,7 @@ public:
         );
     }
 
-    Var<T> operator*(Var<T> const & rhs) {
+    Var<T> operator*(Var<T> const & rhs) const {
         size_t new_node_idx = manager_ptr_-> template new_node<ProdNode<T>>(
             node_idx_,
             rhs.node_idx_
@@ -71,7 +73,7 @@ public:
         );
     }
 
-    Var<T> exp() {
+    Var<T> exp() const {
         size_t new_node_idx = manager_ptr_-> template new_node<ExpNode<T>>(
             node_idx_
         );

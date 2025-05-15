@@ -2,13 +2,14 @@
 #include <functional>
 #include <array>
 
-// #include "NodeManager.hpp"
+#include <Eigen/Core>
+#include "EigenSupport.hpp"
 #include "Tape.hpp"
 
 using namespace autodiff::reverse;
 using VarD = Var<double>;
 using TapeD = Tape<double>;
-
+using VecVarD = Eigen::Vector<VarD, Eigen::Dynamic>;
 
 std::array<double, 3>
 finite_diff(
@@ -33,12 +34,17 @@ T f(T x, T y, T z) {
     return (x*y).exp();
 }
 
+VarD f(VecVarD x) {
+    return (x(0)*x(1)).exp();
+}
+
 int main() {
     TapeD tape;
 
-    VarD x = tape.var(3.0);
-    VarD y = tape.var(1.0);
-    VarD z = tape.var(5.0);
+    VecVarD x(3);
+    x(0) = tape.var(3.0);
+    x(1) = tape.var(1.0);
+    x(2) = tape.var(5.0);
 
     // double out = f(x.value(), y.value(), z.value());
     // auto [dx, dy, dz] = finite_diff(
@@ -47,8 +53,8 @@ int main() {
     //     0.00001
     // );
 
-    VarD out_b = f(x,y,z);
-    out_b.backward();
+    VarD y = f(x);
+    y.backward();
 
     // std::cout << "ORIGINAL: \n";
     // std::cout << " value: " << out << std::endl;
@@ -57,10 +63,10 @@ int main() {
     // std::cout << " dz: " << dz << std::endl;
 
     std::cout << "AUTODIFF: \n";
-    std::cout << " value: " << out_b.value() << std::endl;
-    std::cout << " dx: " << x.grad() << std::endl;
-    std::cout << " dy: " << y.grad() << std::endl;
-    std::cout << " dz: " << z.grad() << std::endl;
+    std::cout << " value: " << y.value() << std::endl;
+    std::cout << " dx: " << x(0).grad() << std::endl;
+    std::cout << " dy: " << x(1).grad() << std::endl;
+    std::cout << " dz: " << x(2).grad() << std::endl;
     
     return 0;
 }
