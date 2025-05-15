@@ -1,17 +1,12 @@
 #ifndef LINEARMODEL_H
 #define LINEARMODEL_H
 
-#include "DualOps.h"
-#include "Differentiator.h"
-#include "DualOps.h"
-#include "DualVar.h"
+#include "../../autodiff/forward/autodiff.hpp"
 #include <iostream>
 #include <vector>
 #include <random>
 #include <algorithm>
 #include "../optimizer/Optimizer.h"
-#include <cmath>
-
 using namespace autodiff::forward;
 
 inline std::vector<std::pair<double, double>> generate_data(const int N, const double true_w, const double true_b)
@@ -60,6 +55,8 @@ protected:
     }
 
     public:
+    virtual ~LinearModel() = default;
+
     LinearModel(Optimizer* optimizer, int epochs = 50, int batch_size = 10)
         :w(0.0), b(0.0), epochs(epochs), batch_size(batch_size), optimizer(optimizer){}
 
