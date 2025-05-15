@@ -9,8 +9,13 @@
 #include <cmath>
 #include <numeric>
 #include <functional>
+<<<<<<< HEAD
 #include <Eigen/Dense>
 
+=======
+//#include <Eigen/Dense>
+#include <stdexcept>
+>>>>>>> 99f4debb84c65ec9cbace63b40579aa82e0724b2
 
 namespace autodiff {
 namespace forward {

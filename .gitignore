@@ -7,4 +7,4 @@ test
 *.dSYM
 .vscode/*
 .clangd
-
+.idea/
