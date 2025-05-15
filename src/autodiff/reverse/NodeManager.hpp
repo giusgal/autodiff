@@ -10,6 +10,21 @@
 namespace autodiff {
 namespace reverse {
 
+
+/**
+ * @class NodeManager
+ * @brief A middle-end class between the actual `Node`(s) of the computational graph
+ * and the `Var`(s) in the front-end
+ * @tparam T The type of the underlying variables
+ *
+ * The main reason why this class exists is to avoid the need for explicitly computing
+ * a topological ordering of the nodes of the computationl graph before the
+ * backward pass.
+ * In fact, as expressions involving `Var` instances are evaluated, the corresponding
+ * computational graph nodes are automatically created and appended to an 
+ * `std::vector` in the order of their creation — which naturally forms a valid 
+ * topological order of the computational graph.
+ */
 template <typename T>
 class NodeManager {
 public:

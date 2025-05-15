@@ -13,6 +13,11 @@ template <typename T>
 using NodePtr = Node<T> * const;
 
 // TODO: (maybe) forward() function for lazy evaluation
+/**
+ * @class Node
+ * @brief An abstract class which represents a generic node in the computational graph.
+ * @tparam T The type of the underlying variable
+ */
 template <typename T>
 class Node {
 public:
@@ -35,6 +40,13 @@ protected:
     T grad_;
 };
 
+/**
+ * @class IndNode
+ * @brief A class which represents variables or constants in the computational graph.
+ * @tparam T The type of the underlying variable
+ *
+ * IndNode stands for Independent Node, i.e. the leaf nodes of the computational graph
+ */
 template <typename T>
 class IndNode : public Node<T> {
 public:
@@ -45,6 +57,11 @@ public:
 };
 
 
+/**
+ * @class UnaryNode
+ * @brief An abstract class which represents functions taking only one input.
+ * @tparam T The type of the underlying variable
+ */
 template <typename T>
 class UnaryNode : public Node<T> {
 public:
@@ -56,6 +73,11 @@ protected:
     NodePtr<T> first_;
 };
 
+/**
+ * @class BinaryNode
+ * @brief An abstract class which represents functions taking 2 inputs.
+ * @tparam T The type of the underlying variable
+ */
 template <typename T>
 class BinaryNode: public Node<T> {
 public:

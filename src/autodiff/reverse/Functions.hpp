@@ -4,6 +4,11 @@
 #include "Node.hpp"
 #include <cmath>
 
+/**
+ * The actual definition for all the functions that inherit from the
+ * `Node` class goes here
+ */
+
 namespace autodiff {
 namespace reverse {
 

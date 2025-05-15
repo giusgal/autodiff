@@ -7,6 +7,11 @@
 namespace autodiff {
 namespace reverse {
 
+/**
+ * @class Tape
+ * @brief User-facing interface to the NodeManager class.
+ * @tparam T The type of the underlying variables
+ */
 template <typename T>
 class Tape {
 public:
