@@ -4,5 +4,7 @@ test
 *.jpg
 *.bkp
 *.dtmp
+*.dSYM
 .vscode/*
 .clangd
+

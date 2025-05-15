@@ -10,7 +10,7 @@
 #include <numeric>
 #include <functional>
 #include <Eigen/Dense>
-#include <stdexcept>
+
 
 namespace autodiff {
 namespace forward {
@@ -20,11 +20,16 @@ class DualVar {
 public:
     DualVar() = default;
     
+    // copy constructor
+    DualVar(const DualVar<T> &dv) = default;
+
     DualVar(T const & real):
         real_{real} {}
 
     DualVar(T const & real, T const & inf):
         real_{real}, inf_{inf} {}
+
+    ~DualVar() = default;
 
     std::string getValue() const {
         return "(" + std::to_string(real_) + ", " +
@@ -35,6 +40,7 @@ public:
     T getInf() const { return inf_; }
 
     void setInf(T inf) { inf_ = inf; }
+
 
     /***************************************************************/
     /* NEGATE */
@@ -130,9 +136,19 @@ public:
     }
 
 private:
-    T const real_ = 0;
+    T real_ = 0;
     T inf_ = 0;
 };
+
+/***************************************************************/
+/* OSTREAM */
+/***************************************************************/
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const DualVar<T>& dv) {
+    os << "(" << dv.getReal() << ", " << dv.getInf() << ")";
+    return os;
+}
 
 
 /***************************************************************/
@@ -274,108 +290,6 @@ std::vector<double> gradient(std::function<DualVar<double>(std::vector<DualVar<d
         return res;
 }
 
-Eigen::MatrixXd jacobian(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, Eigen::VectorXd x0, Eigen::VectorXd &eval) {
-
-    std::vector<DualVar<double>> inputs, res;
-    int M = eval.size();
-    int N = x0.size();
-    inputs.reserve(N);
-
-    // Initialize inputs with the values from x0 and seed value set to zero
-    for (int i = 0; i < N; i ++) {
-        inputs.emplace_back(DualVar<double>(x0[i], 0.0));
-    }
-
-    Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(M, N);
-
-    // Compute each column of the Jacobian
-    // For each column of the jacobian, we are evaluating the function at point x0
-    for (int i = 0; i < N; i++) {
-        inputs[i].setInf(1.0);
-        res = f(inputs);
-        for (int j = 0; j < M; j++) {
-            jacobian(j, i) = res[j].getInf();
-        }
-        inputs[i].setInf(0.0);
-    }
-
-    // recycle the last function evaluation
-    for (int i = 0; i < M; i++) {
-        eval[i] = res[i].getReal();
-    }
-        
-
-    return jacobian;
-}
-
-Eigen::VectorXd solve(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, int M, Eigen::VectorXd &f_eval) {
-        
-        // Matrix containing all partial derivatives of function f at point x = x0
-        Eigen::MatrixXd J = jacobian(f, x0, f_eval);
-        
-        for (auto xi : f_eval) {
-            if (std::isinf(xi) or std::isnan(xi)) throw std::overflow_error("function valuation is NaN");
-        }
-
-        for (auto xi : f_eval) {
-            assert(not(std::isnan(xi)));
-        }
-        // Solve the linear system J * u = f_eval for u
-        return J.fullPivLu().solve(f_eval);
-}
-
-Eigen::VectorXd newton(std::function<std::vector<DualVar<double>>(std::vector<DualVar<double>>)>f, 
-                        Eigen::VectorXd x0, int M, int maxit=1000, double tol=1e-6, bool v = false){
-
-        Eigen::VectorXd x, x1, eval(M);
-        x = x0;
-        int i = 0;
-        for(; i < maxit; i++){
-            try{
-                x1 = solve(f, x, M, eval);
-            }
-            catch (const std::overflow_error & e){
-                std::cout << e.what() << std::endl;
-                i = maxit;
-                break;
-            }
-            x = x - x1;
-            if (v) {
-                std::cout << "iteration: " << i << std::endl;
-                std::cout << "new guess:\n" << x << std::endl;
-            }
-            x1 = x1.cwiseAbs();
-            eval = eval.cwiseAbs();
-            double step_size = std::accumulate(x1.data(), x1.data() + x1.size(), 0.0);
-            double residual = std::accumulate(eval.data(), eval.data() + eval.size(), 0.0);
-            if (step_size < tol && residual < tol)
-                break;
-        }
-        if (i == maxit) {
-            throw std::runtime_error("Unable to converge");
-        }
-        if (v) {
-            std::cout << "number of iterations: " << i << std::endl; 
-            std::cout << "x:\n" << x << std::endl;
-        }
-        for (auto xi : eval) {
-            assert(not (std::isnan(xi) || std::isinf(xi)));
-        }
-        // double check
-        std::vector<DualVar<double>> x_d(x.size()), x_d1(x.size());
-        for(auto xi : x) {
-            x_d.push_back(xi);
-        }
-        auto res_c = f(x_d);
-        auto x2 = x + x1;
-
-        for(auto xi : x2) {
-            x_d1.push_back(xi);
-        }
-        auto res_c2 = f(x_d1);
-        return x;
-    }
     
 }; // namespace forward
 }; // namespace autodiff
