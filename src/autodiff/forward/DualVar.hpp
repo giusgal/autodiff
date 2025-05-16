@@ -128,7 +128,11 @@ public:
     friend DualVar<U> pow(DualVar<U> const & base, U const & exp);
 
     template <typename U>
+    friend DualVar<U> sqrt(DualVar<U> const & arg);
+
+    template <typename U>
     friend DualVar<U> relu(DualVar<U> const & arg);
+
 
     bool operator==(DualVar<T> const & rhs) {
         return (real_ == rhs.real_) && (inf_ == rhs.inf_);
@@ -250,6 +254,14 @@ DualVar<T> pow(DualVar<T> const & base, T const & exp) {
     return DualVar<T>(
         std::pow(base.real_, exp), 
         std::pow(base.real_, exp - 1) * exp * base.inf_
+    );
+}
+
+template <typename T>
+DualVar<T> sqrt(DualVar<T> const & arg) {
+    return DualVar<T>(
+        std::sqrt(arg.real_),
+        (1.0/(2.0*std::sqrt(arg.real_)))*arg.inf_
     );
 }
 
