@@ -8,6 +8,9 @@
  * This file specializes the NumTraits struct template for the
  * Var<double> type to let Eigen access information
  * on this type
+ *
+ * Taken from:
+ * "https://eigen.tuxfamily.org/dox/TopicCustomizing_CustomScalar.html"
  */
 
 // TODO: maybe it's not a good idea to leave this type-alias here
@@ -20,14 +23,12 @@ namespace Eigen {
 // TODO: review this
 template<>
 struct NumTraits<VarD> : NumTraits<double> {
-    // TODO: see "https://eigen.tuxfamily.org/dox/TopicCustomizing_CustomScalar.html"
-    //  Maybe in this typedef we should use Var<double> instead of double
     /* 
     Real gives the "real part" type of T. If T is already real, 
     then Real is just a typedef to T. If T is std::complex<U> 
     then Real is a typedef to U
     */
-    typedef double Real;
+    typedef VarD Real;
     /*
     NonInteger gives the type that should be used for operations 
     producing non-integral values, such as quotients, square roots, etc. 

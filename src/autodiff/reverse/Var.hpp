@@ -73,16 +73,11 @@ public:
         );
     }
 
-    Var<T> exp() const {
-        size_t new_node_idx = manager_ptr_-> template new_node<ExpNode<T>>(
-            node_idx_
-        );
+    template <typename U>
+    friend Var<U> exp(Var<U> const & arg);
 
-        return Var<T>(
-            new_node_idx,
-            manager_ptr_
-        );
-    }
+    template <typename U>
+    friend Var<U> sqrt(Var<U> const & arg);
 
 private:
     // The index of the node which is "tracked" by this variable
@@ -92,6 +87,32 @@ private:
     //  tracked by this variable
     NodeManagerPtr<T> manager_ptr_;
 };
+
+/******** OPERATORS *******/
+template <typename T>
+Var<T> exp(Var<T> const & arg) {
+    size_t new_node_idx = arg.manager_ptr_-> template new_node<ExpNode<T>>(
+        arg.node_idx_
+    );
+
+    return Var<T>(
+        new_node_idx,
+        arg.manager_ptr_
+    );
+}
+
+template <typename T>
+Var<T> sqrt(Var<T> const & arg) {
+    size_t new_node_idx = arg.manager_ptr_-> template new_node<SqrtNode<T>>(
+        arg.node_idx_
+    );
+
+    return Var<T>(
+        new_node_idx,
+        arg.manager_ptr_
+    );
+}
+
 
 }; // namespace reverse
 }; // namespace autodiff 

@@ -35,7 +35,9 @@ T f(T x, T y, T z) {
 }
 
 VarD f(VecVarD x) {
-    return (x(0)*x(1)).exp();
+    // return exp(x(0)*x(1));
+    return sqrt(x(0));
+    // return x.norm();
 }
 
 int main() {

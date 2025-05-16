@@ -59,6 +59,18 @@ public:
     }
 };
 
+template <typename T>
+class SqrtNode : public UnaryNode<T> {
+public:
+    SqrtNode(NodePtr<T> first):
+     UnaryNode<T>(std::sqrt(first->value()), first) {}
+
+    void backward() override {
+        T der = 1.0/(2.0*this->value());
+        this->first_->update_grad(this->grad_ * der);
+    }
+};
+
 }; // namespace reverse
 }; // namespace autodiff 
 
