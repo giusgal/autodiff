@@ -46,16 +46,34 @@ struct MLPParams
         b2 = p[idx++];
 
     }
+    static void unpack(const std::vector<double>& p,
+                   int hidden_size,
+                   std::vector<std::vector<double>>& W1,
+                   std::vector<double>& b1,
+                   std::vector<std::vector<double>>& W2,
+                   double& b2)
+{
+    int idx = 0;
+    W1.assign(hidden_size, std::vector<double>(1));
+    for (int i = 0; i < hidden_size; ++i) W1[i][0] = p[idx++];
+    b1.assign(hidden_size, 0.0);
+    for (int i = 0; i < hidden_size; ++i) b1[i] = p[idx++];
+    W2.assign(1, std::vector<double>(hidden_size));
+    for (int j = 0; j < hidden_size; ++j) W2[0][j] = p[idx++];
+    b2 = p[idx++];  // now idx == 3*H + 1
+}
+
+
 };
 
 class NeuralModel : public IModel
 {
     int epochs, batch_size, hidden_size;
-    const std::vector<DualVar<double>> params;
+    std::vector<double> params;
     Optimizer* optimizer;
 
-    DualVar<double> loss_func(const vector<DualVar<double>>& batch,
-        const std::vector<DualVar<double>>& p_dual
+    DualVar<double> loss_func(const std::vector<std::pair<double, double>>& batch,
+                              std::vector<DualVar<double>> p_dual
     )
     {
         //1 unpack to my data
@@ -65,8 +83,8 @@ class NeuralModel : public IModel
         MLPParams::unpack(p_dual, hidden_size, W1, b1, W2, b2);
         DualVar<double> real_accum(0, 0);
 
-        std::vector<DualVar<double>> hidden;
-        for (auto &[x_, y_] : batch)
+        std::vector<DualVar<double>> hidden(hidden_size);
+        for (const auto& [x_, y_] : batch)
         {
             //dualvar input to the deep layers
             DualVar<double> x(x_, 0.0);
@@ -133,9 +151,10 @@ public:
 
                 //now compute the gradient of these small batch
                 auto grad = gradient(
-                [&](const std::vector<DualVar<double>>& p{
+                [&](const std::vector<DualVar<double>>& p){
                     return loss_func(batch, p);
                 }, params);
+
                 optimizer->update(params, grad);
 
             }
@@ -148,27 +167,32 @@ public:
         std::vector<std::vector<DualVar<double>>> W1, W2;
         std::vector<DualVar<double>> b1;
         DualVar<double> b2;
-        MLPParams::unpack(params, hidden_size, W1, b1, W2, b2);
+        std::vector<DualVar<double>> p_dual(params.size());
+        for (size_t i = 0; i < params.size(); ++i)
+            p_dual[i] = DualVar<double>(params[i], 0.0);
+
+        MLPParams::unpack(p_dual, hidden_size, W1, b1, W2, b2);
         // 2) Forward pass
         // first layer
-        std::vector<double> hidden(hidden_size);
+        std::vector<DualVar<double>> hidden(hidden_size);
         for (int i = 0; i < hidden_size; ++i) {
-            double z = b1[i] + W1[i][0] * x;
-            hidden[i] = (z > 0 ? z : 0);  // ReLU
+            DualVar<double> z = b1[i] + W1[i][0] * x;
+            hidden[i] = relu(z);  // ReLU
         }
         // output layer (single output)
-        double out = b2;
+        DualVar<double> out = b2;
         for (int j = 0; j < hidden_size; ++j) {
-            out += hidden[j] * W2[0][j];
+            out = out + hidden[j] * W2[0][j];
         }
-        return out;
+        return out.getReal();
 
     }
 
     std::vector<double> get_params() const override
     {
         //to be implemented
-        return std::vector<double>(NULL);
+        return params;  // makes a copy of the flat parameter vector
+
     }
 
     void print_parameters() const override
