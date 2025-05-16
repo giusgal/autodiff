@@ -75,6 +75,7 @@ class NeuralModel : public IModel
             //forward of 1 -> hidden
             for (int i = 0; i < hidden_size; i++)
             {
+                //first column is hidden , second is input for w1
                 hidden[i] = b1[i] + W1[i][0] * x;
                 hidden[i] = relu(hidden[i]);
             }
@@ -82,6 +83,7 @@ class NeuralModel : public IModel
             //forward of hidden -> 1
             DualVar<double> out = b2;
             for (int j = 0; j < hidden_size; j++)
+                //w2 is outxhidden
                 out = out + hidden[j] * W2[0][j];
 
             //now calculate the loss
@@ -98,11 +100,48 @@ class NeuralModel : public IModel
     }
 
 public:
-    void fit(std::vector<std::pair<double, double>>& data) override
-    {
 
+    NeuralModel(Optimizer* optimizer,
+                    const int hidden_size,
+                    const int epochs = 50,
+                    const int batch_size = 10):
+                    epochs(epochs),
+    batch_size(batch_size),
+    optimizer(optimizer),
+    hidden_size(hidden_size)
+    {
+        // initialize flat params to small random
+        std::mt19937 rng(42);
+        std::normal_distribution<double> dist(0.0, 0.1);
+        int total = 3*hidden_size + 1; // W1 W2 b1 + 1 is b2
+        params.resize(total);
+        for (auto &v : params)
+            v = dist(rng);
     }
 
+    void fit(std::vector<std::pair<double, double>>& data) override
+    {
+        for (int epoch = 0; epoch < epochs; epoch++)
+        {
+            //randomize data..
+            std::shuffle(data.begin(), data.end(), std::mt19937(epoch));
+            //divide the whole dataset into small chuncks
+            for (int i = 0; i < data.size(); i+= batch_size)
+            {
+                auto batch_end = std::min(i + batch_size, static_cast<int>(data.size()));
+                std::vector<std::pair<double, double>> batch(data.begin() + i, data.begin() + batch_end);
+
+                //now compute the gradient of these small batch
+                auto grad = gradient(
+                [&](const std::vector<DualVar<double>>& p{
+                    return loss_func(batch, p);
+                }, params);
+                optimizer->update(params, grad);
+
+            }
+        }
+    }
+    
     double predict(double x) const override;
 
     std::vector<double> get_params() const override;
