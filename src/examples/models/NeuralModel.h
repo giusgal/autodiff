@@ -22,7 +22,7 @@ struct MLPParams
 
     //2 layer neural network
     static void unpack(const std::vector<DualVar<double>>& p,
-        int H,
+        int hidden_size,
         std::vector<std::vector<DualVar<double>>>& W1,
         std::vector<DualVar<double>>& b1,
         std::vector<std::vector<DualVar<double>>>& W2,
@@ -33,15 +33,15 @@ struct MLPParams
         // Here D=1 (single input) and O=1 (single output).
         int idx = 0;
         // W1 is hiddenxinput   because later hidden[i] = W1[i][j] * input[j]
-        W1.assign(H, std::vector<DualVar<double>>(1));
-        for (int i = 0; i < H; i++)
+        W1.assign(hidden_size, std::vector<DualVar<double>>(1));
+        for (int i = 0; i < hidden_size; i++)
             W1[i][0] = p[idx++];
-        b1.assign(H, DualVar<double>(0,0));
-        for (int i = 0; i < H; i++)
+        b1.assign(hidden_size, DualVar<double>(0,0));
+        for (int i = 0; i < hidden_size; i++)
             b1[i] = p[idx++];
         //while H2 is outputxhidde,  because out[k] = W2[k][i] * hidden[i]
-        W2.assign(1, std::vector<DualVar<double>>(H));
-        for (int j = 0; j < H; j++)
+        W2.assign(1, std::vector<DualVar<double>>(hidden_size));
+        for (int j = 0; j < hidden_size; j++)
             W2[0][j] = p[idx++];
         b2 = p[idx++];
 
@@ -50,9 +50,58 @@ struct MLPParams
 
 class NeuralModel : public IModel
 {
-    
+    int epochs, batch_size, hidden_size;
+    std::vector<double> params;
+    Optimizer* optimizer;
+
+    DualVar<double> loss_func(const vector<DualVar<double>>& batch,
+        const std::vector<DualVar<double>>& p_dual
+    )
+    {
+        //1 unpack to my data
+        std::vector<std::vector<DualVar<double>>> W1, W2;
+        std::vector<DualVar<double>> b1;
+        DualVar<double> b2;
+        MLPParams::unpack(p_dual, hidden_size, W1, b1, W2, b2);
+        DualVar<double> real_accum(0, 0);
+
+        std::vector<DualVar<double>> hidden;
+        for (auto &[x_, y_] : batch)
+        {
+            //dualvar input to the deep layers
+            DualVar<double> x(x_, 0.0);
+            DualVar<double> y(y_, 0.0);
+
+            //forward of 1 -> hidden
+            for (int i = 0; i < hidden_size; i++)
+            {
+                hidden[i] = b1[i] + W1[i][0] * x;
+                hidden[i] = relu(hidden[i]);
+            }
+
+            //forward of hidden -> 1
+            DualVar<double> out = b2;
+            for (int j = 0; j < hidden_size; j++)
+                out = out + hidden[j] * W2[0][j];
+
+            //now calculate the loss
+            DualVar<double> diff = out - y;
+            real_accum = DualVar<double>(real_accum.getReal() + diff.getReal()*diff.getReal(),
+                real_accum.getInf() + 2 * diff.getReal() * diff.getInf());
+            //always using the algebra of dual numbers (a + be) * (c + de)
+            // = a*c and a*de + be*c,  be*de = 0..
+
+        }
+        //return the accumulated average
+        return DualVar<double>(real_accum.getReal() / batch.size(),
+            real_accum.getInf() / batch.size());
+    }
+
 public:
-    void fit(std::vector<std::pair<double, double>>& data) override;
+    void fit(std::vector<std::pair<double, double>>& data) override
+    {
+
+    }
 
     double predict(double x) const override;
 
