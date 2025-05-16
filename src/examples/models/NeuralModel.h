@@ -1,5 +1,5 @@
 //
-// Created by song on 5/16/25.
+// Created on 5/16/25.
 //
 
 #ifndef NEURALMODEL_H
