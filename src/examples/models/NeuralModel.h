@@ -9,6 +9,8 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+
+#include "IModel.h"
 #include "../optimizer/Optimizer.h"
 
 using namespace autodiff::forward;
@@ -46,10 +48,17 @@ struct MLPParams
     }
 };
 
-class NeuralModel
+class NeuralModel : public IModel
 {
+    
+public:
+    void fit(std::vector<std::pair<double, double>>& data) override;
 
-    public:
+    double predict(double x) const override;
+
+    std::vector<double> get_params() const override;
+
+    void print_parameters() const override;
 };
 
 
