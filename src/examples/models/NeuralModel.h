@@ -51,7 +51,7 @@ struct MLPParams
 class NeuralModel : public IModel
 {
     int epochs, batch_size, hidden_size;
-    std::vector<double> params;
+    const std::vector<DualVar<double>> params;
     Optimizer* optimizer;
 
     DualVar<double> loss_func(const vector<DualVar<double>>& batch,
@@ -141,12 +141,45 @@ public:
             }
         }
     }
-    
-    double predict(double x) const override;
 
-    std::vector<double> get_params() const override;
+    double predict(double x) const override
+    {
+        // 1) Unpack double params
+        std::vector<std::vector<DualVar<double>>> W1, W2;
+        std::vector<DualVar<double>> b1;
+        DualVar<double> b2;
+        MLPParams::unpack(params, hidden_size, W1, b1, W2, b2);
+        // 2) Forward pass
+        // first layer
+        std::vector<double> hidden(hidden_size);
+        for (int i = 0; i < hidden_size; ++i) {
+            double z = b1[i] + W1[i][0] * x;
+            hidden[i] = (z > 0 ? z : 0);  // ReLU
+        }
+        // output layer (single output)
+        double out = b2;
+        for (int j = 0; j < hidden_size; ++j) {
+            out += hidden[j] * W2[0][j];
+        }
+        return out;
 
-    void print_parameters() const override;
+    }
+
+    std::vector<double> get_params() const override
+    {
+        //to be implemented
+        return std::vector<double>(NULL);
+    }
+
+    void print_parameters() const override
+    {
+        std::cout << "params = [";
+        for (size_t i = 0; i < params.size(); ++i) {
+            std::cout << params[i];
+            if (i + 1 < params.size()) std::cout << ", ";
+        }
+        std::cout << "]\n";
+    }
 };
 
 
