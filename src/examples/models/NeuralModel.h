@@ -5,7 +5,7 @@
 #ifndef NEURALMODEL_H
 #define NEURALMODEL_H
 
-#include "../../autodiff/forward/autodiff.hpp"
+#include "../../autodiff/forward/DualVar.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
