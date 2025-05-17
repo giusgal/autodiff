@@ -9,3 +9,4 @@ test
 .clangd
 .idea/
 .DS_Store
+*.csv

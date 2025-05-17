@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+
+#include "IModel.h"
 #include "../optimizer/Optimizer.h"
 using namespace autodiff::forward;
 
@@ -26,7 +28,7 @@ inline std::vector<std::pair<double, double>> generate_data(const int N, const d
 
 
 /* this classe is for an example of a simple regression*/
-class LinearModel{
+class LinearModel : public IModel{
 protected:
     double w;
     double b;
@@ -60,7 +62,7 @@ protected:
     LinearModel(Optimizer* optimizer, int epochs = 50, int batch_size = 10)
         :w(0.0), b(0.0), epochs(epochs), batch_size(batch_size), optimizer(optimizer){}
 
-    virtual void fit(std::vector<std::pair<double, double>>& data)
+    virtual void fit(std::vector<std::pair<double, double>>& data) override
     {
         std::vector<double> params = {w, b};
         std::default_random_engine rng(0);
@@ -96,19 +98,22 @@ protected:
         b = params[1];
     }
 
-    void print_parameters()const
+    void print_parameters()const override
     {
         std::cout << "w: " << w
                 << " | b: " << b << std::endl;
     }
 
-    double predict(double x) const
+    double predict(double x) const override
     {
         return w * x + b;
     }
 
-    std::pair<double, double> get_params() const{
-        return {w, b};
+    std::vector<double> get_params() const override{
+        std::vector<double> result(2);
+        result[0] = w;
+        result[1] = b;
+        return result;
     }
 
 };
