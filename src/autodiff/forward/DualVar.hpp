@@ -133,6 +133,9 @@ public:
     template <typename U>
     friend DualVar<U> relu(DualVar<U> const & arg);
 
+    template <typename U>
+    friend DualVar<U> tanh(DualVar<U> const & arg);
+
 
     bool operator==(DualVar<T> const & rhs) {
         return (real_ == rhs.real_) && (inf_ == rhs.inf_);
@@ -272,6 +275,15 @@ DualVar<T> relu(DualVar<T> const & arg) {
     } else {
         return DualVar<T>(0, 0);
     }
+}
+
+    template <typename T>
+    DualVar<T> tanh(DualVar<T> const & arg)
+{
+    T val = std::tanh(arg.getReal());
+    T deriv = 1.0 - val * val;
+    return DualVar<T>(val, deriv * arg.inf_);
+
 }
 
 DualVar<double> derivative(std::function<DualVar<double>(DualVar<double>)>f, double x0){
