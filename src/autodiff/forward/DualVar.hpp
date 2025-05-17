@@ -271,7 +271,7 @@ DualVar<T> sqrt(DualVar<T> const & arg) {
 template <typename T>
 DualVar<T> relu(DualVar<T> const & arg) {
     if (arg.real_ > 0){
-        return DualVar<T>(arg.real_, 1);
+        return DualVar<T>(arg.real_, arg.inf_);
     } else {
         return DualVar<T>(0, 0);
     }

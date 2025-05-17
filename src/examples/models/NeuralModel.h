@@ -95,7 +95,7 @@ class NeuralModel : public IModel
             {
                 //first column is hidden , second is input for w1
                 hidden[i] = b1[i] + W1[i][0] * x;
-                hidden[i] = relu(hidden[i]);
+                hidden[i] = tanh(hidden[i]);
             }
 
             //forward of hidden -> 1
@@ -177,7 +177,7 @@ public:
         std::vector<DualVar<double>> hidden(hidden_size);
         for (int i = 0; i < hidden_size; ++i) {
             DualVar<double> z = b1[i] + W1[i][0] * x;
-            hidden[i] = relu(z);  // ReLU
+            hidden[i] = tanh(z);  // ReLU
         }
         // output layer (single output)
         DualVar<double> out = b2;
