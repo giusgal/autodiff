@@ -31,22 +31,16 @@ finite_diff(
 
 template <typename T>
 T f(T x, T y, T z) {
-    return (x*y).exp();
+    return exp(x*y);
 }
 
 VarD f(VecVarD x) {
     // return exp(x(0)*x(1));
-    return sqrt(x(0));
-    // return x.norm();
+    // return sqrt(x(0));
+    return x.norm();
 }
 
 int main() {
-    TapeD tape;
-
-    VecVarD x(3);
-    x(0) = tape.var(3.0);
-    x(1) = tape.var(1.0);
-    x(2) = tape.var(5.0);
 
     // double out = f(x.value(), y.value(), z.value());
     // auto [dx, dy, dz] = finite_diff(
@@ -54,21 +48,43 @@ int main() {
     //     {x.value(), y.value(), z.value()},
     //     0.00001
     // );
-
-    VarD y = f(x);
-    y.backward();
-
+    //
     // std::cout << "ORIGINAL: \n";
     // std::cout << " value: " << out << std::endl;
     // std::cout << " dx: " << dx << std::endl;
     // std::cout << " dy: " << dy << std::endl;
     // std::cout << " dz: " << dz << std::endl;
 
-    std::cout << "AUTODIFF: \n";
-    std::cout << " value: " << y.value() << std::endl;
-    std::cout << " dx: " << x(0).grad() << std::endl;
-    std::cout << " dy: " << x(1).grad() << std::endl;
-    std::cout << " dz: " << x(2).grad() << std::endl;
+    {
+        VecVarD x(3);
+        x(0) = VarD(3.0);
+        x(1) = VarD(1.0);
+        x(2) = VarD(5.0);
+
+        VarD u = f(x);
+        u.backward();
+
+        std::cout << "AUTODIFF: \n";
+        std::cout << " value: " << u.value() << std::endl;
+        std::cout << " dx: " << x(0).grad() << std::endl;
+        std::cout << " dy: " << x(1).grad() << std::endl;
+        std::cout << " dz: " << x(2).grad() << std::endl;
+    }
+
+    // {
+    //     VarD x(3.0);
+    //     VarD y(1.0);
+    //     VarD z(5.0);
+    //
+    //     VarD u = f(x,y,z);
+    //     u.backward();
+    //
+    //     std::cout << "AUTODIFF: \n";
+    //     std::cout << " value: " << u.value() << std::endl;
+    //     std::cout << " dx: " << x.grad() << std::endl;
+    //     std::cout << " dy: " << y.grad() << std::endl;
+    //     std::cout << " dz: " << z.grad() << std::endl;
+    // }
     
     return 0;
 }
