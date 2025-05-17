@@ -25,13 +25,13 @@ int main() {
 
     // Train linear model
     Adam adam_lin(0.03);
-    LinearModel lin(&adam_lin, 2000, 16);
+    LinearModel lin(&adam_lin, 1000, 16);
     lin.fit(data);
     auto p_lin = lin.get_params();
 
     // Train neural model
     Adam adam_nn(0.03);
-    NeuralModel nn(&adam_nn, 16, 2000, 16);
+    NeuralModel nn(&adam_nn, 1, 1000, 16);
     nn.fit(data);
 
     // Open CSV
