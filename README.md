@@ -1,4 +1,4 @@
-# C++ Automatic Differentiation Library with ML Examples
+# C++ Automatic Differentiation Library
 
 ## 🚀 Overview
 
