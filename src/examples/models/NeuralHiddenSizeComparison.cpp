@@ -65,7 +65,7 @@ int main() {
     }
 
     // --- Output Results to CSV ---
-    std::ofstream out_file("model_results_hidden_sweep.csv");
+    std::ofstream out_file("output/model_results_hidden_sweep.csv");
     if (!out_file.is_open()) {
         std::cerr << "Error: Could not open model_results_hidden_sweep.csv for writing!" << std::endl;
         return 1; // Indicate an error
