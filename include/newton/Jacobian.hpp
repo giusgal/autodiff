@@ -1,6 +1,6 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "NewtonTraits.hpp"
+#include "../../src/examples/newton/NewtonTraits.hpp"
 
 
 namespace newton 

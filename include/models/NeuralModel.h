@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "IModel.h"
-#include "../optimizer/Optimizer.h"
+#include "../../src/examples/optimizer/Optimizer.h"
 
 using namespace autodiff::forward;
 
