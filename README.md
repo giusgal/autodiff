@@ -4,6 +4,9 @@
 
 This project is a lightweight C++ library implementing core automatic differentiation (autodiff) capabilities, both forward and reverse modes. It also provides examples of applying autodiff to build simple machine learning models (like linear regression and a small neural network) and optimization algorithms (like SGD and Adam).
 
+![One Layer Deep Learning](docs/model_comparison_hidden_sweep.png)
+
+
 The goal is to provide a clear and self-contained demonstration of autodiff principles and their practical application in numerical optimization and machine learning contexts using modern C++.
 
 ## ✨ Features
