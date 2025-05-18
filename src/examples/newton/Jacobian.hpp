@@ -1,6 +1,7 @@
 #include <functional>
 #include <Eigen/Dense>
 #include "NewtonTraits.hpp"
+#include <omp.h>
 
 
 namespace newton 
@@ -73,9 +74,40 @@ public:
   
   }
 
-  RealVec solve(const RealVec &x, RealVec &resid) {
-    // update the jacobian
-    compute(x, resid);
+  void compute_parallel(const RealVec &x0, RealVec &real_eval) {
+    // create dual vector to feed the function as input
+    FwArgType x0d(this->_M);
+    FwRetType eval(this->_M);
+    for(int i = 0; i < this->_M; i++) {
+      x0d[i] = dv(x0[i], 0.0);
+    }
+
+    #pragma omp parallel for \
+      firstprivate(x0d) lastprivate(eval) shared(this->_J)
+    for (int i = 0; i < this->_N; i++) {
+      x0d[i].setInf(1.0);
+      eval = this->_fn(x0d);
+      for (int j = 0; j < this->_M; j++) {
+        this->_J(j, i) = eval[j].getInf();
+      }
+      x0d[i].setInf(0.0);
+    }
+    // write the value of fn in real_eval pointer
+    
+    for (int i = 0; i < this->_M; i++) {
+      real_eval[i] = eval[i].getReal();
+    }
+  
+  }
+
+  RealVec solve(const RealVec &x, RealVec &resid, int parallel=0) {
+
+     // update the jacobian
+    if (parallel) {
+      compute_parallel(x, resid);
+    } else {
+      compute(x, resid);
+    }
     return this->_J.fullPivLu().solve(resid);
   }
 

@@ -12,6 +12,7 @@ struct NewtonOpts {
   double tol;
   int dim_in;
   int dim_out;
+  int parallel;
 };
 
 template <typename T>
@@ -36,7 +37,7 @@ public:
 
     int iter = 0;
     for(; iter < _opts.maxit; iter++) {
-      x1 = _J.solve(x, resid);
+      x1 = _J.solve(x, resid, _opts.parallel);
 
       x = x - x1;
 
