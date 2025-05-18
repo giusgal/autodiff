@@ -11,7 +11,7 @@
 // User's provided header files
 #include "LinearModel.h"    // Assuming in the same directory or correct include path
 #include "NeuralModel.h"    // Assuming in the same directory or correct include path
-#include "../optimizer/Adam.h" // Adjust path as necessary for your project structure
+#include "Adam.h" // Adjust path as necessary for your project structure
 
 int main() {
     // --- Define the new range for x ---

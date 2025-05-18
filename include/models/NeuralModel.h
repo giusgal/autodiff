@@ -5,13 +5,13 @@
 #ifndef NEURALMODEL_H
 #define NEURALMODEL_H
 
-#include "../../autodiff/forward/DualVar.hpp"
+#include "../autodiff/forward/DualVar.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
 
 #include "IModel.h"
-#include "../../src/examples/optimizer/Optimizer.h"
+#include "../optimizer/Optimizer.h"
 
 using namespace autodiff::forward;
 

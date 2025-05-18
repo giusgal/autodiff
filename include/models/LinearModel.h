@@ -1,14 +1,14 @@
 #ifndef LINEARMODEL_H
 #define LINEARMODEL_H
 
-#include "../../autodiff/forward/DualVar.hpp"
+#include "../autodiff/forward/DualVar.hpp"
 #include <iostream>
 #include <vector>
 #include <random>
 #include <algorithm>
 
 #include "IModel.h"
-#include "../../src/examples/optimizer/Optimizer.h"
+#include "../optimizer/Optimizer.h"
 using namespace autodiff::forward;
 
 inline std::vector<std::pair<double, double>> generate_data(const int N, const double true_w, const double true_b)
