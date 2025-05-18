@@ -1,4 +1,4 @@
-# Project Title (e.g., C++ Automatic Differentiation Library with ML Examples)
+# C++ Automatic Differentiation Library with ML Examples
 
 ## 🚀 Overview
 
