@@ -63,7 +63,6 @@ struct MLPParams
     b2 = p[idx++];  // now idx == 3*H + 1
 }
 
-
 };
 
 class NeuralModel : public IModel
@@ -191,7 +190,7 @@ public:
     std::vector<double> get_params() const override
     {
         //to be implemented
-        return params;  // makes a copy of the flat parameter vector
+        return params;  //return the flat parameter vector
 
     }
 

@@ -46,7 +46,6 @@ int main(){
 
     // 5) Inspect parameters
     model.print_parameters();
-
     // 6) Test predictions
     std::cout << "\nSample predictions:\n";
     for (double x : {-1.0, -0.5, 0.0, 0.5, 1.0}) {
