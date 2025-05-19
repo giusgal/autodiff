@@ -98,4 +98,3 @@ target_link_libraries(span_test PRIVATE ml_components autodiff) # Link to ml_com
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.
->>>>>>> d3e6dd4f002a1db61b8095a2c96bb878cd8a30eb
