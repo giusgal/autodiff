@@ -6,7 +6,6 @@
 
 class LinearModelParallel : public LinearModel{
     public:
-
     using LinearModel::LinearModel;
 
     void fit(std::vector<std::pair<double, double>>& data) override
