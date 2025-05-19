@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.10) # Minimum required CMake version
+cmake_minimum_required(VERSION 3.31) # Minimum required CMake version
 
-project(autodiff_project) # Your project name
+project(autodiff_project)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -98,3 +98,4 @@ target_link_libraries(span_test PRIVATE ml_components autodiff) # Link to ml_com
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.
+>>>>>>> d3e6dd4f002a1db61b8095a2c96bb878cd8a30eb
