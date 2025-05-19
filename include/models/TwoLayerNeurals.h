@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
-#include "../optimizer/Optimizer.h"
+#include "../../src/examples/optimizer/Optimizer.h"
 
 class TwoLayerNeurals
 {

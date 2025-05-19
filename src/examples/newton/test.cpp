@@ -1,7 +1,7 @@
 #include <iostream>
 #include <functional>
 #include <Eigen/Core>
-#include "Newton.hpp"
+#include "../../../include/newton/Newton.hpp"
 
 #define DIM 3
 #define FN_OUTPUTS 2

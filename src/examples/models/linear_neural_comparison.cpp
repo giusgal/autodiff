@@ -4,11 +4,9 @@
 #include <random>
 #include <algorithm>
 #include <utility>
-#include "LinearModel.h"
-#include "NeuralModel.h"
-#include "../optimizer/Adam.h"
-#include "../optimizer/SGD.h"
-#include "../optimizer/SGDWithMomentum.h"
+#include <LinearModel.h>
+#include <NeuralModel.h>
+#include <Adam.h>
 
 int main() {
     // Generate data

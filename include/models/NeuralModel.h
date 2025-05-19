@@ -5,7 +5,7 @@
 #ifndef NEURALMODEL_H
 #define NEURALMODEL_H
 
-#include "../../autodiff/forward/DualVar.hpp"
+#include "../autodiff/forward/DualVar.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -67,12 +67,13 @@ struct MLPParams
 
 class NeuralModel : public IModel
 {
+    protected:
     int epochs, batch_size, hidden_size;
     std::vector<double> params;
     Optimizer* optimizer;
-
+    private:
     DualVar<double> loss_func(const std::vector<std::pair<double, double>>& batch,
-                              std::vector<DualVar<double>> p_dual
+                                      const std::vector<DualVar<double>>& p_dual
     )
     {
         //1 unpack to my data
