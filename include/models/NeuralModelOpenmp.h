@@ -1,10 +1,10 @@
-#ifndef NEURALMODELOPTIMIZED_H
-#define NEURALMODELOPTIMIZED_H
+#ifndef NEURALMODELOPENMP_H
+#define NEURALMODELOPENMP_H
 #include <span>
 
 #include "NeuralModel.h"
 
-class NeuralModelOptimized : public NeuralModel
+class NeuralModelOpenmp : public NeuralModel
 {
     DualVar<double> loss_func_fused(const std::vector<std::pair<double, double>>& batch,
                               const std::span<DualVar<double>> p_dual
@@ -16,7 +16,7 @@ class NeuralModelOptimized : public NeuralModel
         auto w1 = p_dual.subspan(0, hidden_size);
         auto b1 = p_dual.subspan(hidden_size, hidden_size);
         auto w2 = p_dual.subspan(2 * hidden_size, hidden_size);
-        auto b2 = p_dual.subspan(3 * hidden_size, 1);
+        DualVar<double> b2 = p_dual.subspan(3 * hidden_size, 1).back();
 
         std::vector<DualVar<double>> hidden(hidden_size);
         for (const auto& [x_, y_] : batch)
@@ -25,6 +25,7 @@ class NeuralModelOptimized : public NeuralModel
             DualVar<double> x(x_, 0.0);
             DualVar<double> y(y_, 0.0);
             //forward of 1 -> hidden
+            #pragma omp for
             for (int i = 0; i < hidden_size; i++)
             {
                 //first column is hidden , second is input for w1
@@ -32,7 +33,7 @@ class NeuralModelOptimized : public NeuralModel
             }
 
             //forward of hidden -> 1
-            DualVar<double> out = b2.back();
+            DualVar<double> out = b2;
             for (int j = 0; j < hidden_size; j++)
                 //w2 is outxhidden
                     out = out + hidden[j] * w2[j];
@@ -50,7 +51,7 @@ class NeuralModelOptimized : public NeuralModel
             real_accum.getInf() / batch.size());
     }
     public:
-    NeuralModelOptimized(Optimizer* optimizer,
+    NeuralModelOpenmp(Optimizer* optimizer,
                 const int hidden_size,
                 const int epochs = 50,
                 const int batch_size = 10): NeuralModel(optimizer, hidden_size, epochs, batch_size){}
@@ -82,4 +83,5 @@ class NeuralModelOptimized : public NeuralModel
 
 };
 
-#endif //NEURALMODELOPTIMIZED_H
+
+#endif //NEURALMODELOPENMP_H

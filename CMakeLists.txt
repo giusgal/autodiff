@@ -92,6 +92,8 @@ target_link_libraries(optimizer_linear_test PRIVATE ml_components autodiff) # Li
 add_executable(span_test test/model/spantest.cpp)
 target_link_libraries(span_test PRIVATE ml_components autodiff) # Link to ml_components and autodiff
 
+add_executable(span_modelsize_test test/model/spanModelSizeTest.cpp)
+target_link_libraries(span_modelsize_test PRIVATE ml_components autodiff)
 # If src/autodiff/reverse/test.cpp is a separate test executable:
 # add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
 # target_link_libraries(autodiff_reverse_test PRIVATE autodiff)
