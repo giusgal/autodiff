@@ -5,6 +5,7 @@
 #include <random>
 #include <iomanip>
 #include <algorithm> // Include for std::shuffle
+#include <fstream>   // Include for file operations
 
 // Include headers for your models and optimizers
 // Adjust paths as necessary for your project structure
@@ -49,7 +50,11 @@ int main(){
     auto data = make_data(DATA_SIZE, X_MIN, X_MAX);
     std::cout << "Generated " << DATA_SIZE << " data points." << std::endl;
 
-    // Output table header
+    // Open file for performance data
+    std::ofstream performance_csv("performance_data.csv");
+    performance_csv << "HiddenSize,StandardModel_ms,OptimizedModel_ms,OpenMPModel_ms\n";
+
+    // Output table header for console
     std::cout << std::left << std::setw(15) << "Hidden Size"
               << std::setw(25) << "Standard Model (ms)"
               << std::setw(25) << "Optimized Model (ms)"
@@ -94,10 +99,47 @@ int main(){
         auto t1_openmp = std::chrono::high_resolution_clock::now();
         auto ms_openmp = std::chrono::duration_cast<std::chrono::milliseconds>(t1_openmp - t0_openmp).count();
         std::cout << std::left << std::setw(25) << ms_openmp << "\n";
+
+        // Write performance data to CSV
+        performance_csv << hidden_size << ","
+                        << ms_standard << ","
+                        << ms_optimized << ","
+                        << ms_openmp << "\n";
+
+        // --- Generate prediction data for the first hidden size only for visual inspection ---
+        // To avoid generating huge CSVs, we'll only do this for the first hidden size (e.g., hidden_sizes[0])
+        // If you want to see all, you can remove this condition.
+       // if (hidden_size == hidden_sizes[4]) {
+            std::cout << "Generating prediction data for hidden size " << hidden_size << "...\n";
+            std::ofstream prediction_csv("prediction_data_h" + std::to_string(hidden_size) + ".csv");
+            prediction_csv << "x,y_true,y_standard_pred,y_optimized_pred,y_openmp_pred\n";
+
+            // Generate prediction points over a denser range
+            const int NUM_PREDICTION_POINTS = 200;
+            for (int i = 0; i < NUM_PREDICTION_POINTS; ++i) {
+                double x_pred = X_MIN + (static_cast<double>(i) / (NUM_PREDICTION_POINTS - 1)) * (X_MAX - X_MIN);
+                double y_true = TARGET_FUNCTION(x_pred);
+
+                double y_standard_pred = standard_model.predict(x_pred);
+                double y_optimized_pred = optimized_model.predict(x_pred);
+                double y_openmp_pred = openmp_model.predict(x_pred);
+
+                prediction_csv << std::fixed << std::setprecision(6) // Set precision for output
+                               << x_pred << ","
+                               << y_true << ","
+                               << y_standard_pred << ","
+                               << y_optimized_pred << ","
+                               << y_openmp_pred << "\n";
+            }
+            prediction_csv.close();
+            std::cout << "Prediction data saved to prediction_data_h" << hidden_size << ".csv\n";
+    //    }
     }
 
+    performance_csv.close();
     std::cout << std::string(90, '-') << "\n"; // Separator line
     std::cout << "--- Test Complete ---\n";
+    std::cout << "Performance data saved to performance_data.csv\n";
 
     return 0;
 }
