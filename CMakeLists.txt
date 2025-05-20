@@ -97,6 +97,9 @@ target_link_libraries(span_test PRIVATE ml_components autodiff) # Link to ml_com
 
 add_executable(span_modelsize_test test/model/spanModelSizeTest.cpp)
 target_link_libraries(span_modelsize_test PRIVATE ml_components autodiff)
+
+
+# Linking executable files to OpenMP library for parallelization
 if(OpenMP_FOUND)
     target_link_libraries(span_modelsize_test PUBLIC OpenMP::OpenMP_CXX)
     message(STATUS "OpenMP found and linked for CXX.") # Optional: for confirmation

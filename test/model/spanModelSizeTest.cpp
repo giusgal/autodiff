@@ -36,11 +36,11 @@ int main(){
     std::cout << "--- Neural Model Hidden Size Scalability Test ---\n";
 
     // --- Configuration ---
-    const int DATA_SIZE = 300; // Fixed data size
+    const int DATA_SIZE = 100; // Fixed data size
     const double X_MIN = -2.0;
     const double X_MAX = 3.0;
-    const int EPOCHS = 100; // Number of training epochs
-    const int BATCH_SIZE = 16; // Batch size
+    const int EPOCHS = 500; // Number of training epochs
+    const int BATCH_SIZE = 5; // Batch size
 
     // Define the hidden layer sizes to test
     std::vector<int> hidden_sizes = {2, 4, 8, 16, 32, 64, 128}; // Testing a wider range of hidden sizes
@@ -94,8 +94,6 @@ int main(){
         auto t1_openmp = std::chrono::high_resolution_clock::now();
         auto ms_openmp = std::chrono::duration_cast<std::chrono::milliseconds>(t1_openmp - t0_openmp).count();
         std::cout << std::left << std::setw(25) << ms_openmp << "\n";
-
-        // Note: If you were using SGD, you would instantiate SGD optimizers similarly.
     }
 
     std::cout << std::string(90, '-') << "\n"; // Separator line
