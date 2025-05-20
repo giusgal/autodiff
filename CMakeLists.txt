@@ -6,6 +6,9 @@ project(autodiff_project)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set for OpenMp
+find_package(OpenMP REQUIRED)
+
 # Define include directories for the entire project
 include_directories(
         ${CMAKE_SOURCE_DIR}/include
@@ -94,6 +97,13 @@ target_link_libraries(span_test PRIVATE ml_components autodiff) # Link to ml_com
 
 add_executable(span_modelsize_test test/model/spanModelSizeTest.cpp)
 target_link_libraries(span_modelsize_test PRIVATE ml_components autodiff)
+if(OpenMP_FOUND)
+    target_link_libraries(span_modelsize_test PUBLIC OpenMP::OpenMP_CXX)
+    message(STATUS "OpenMP found and linked for CXX.") # Optional: for confirmation
+else()
+    message(WARNING "OpenMP not found. Parallel features will be disabled or cause errors.")
+endif()
+
 # If src/autodiff/reverse/test.cpp is a separate test executable:
 # add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
 # target_link_libraries(autodiff_reverse_test PRIVATE autodiff)
