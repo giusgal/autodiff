@@ -35,6 +35,9 @@ public:
     void update_grad(T const & grad) {
         grad_ += grad;
     }
+    void clear_grad() {
+        grad_ = 0;
+    }
 protected:
     T value_;
     T grad_;

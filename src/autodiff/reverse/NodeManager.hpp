@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <iostream>
 
 #include "Node.hpp"
 // #include "Functions.hpp"
@@ -58,10 +59,16 @@ public:
     }
 
     void clear() {
+        // std::cout << nodes_.size() << std::endl;
         nodes_.clear();
     }
     void reserve(size_t dim) {
         nodes_.reserve(dim);
+    }
+    void clear_grad() {
+        for(auto & node: nodes_) {
+            node->clear_grad();
+        }
     }
 
     size_t size() const {
