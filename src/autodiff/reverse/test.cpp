@@ -40,8 +40,8 @@ Var f_N1(VecVar x) {
 }
 
 VecVar f_NM(VecVar x) {
-    VarD y1 = x.norm();
-    VarD y2 = exp(x(0)*x(1));
+    Var y1 = x.norm();
+    Var y2 = exp(x(0)*x(1));
     // VarD y3 = x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
 
     VecVar y(2);

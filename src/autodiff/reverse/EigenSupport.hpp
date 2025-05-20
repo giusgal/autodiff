@@ -13,22 +13,17 @@
  * "https://eigen.tuxfamily.org/dox/TopicCustomizing_CustomScalar.html"
  */
 
-// TODO: maybe it's not a good idea to leave this type-alias here
-// (namespace pollution)
-using VarD = autodiff::reverse::Var<double>;
-
 namespace Eigen {
-
 
 // TODO: review this
 template<>
-struct NumTraits<VarD> : NumTraits<double> {
+struct NumTraits<autodiff::reverse::Var<double>> : NumTraits<double> {
     /* 
     Real gives the "real part" type of T. If T is already real, 
     then Real is just a typedef to T. If T is std::complex<U> 
     then Real is a typedef to U
     */
-    typedef VarD Real;
+    typedef autodiff::reverse::Var<double> Real;
     /*
     NonInteger gives the type that should be used for operations 
     producing non-integral values, such as quotients, square roots, etc. 
@@ -36,11 +31,11 @@ struct NumTraits<VarD> : NumTraits<double> {
     Thus, this typedef is only intended as a helper for code that needs
     to explicitly promote types.
     */
-    typedef VarD NonInteger;
+    typedef autodiff::reverse::Var<double> NonInteger;
     /*
     Nested gives the type to use to nest a value inside of the expression tree.
     */
-    typedef VarD Nested;
+    typedef autodiff::reverse::Var<double> Nested;
 
     enum {
         IsComplex = 0,
@@ -59,9 +54,9 @@ struct NumTraits<VarD> : NumTraits<double> {
 namespace autodiff {
 namespace reverse {
 
-inline VarD const & conj(VarD const & x) { return x; }
-inline VarD const & real(VarD const & x) { return x; }
-inline VarD abs2(VarD const & x) { return x*x; }
+inline autodiff::reverse::Var<double> const & conj(autodiff::reverse::Var<double> const & x) { return x; }
+inline autodiff::reverse::Var<double> const & real(autodiff::reverse::Var<double> const & x) { return x; }
+inline autodiff::reverse::Var<double> abs2(autodiff::reverse::Var<double> const & x) { return x*x; }
 
 }; // namespace reverse
 }; // namespace autodiff
