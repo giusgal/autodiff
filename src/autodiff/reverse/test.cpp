@@ -10,6 +10,7 @@ using namespace autodiff::reverse;
 using VarD = Var<double>;
 using TapeD = Tape<double>;
 using VecVarD = Eigen::Vector<VarD, Eigen::Dynamic>;
+using Vec = Eigen::Vector<double, Eigen::Dynamic>;
 
 std::array<double, 3>
 finite_diff(
@@ -29,15 +30,36 @@ finite_diff(
     return output;
 }
 
-template <typename T>
-T f(T x, T y, T z) {
-    return exp(x*y);
-}
+// template <typename T>
+// T f(T x, T y, T z) {
+//     return exp(x*y);
+// }
 
 VarD f(VecVarD x) {
     // return exp(x(0)*x(1));
     // return sqrt(x(0));
-    return x.norm();
+    // return x.norm();
+    return x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
+}
+
+void gradient(std::function<VarD(VecVarD)> f, Vec const & x, double & f_x, Vec & grad) {
+    VecVarD var_x(x.size());
+    
+    for(size_t i = 0; i < var_x.size(); ++i) {
+        var_x(i) = VarD(x(i));
+    }
+
+    VarD y = f(var_x);
+    y.backward();
+
+    f_x = y.value();
+
+    grad.resizeLike(var_x);
+    for(size_t i = 0; i < grad.size(); ++i) {
+        grad(i) = var_x(i).grad();
+    }
+
+    TapeD::instance().manager().clear();
 }
 
 int main() {
@@ -56,19 +78,28 @@ int main() {
     // std::cout << " dz: " << dz << std::endl;
 
     {
-        VecVarD x(3);
-        x(0) = VarD(3.0);
-        x(1) = VarD(1.0);
-        x(2) = VarD(5.0);
 
-        VarD u = f(x);
-        u.backward();
+        constexpr size_t N = 10;
+        Vec x(3);
+        x << 1.0, 1.0, 1.0;
+        double f_x = 0.0;
+        Vec grad(3);
+        double lambda = 0.8;
+
+        for(size_t i = 0; i < N; ++i) {
+            gradient(f, x, f_x, grad);
+            x = x - lambda*grad;
+            std::cout << "Iteration #" << i << "\n"
+                << " x: ";
+            std::cout << x << "\n\n";
+        }
+
 
         std::cout << "AUTODIFF: \n";
-        std::cout << " value: " << u.value() << std::endl;
-        std::cout << " dx: " << x(0).grad() << std::endl;
-        std::cout << " dy: " << x(1).grad() << std::endl;
-        std::cout << " dz: " << x(2).grad() << std::endl;
+        std::cout << " value: " << f_x << std::endl;
+        std::cout << " dx: " << grad(0) << std::endl;
+        std::cout << " dy: " << grad(1) << std::endl;
+        std::cout << " dz: " << grad(2) << std::endl;
     }
 
     // {
