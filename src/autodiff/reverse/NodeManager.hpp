@@ -29,6 +29,18 @@ namespace reverse {
 template <typename T>
 class NodeManager {
 public:
+    // No copy or move allowed
+    NodeManager(NodeManager const &) = delete;
+    NodeManager& operator=(NodeManager const &) = delete;
+    NodeManager(NodeManager &&) = delete;
+    NodeManager& operator=(NodeManager &&) = delete;
+
+    static NodeManager& instance() {
+        // Guaranteed thread-safe in C++11 and later
+        static NodeManager instance_;
+        return instance_;
+    }
+
     size_t new_node(T const & value) {
         nodes_.emplace_back(std::make_unique<IndNode<T>>(value));
         return nodes_.size()-1;
@@ -93,6 +105,8 @@ public:
         return nodes_[idx]->value();
     }
 private:
+    NodeManager() = default;
+
     std::vector<std::unique_ptr<Node<T>>> nodes_;
 };
 

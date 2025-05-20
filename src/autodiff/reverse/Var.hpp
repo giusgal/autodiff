@@ -3,7 +3,6 @@
 
 #include "NodeManager.hpp"
 #include "Functions.hpp"
-#include "Tape.hpp"
 
 namespace autodiff {
 namespace reverse {
@@ -22,8 +21,7 @@ public:
     Var() = default;
 
     Var(T const & value) {
-        Tape<T> & tape = Tape<T>::instance();
-        NodeManager<T> & manager = tape.manager();
+        NodeManager<T> & manager = NodeManager<T>::instance();
 
         manager_ptr_ = &manager;
         node_idx_ = manager_ptr_->new_node(value);
