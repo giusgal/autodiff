@@ -65,6 +65,11 @@ public:
     void reserve(size_t dim) {
         nodes_.reserve(dim);
     }
+    void clear_grad() {
+        for(auto & node: nodes_) {
+            node->clear_grad();
+        }
+    }
 
     size_t size() const {
         return nodes_.size();

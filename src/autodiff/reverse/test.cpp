@@ -11,6 +11,7 @@ using VarD = Var<double>;
 using TapeD = Tape<double>;
 using VecVarD = Eigen::Vector<VarD, Eigen::Dynamic>;
 using Vec = Eigen::Vector<double, Eigen::Dynamic>;
+using Mat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
 std::array<double, 3>
 finite_diff(
@@ -42,6 +43,17 @@ VarD f(VecVarD x) {
     return x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
 }
 
+VecVarD f_system(VecVarD x) {
+    VarD y1 = x.norm();
+    VarD y2 = exp(x(0)*x(1));
+    VarD y3 = x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
+
+    VecVarD y(3);
+    y << y1, y2, y3;
+
+    return y;
+}
+
 void gradient(std::function<VarD(VecVarD)> f, Vec const & x, double & f_x, Vec & grad) {
     VecVarD var_x(x.size());
     
@@ -62,8 +74,31 @@ void gradient(std::function<VarD(VecVarD)> f, Vec const & x, double & f_x, Vec &
     TapeD::instance().manager().clear();
 }
 
-int main() {
+void jacobian(std::function<VecVarD(VecVarD)> f, Vec const & x, Vec & f_x, Mat & jac) {
+    VecVarD var_x(x.size());
 
+    for(size_t i = 0; i < var_x.size(); ++i) {
+        var_x(i) = VarD(x(i));
+    }
+
+    VecVarD y = f(var_x);
+
+    f_x.resizeLike(y);
+    jac.resize(y.size(), var_x.size());
+    for(size_t i = 0; i < y.size(); ++i) {
+        f_x(i) = y(i).value();
+        y(i).backward();
+        for(size_t j = 0; j < var_x.size(); ++j) {
+            jac(i,j) = var_x(j).grad();
+        }
+        // reset grad info
+        TapeD::instance().manager().clear_grad();
+    }
+    
+    TapeD::instance().manager().clear();
+}
+
+int main() {
     // double out = f(x.value(), y.value(), z.value());
     // auto [dx, dy, dz] = finite_diff(
     //     f<double>,
@@ -78,29 +113,36 @@ int main() {
     // std::cout << " dz: " << dz << std::endl;
 
     {
-
-        constexpr size_t N = 10;
         Vec x(3);
-        x << 1.0, 1.0, 1.0;
-        double f_x = 0.0;
-        Vec grad(3);
-        double lambda = 0.8;
+        x << 3.0, 1.0, 5.0;
+        Vec f_x;
+        Mat jac;
 
-        for(size_t i = 0; i < N; ++i) {
-            gradient(f, x, f_x, grad);
-            x = x - lambda*grad;
-            std::cout << "Iteration #" << i << "\n"
-                << " x: ";
-            std::cout << x << "\n\n";
-        }
+        jacobian(f_system, x, f_x, jac);
 
-
-        std::cout << "AUTODIFF: \n";
-        std::cout << " value: " << f_x << std::endl;
-        std::cout << " dx: " << grad(0) << std::endl;
-        std::cout << " dy: " << grad(1) << std::endl;
-        std::cout << " dz: " << grad(2) << std::endl;
+        std::cout << jac << std::endl;
     }
+
+    // {
+    //     constexpr size_t N = 10;
+    //     double f_x = 0.0;
+    //     Vec grad(3);
+    //     double lambda = 0.8;
+    //
+    //     for(size_t i = 0; i < N; ++i) {
+    //         gradient(f, x, f_x, grad);
+    //         x = x - lambda*grad;
+    //         std::cout << "Iteration #" << i << "\n"
+    //             << " x: ";
+    //         std::cout << x << "\n\n";
+    //     }
+    //
+    //     std::cout << "AUTODIFF: \n";
+    //     std::cout << " value: " << f_x << std::endl;
+    //     std::cout << " dx: " << grad(0) << std::endl;
+    //     std::cout << " dy: " << grad(1) << std::endl;
+    //     std::cout << " dz: " << grad(2) << std::endl;
+    // }
 
     // {
     //     VarD x(3.0);
