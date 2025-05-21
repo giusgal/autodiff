@@ -1,7 +1,3 @@
-//
-// Created by sheldon on 5/18/25.
-//
-
 #ifndef NEURALMODELOPTIMIZED_H
 #define NEURALMODELOPTIMIZED_H
 #include <span>
@@ -20,7 +16,7 @@ class NeuralModelOptimized : public NeuralModel
         auto w1 = p_dual.subspan(0, hidden_size);
         auto b1 = p_dual.subspan(hidden_size, hidden_size);
         auto w2 = p_dual.subspan(2 * hidden_size, hidden_size);
-        DualVar<double> b2 = p_dual[3 * hidden_size];
+        auto b2 = p_dual.subspan(3 * hidden_size, 1);
 
         std::vector<DualVar<double>> hidden(hidden_size);
         for (const auto& [x_, y_] : batch)
@@ -36,7 +32,7 @@ class NeuralModelOptimized : public NeuralModel
             }
 
             //forward of hidden -> 1
-            DualVar<double> out = b2;
+            DualVar<double> out = b2.back();
             for (int j = 0; j < hidden_size; j++)
                 //w2 is outxhidden
                     out = out + hidden[j] * w2[j];

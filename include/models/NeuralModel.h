@@ -150,6 +150,7 @@ public:
                 std::vector<std::pair<double, double>> batch(data.begin() + i, data.begin() + batch_end);
 
                 //now compute the gradient of these small batch
+                //batch is the data, p is the parameters params for neural weights
                 auto grad = gradient(
                 [&](const std::vector<DualVar<double>>& p){
                     return loss_func(batch, p);

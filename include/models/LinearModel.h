@@ -13,7 +13,7 @@ using namespace autodiff::forward;
 
 inline std::vector<std::pair<double, double>> generate_data(const int N, const double true_w, const double true_b)
 {
-    std::default_random_engine rng(42);
+    std::default_random_engine rng(0);
     std::normal_distribution<double> noise(0.0, 0.1);
     std::vector<std::pair<double, double>> data;
     for (int i = 0; i < N; i++)
@@ -57,12 +57,12 @@ protected:
     }
 
     public:
-    virtual ~LinearModel() = default;
+    ~LinearModel() override = default;
 
     LinearModel(Optimizer* optimizer, int epochs = 50, int batch_size = 10)
         :w(0.0), b(0.0), epochs(epochs), batch_size(batch_size), optimizer(optimizer){}
 
-    virtual void fit(std::vector<std::pair<double, double>>& data) override
+    void fit(std::vector<std::pair<double, double>>& data) override
     {
         std::vector<double> params = {w, b};
         std::default_random_engine rng(0);
@@ -83,17 +83,8 @@ protected:
                 optimizer->update(params, grad);
             }
 
-            /*auto loss_val = loss_func(data,
-                DualVar<double>(params[0], 0.0),
-                DualVar<double>(params[1], 0.0)).getReal();
 
-            std::cout << "Epoch " << epoch
-                << " | loss: " << loss_val
-                << " | w: " << params[0]
-                << " | b: " << params[1] << std::endl;*/
         }
-        //std::cout << " | w: " << params[0]
-          //      << " | b: " << params[1] << std::endl;
         w = params[0];
         b = params[1];
     }
@@ -109,7 +100,7 @@ protected:
         return w * x + b;
     }
 
-    std::vector<double> get_params() const override{
+    [[nodiscard]] std::vector<double> get_params() const override{
         std::vector<double> result(2);
         result[0] = w;
         result[1] = b;
