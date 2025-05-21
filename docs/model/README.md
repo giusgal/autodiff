@@ -34,7 +34,64 @@ Although there is a speed up, the convergence is diminished, to have the same ap
 
 ### Linear model and Neural Model
 
+This is a comparison of how different models approximate the same function.
+```bash
+Adam lr = 0.03
+epochs = 1000
+batch_size = 16
+hidden_size of the neural model is 8. There are a total of 3*8 + 1 parameters.
+```
+
 ![linear vs neural model](model_comparison.png)
+
+
+### Neural network model with different hidden sizes
+There is an illustration of how different sizes of parameters affect the approximation.
+The total parameters of this 2 model with 2 layers is `3 * hidden_size + 1`.
+
+```bash
+ const int N = 200; // Number of data points
+ adam lr = 0.03
+std::vector<int> hidden_layer_sizes = {1, 2, 4, 8, 16};
+epochs = 1000
+
+```
+
+![neural models with different sizes](model_comparison_hidden_sweep.png)
+
+
+### Tests of performance between standard, optimized, and openMP models
+
+```bash
+    const int DATA_SIZE = 100; // Fixed data size
+    const int EPOCHS = 500; // Number of training epochs
+    const int BATCH_SIZE = 5; // Batch size
+    std::vector<int> hidden_sizes = {2, 4, 8, 16, 32, 64, 128}; // Testing a wider range of hidden sizes
+    adam lr = 0.03
+```
+
+
+The performance:
+As you can see the optimized model is a constant speed-up compared to the serial model, where using more threads gives an exponential speed-up.
+
+![neural performance](model_performance.png)
+
+The approximation:
+
+Talking about this approximation, we can see that the optimized and standard models are good approximations, but when we talk about AI, too much approximation can lead to overfitting. Whereas the parallelized model is not that approximated, because the averaged gradients somehow destroy the SGD effect, it generally approximates well the trend.
+
+![neural approximation](three_models_verification.png)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
