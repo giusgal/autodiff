@@ -23,7 +23,7 @@ class LinearModelParallel : public LinearModel{
         // Accumulator for summed gradients across all batches
         std::vector<double> grad_sum(params.size(), 0.0);
 
-#pragma omp parallel
+    #pragma omp parallel
         {
             // Each thread keeps its own local copy to reduce into
             std::vector<double> local_grad(params.size(), 0.0);

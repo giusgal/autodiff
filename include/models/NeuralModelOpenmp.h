@@ -26,9 +26,10 @@ public:
             //the shuffle function still works linearly...
             std::shuffle(data.begin(), data.end(), std::mt19937(epoch));
 
-            //since i can't parallelize
+            //I will work on each meta baches, within each meta batch, i work on minibatches concurrently
             for (size_t i = 0; i < data.size(); i += (size_t)batch_size * num_concurrent_batches)
             {
+                //gradient for each minibatch, we will use all the threads available
                 std::vector<std::vector<double>> batch_gradients(num_concurrent_batches);
                 std::vector<int> actual_samples_in_batch(num_concurrent_batches, 0);
 
@@ -36,7 +37,10 @@ public:
                 {
                     int thread_id = omp_get_thread_num();
                     size_t current_batch_start_index = i + (size_t)thread_id * batch_size;
+                    // i + 0*5,   i+1*5   i+2*5 to start
 
+                    //if we had more threads that its id is > data's size we won't work
+                    //we will either set batch_gradients to zero so it won't be calculated or make it empty
                     if (current_batch_start_index < data.size())
                     {
                         auto batch_end_iter = data.begin() + std::min(current_batch_start_index + batch_size, data.size());
@@ -80,6 +84,8 @@ public:
                     {
                         for (size_t j = 0; j < params.size(); ++j)
                         {
+                            //weighted average, considering if the last metabatch is < batch_size
+                            // we don't want average of gradents, but WEIGHTED AVERAGE like (5,5,5......,3) from 103 data
                             aggregated_grad[j] += batch_gradients[k][j] * static_cast<double>(actual_samples_in_batch[k]);
                         }
                         total_samples_processed_in_meta_batch += actual_samples_in_batch[k];
@@ -133,11 +139,14 @@ public:
             DualVar<double> out = b2;
             for (int j = 0; j < this->hidden_size; j++)
             {
-                out = out + hidden[j] * w2[j];
+                out = out + hidden[j] * w2[j];  //there is no += operator implemented in dualvar, but it is ok
             }
             DualVar<double> diff = out - y;
             sum_real_loss += diff.getReal() * diff.getReal();
             sum_inf_loss += 2 * diff.getReal() * diff.getInf();
+            //always using the algebra of dual numbers (a + be) * (c + de)
+            // = a*c and a*de + be*c,  be*de = 0..
+            //a*de + be*c = 2*a*de 
         }
 
         // Avoid division by zero if batch is empty, though current logic
