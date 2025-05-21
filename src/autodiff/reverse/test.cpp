@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #include <Eigen/Core>
@@ -8,6 +9,8 @@ using Var = autodiff::reverse::Var<double>;
 using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
 using Vec = Eigen::Vector<double, Eigen::Dynamic>;
 using Mat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+constexpr size_t N = 10000;
 
 // std::array<double, 3>
 // finite_diff(
@@ -32,20 +35,25 @@ T f_31(T x, T y, T z) {
     return exp(x*y);
 }
 
-Var f_N1(VecVar x) {
+Var f_N1(VecVar const & x) {
     // return exp(x(0)*x(1));
     // return sqrt(x(0));
+    return sqrt(x.sum());
     // return x.norm();
-    return x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
+    // return x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
 }
 
 VecVar f_NM(VecVar x) {
-    Var y1 = x.norm();
-    Var y2 = exp(x(0)*x(1));
-    // VarD y3 = x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
+    VecVar y(N);
 
-    VecVar y(2);
-    y << y1, y2;
+    for(size_t i = 0; i < N; ++i) {
+        y(i) = x.norm();
+    }
+
+    // Var y1 = x.norm();
+    // Var y2 = exp(x(0)*x(1));
+    // VarD y3 = x(0)*x(0) + x(1)*x(1) + x(2)*x(2);
+    // y << y1, y2;
 
     return y;
 }
@@ -60,40 +68,34 @@ VecVar f_NM(VecVar x) {
  *  3. Implement a memory pool (arena allocator)
  * */
 int main() {
-    {
-        Vec x(3);
-        x << 3.0, 1.0, 5.0;
-        Vec f_x;
-        Mat jac;
-
-        jacobian(f_NM, x, f_x, jac);
-
-        std::cout << jac << std::endl;
-    }
-
     // {
-    //     // Gradient-descent
-    //     constexpr size_t N = 10;
-    //     double f_x = 0.0;
-    //     Vec grad(3);
-    //     double lambda = 0.8;
-    //     Vec x(3);
-    //     x << 1.0, 1.0, 1.0;
+    //     Vec x = Vec::Ones(N);
+    //     Vec f_x;
+    //     Mat jac;
     //
-    //     for(size_t i = 0; i < N; ++i) {
-    //         gradient(f_N1, x, f_x, grad);
-    //         x = x - lambda*grad;
-    //         std::cout << "Iteration #" << i << "\n"
-    //             << " x: ";
-    //         std::cout << x << "\n\n";
-    //     }
     //
-    //     std::cout << "AUTODIFF: \n";
-    //     std::cout << " value: " << f_x << std::endl;
-    //     std::cout << " dx: " << grad(0) << std::endl;
-    //     std::cout << " dy: " << grad(1) << std::endl;
-    //     std::cout << " dz: " << grad(2) << std::endl;
+    //     auto t1 = std::chrono::high_resolution_clock::now();
+    //     jacobian(f_NM, x, f_x, jac);
+    //     auto t2 = std::chrono::high_resolution_clock::now();
+    //     std::cout << "test function took "
+    //           << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+    //           << " milliseconds\n";
+    //     // std::cout << jac << std::endl;
     // }
+
+    {
+        Vec x = Vec::Ones(N);
+        double f_x;
+        Vec grad;
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        gradient(f_N1, x, f_x, grad);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "test function took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              << " milliseconds\n";
+        // std::cout << jac << std::endl;
+    }
 
     // {
     //     // Not recommended usage
