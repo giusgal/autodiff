@@ -4,56 +4,37 @@
 
 This part illustrates how we can use forward-model automatic differentiation to build an example product, typically a model that can approximate an arbitrary function.
 
-## ✨ Classes 
+---
 
-* **Linear Model:** Implementations of forward and reverse mode autodiff primitives.
-* **Parallel Linear Model:** Simple implementations of Linear and basic Feedforward Neural Network models.
-* **Optimizers:** Gradient-based optimization algorithms including Stochastic Gradient Descent (SGD) and Adam.
-* **Neural Model:** A basic implementation of Newton's method for root finding/optimization (likely uses autodiff for Jacobian/Hessian).
-* **Cache-Optimized Neural Model:** Written using modern C++ standards (likely C++20 based on CMake).
-* **Parallel Neural Model:** Leverages the Eigen library for efficient vector and matrix operations (indicated by `EigenSupport.hpp`).
-![One Layer Deep Learning](model_comparison_hidden_sweep.png)
- 
+## ✨ Classes
+
+* **Linear Model:** Implementation of 2 parameters to be optimized (w and b).
+* **Parallel Linear Model:** Uses parallel `for` loops on batches of data.
+* **Neural Model:** A basic 2-layer feed-forward neural network implementation.
+* **Cache-Optimized Neural Model:** Uses `std::span` to point to a unique, contiguous, flat memory where the parameters are located.
+* **Parallel Neural Model:** Leverages OpenMP threads working on meta-batches, parallelizing mini-batches.
+
+---
 
 ## 🏗️ Implementations and Tests
 
 ### Linear Model and Parallel Linear Model
 
-1.  Clone the repository:
-    ```bash
-    git clone <repository_url> # Replace with your repo URL
-    cd <project_directory>
-    ```
-2.  Create a build directory and navigate into it:
-    ```bash
-    mkdir build
-    cd build
-    ```
-3.  Run CMake to configure the project and generate build files:
-    ```bash
-    cmake ..
-    # For a Debug build (common when developing):
-    # cmake -DCMAKE_BUILD_TYPE=Debug ..
-    ```
-    *(Note: If Eigen is not found by CMake, you might need to provide its path using `-DEigen3_DIR=/path/to/eigen3/cmake` or similar, depending on how Eigen was installed).*
-4.  Build the project using your chosen build tool (typically `make` or `ninja`):
-    ```bash
-    make
-    # Or:
-    # ninja
-    ```
+The comparison test in ("LinearModel.cpp"):
 
-This will compile the library, examples, and tests.
-
-## 🏃 Running Examples
-
-After building the project, the executables for the examples will be located in your build directory (e.g., `./build/`).
-
-Navigate to the build directory and run the examples:
+On 100 datapoints, `batch_size` 20, SGD `lr = 0.01`
 
 ```bash
-cd build
-./linear_neural_comparison
-./NeuralHiddenSizeComparison
-./newton_test
-# ... and any other example executables you have
+Serial training took: 90722 microseconds
+w: 4.99575 | b: -2.01084
+Parallel training took: 28838 microseconds
+Speed Up is 3.14592
+```
+Although there is a speed up, the convergence is diminished, to have the same approximated parameter, the linear model took `200` epochs, whereas the parallel model worked for `1000` epochs.
+
+### Linear model and Neural Model
+
+![linear vs neural model](model_comparison.png)
+
+
+
