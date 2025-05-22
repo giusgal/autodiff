@@ -1,0 +1,11 @@
+*.o
+test
+*.png
+*.jpg
+*.bkp
+*.dtmp
+*.dSYM
+.vscode/*
+.clangd
+.idea/
+.DS_Store
