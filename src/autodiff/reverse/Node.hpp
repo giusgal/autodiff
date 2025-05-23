@@ -7,9 +7,9 @@
 namespace autodiff {
 namespace reverse {
 
-namespace memory {
-    ArenaAllocator arena;
-}; // namespace memory
+// namespace memory {
+//     ArenaAllocator arena;
+// }; // namespace memory
 
 template <typename T> class Node;
 template <typename T> class IndNode;
@@ -46,10 +46,10 @@ public:
         grad_ = 0;
     }
     
-    void * operator new(size_t count) {
-        void * ptr = memory::arena.Allocate(count);
-        return ptr;
-    }
+    // void * operator new(size_t count) {
+    //     void * ptr = memory::arena.Allocate(count);
+    //     return ptr;
+    // }
 
 protected:
     T value_;
