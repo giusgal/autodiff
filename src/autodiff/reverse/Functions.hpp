@@ -22,7 +22,7 @@ public:
         this->first_->update_grad(this->grad_);
         this->second_->update_grad(this->grad_);
     } 
-};
+}; 
 
 template <typename T>
 class SubNode : public BinaryNode<T> {

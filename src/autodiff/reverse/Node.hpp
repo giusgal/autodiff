@@ -1,15 +1,10 @@
 #ifndef __NODE_HPP__
 #define __NODE_HPP__
 
-#include "ArenaAllocator.hpp"
 #include <cstddef>
 
 namespace autodiff {
 namespace reverse {
-
-// namespace memory {
-//     ArenaAllocator arena;
-// }; // namespace memory
 
 template <typename T> class Node;
 template <typename T> class IndNode;
@@ -45,11 +40,6 @@ public:
     void clear_grad() {
         grad_ = 0;
     }
-    
-    // void * operator new(size_t count) {
-    //     void * ptr = memory::arena.Allocate(count);
-    //     return ptr;
-    // }
 
 protected:
     T value_;

@@ -6,11 +6,9 @@
 #include <iostream>
 
 #include "Node.hpp"
-// #include "Functions.hpp"
 
 namespace autodiff {
 namespace reverse {
-
 
 /**
  * @class NodeManager
@@ -41,42 +39,27 @@ public:
         return instance_;
     }
 
-    size_t new_node(T const & value) {
-        nodes_.emplace_back(std::make_unique<IndNode<T>>(value));
-        return nodes_.size()-1;
-    }
-
-    // TODO: (maybe) avoid templates
-    // TODO: constraints on NodeType
-    template <typename NodeType>
-    size_t new_node(size_t first) {
-        nodes_.emplace_back(
-            std::make_unique<NodeType>(
-                nodes_[first].get()
-            )
-        );
-        return nodes_.size()-1;
-    }
+    // Templated factory functions
+    template <typename U>
+    friend size_t new_node(U const & value);
 
     // TODO: constraints on NodeType
-    template <typename NodeType>
-    size_t new_node(size_t first, size_t second) {
-        nodes_.emplace_back(
-            std::make_unique<NodeType>(
-                nodes_[first].get(),
-                nodes_[second].get()
-            )
-        );
-        return nodes_.size()-1;
-    }
+    template <template <typename> class NodeType, typename U>
+    friend size_t new_node(size_t first);
+
+    // TODO: constraints on NodeType
+    template <template <typename> class NodeType, typename U>
+    friend size_t new_node(size_t first, size_t second);
 
     void clear() {
         // std::cout << nodes_.size() << std::endl;
         nodes_.clear();
     }
+
     void reserve(size_t dim) {
         nodes_.reserve(dim);
     }
+
     void clear_grad() {
         for(auto & node: nodes_) {
             node->clear_grad();
@@ -109,6 +92,41 @@ private:
 
     std::vector<std::unique_ptr<Node<T>>> nodes_;
 };
+
+template <typename U>
+size_t new_node(U const & value) {
+    NodeManager<U> & manager = NodeManager<U>::instance();
+
+    manager.nodes_.emplace_back(
+        std::make_unique<IndNode<U>>(value)
+    );
+    return manager.nodes_.size()-1;
+}
+
+template <template <typename> class NodeType, typename U>
+size_t new_node(size_t first) {
+    NodeManager<U> & manager = NodeManager<U>::instance();
+
+    manager.nodes_.emplace_back(
+        std::make_unique<NodeType<U>>(
+            manager.nodes_[first].get()
+        )
+    );
+    return manager.nodes_.size()-1;
+}
+
+template <template <typename> class NodeType, typename U>
+size_t new_node(size_t first, size_t second) {
+    NodeManager<U> & manager = NodeManager<U>::instance();
+
+    manager.nodes_.emplace_back(
+        std::make_unique<NodeType<U>>(
+            manager.nodes_[first].get(),
+            manager.nodes_[second].get()
+        )
+    );
+    return manager.nodes_.size()-1;
+}
 
 }; // namespace reverse
 }; // namespace autodiff

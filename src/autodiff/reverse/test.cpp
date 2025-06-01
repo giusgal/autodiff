@@ -60,12 +60,9 @@ VecVar f_NM(VecVar x) {
 
 /*
  * TODO:
- *  1. Refactor Var/NodeManager to simplify the creation of new Node(s)
- *     (that 'template' keyword in every overloaded operator in Var
- *     is ugly) and remove the need for a manager_ptr_ member variable in Var
- *  Then:
+ *  1. Refactor Var/NodeManager (Done)
  *  2. Implement more operators
- *  3. Implement a memory pool (arena allocator)
+ *  3. Implement a memory pool/arena allocator (No ok maybe no)
  * */
 int main() {
     // {
