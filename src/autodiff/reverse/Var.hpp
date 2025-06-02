@@ -35,21 +35,18 @@ public:
 
     /******** OPERATORS *******/
     Var<T> operator+(Var<T> const & rhs) const {
-        Var<T> tmp;
-        tmp.node_idx_ = new_node<AddNode, T>(node_idx_,rhs.node_idx_);
-        return tmp;
+        size_t idx = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
+        return new_var_from_idx(idx);
     }
 
     Var<T> operator-(Var<T> const & rhs) const {
-        Var<T> tmp;
-        tmp.node_idx_ = new_node<SubNode, T>(node_idx_,rhs.node_idx_);
-        return tmp;
+        size_t idx = new_node<SubNode, T>(node_idx_, rhs.node_idx_);
+        return new_var_from_idx(idx);
     }
 
     Var<T> operator*(Var<T> const & rhs) const {
-        Var<T> tmp;
-        tmp.node_idx_ = new_node<ProdNode, T>(node_idx_,rhs.node_idx_);
-        return tmp;
+        size_t idx = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
+        return new_var_from_idx(idx);
     }
 
     template <typename U>
@@ -59,6 +56,12 @@ public:
     friend Var<U> sqrt(Var<U> const & arg);
 
 private:
+    static Var<T> new_var_from_idx(size_t idx) {
+        Var<T> tmp;
+        tmp.node_idx_ = idx;
+        return tmp;
+    }
+
     // The index of the node which is "tracked" by this variable
     size_t node_idx_;
 };
@@ -66,16 +69,14 @@ private:
 /******** OPERATORS *******/
 template <typename T>
 Var<T> exp(Var<T> const & arg) {
-    Var<T> tmp;
-    tmp.node_idx_ = new_node<ExpNode, T>(arg.node_idx_);
-    return tmp;
+    size_t idx = new_node<ExpNode, T>(arg.node_idx_);
+    return Var<T>::new_var_from_idx(idx);
 }
 
 template <typename T>
 Var<T> sqrt(Var<T> const & arg) {
-    Var<T> tmp;
-    tmp.node_idx_ = new_node<SqrtNode, T>(arg.node_idx_);
-    return tmp;
+    size_t idx = new_node<SqrtNode, T>(arg.node_idx_);
+    return Var<T>::new_var_from_idx(idx);
 }
 
 }; // namespace reverse
