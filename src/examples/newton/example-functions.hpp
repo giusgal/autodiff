@@ -46,7 +46,7 @@ namespace testfun {
             res[i] = heavy(global_expr(x, i+1));
         return res;
     }
-    #ifdef DUSE_CUDA
+    #ifdef USE_CUDA
     // wrapper unchanged, but break the chained calls into separate statements
     newton::CudaFunctionWrapper<double> createcudafn0() {
       newton::CudaFunctionWrapper<double> cudafun(50);
