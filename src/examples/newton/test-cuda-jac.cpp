@@ -4,8 +4,7 @@
 #include <Eigen/Dense>
 #include <chrono>
 #include "/content/drive/MyDrive/autodiff/src/autodiff/forward/CudaSupport.hpp"
-#include "/content/drive/MyDrive/autodiff/src/examples/newton/test-functions.hpp"
-#include "/content/drive/MyDrive/autodiff/src/examples/newton/Jacobian.hpp"
+#include "/content/drive/MyDrive/autodiff/src/examples/newton/example-functions.hpp"
 #include "/content/drive/MyDrive/autodiff/src/autodiff/forward/autodiff.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
@@ -17,8 +16,8 @@ int main() {
     using Clock = std::chrono::high_resolution_clock;
 
     // Problem dimensions
-    int dim_in = 50;   // Input dimension
-    int dim_out = 50;  // Output dimension
+    int dim_in = 512;   // Input dimension
+    int dim_out = 512;  // Output dimension
 
     // Create input point
     Eigen::VectorXd x0 = Eigen::VectorXd::Random(dim_in);

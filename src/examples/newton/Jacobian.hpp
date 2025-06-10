@@ -62,7 +62,7 @@ public:
     // create dual vector to feed the function as input
     FwArgType x0d(this->_M);
     FwRetType eval(this->_M);
-    for(int i = 0; i < this->_M; i++) {
+    for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
 
@@ -86,7 +86,7 @@ public:
     // create dual vector to feed the function as input
     FwArgType x0d(this->_M);
     FwRetType eval(this->_M);
-    for(int i = 0; i < this->_M; i++) {
+    for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
 
@@ -251,12 +251,13 @@ public:
 
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, M * N * sizeof(T)));
 
-    CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(dv<T>)));
-    CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(dv<T>), cudaMemcpyHostToDevice));
+    CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(T)));
+    CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(T), cudaMemcpyHostToDevice));
     std::cout << "Size of wrapper: " << M * sizeof(CudaFunctionWrapper<T>) << std::endl;
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, M * sizeof(CudaFunctionWrapper<T>)));
 
-    // Since all threads which write in the same column of the jacobian are executing the same functions, 
+    // Since all threads which write in the same column of the jacobian are executing the same functions
+    // place them in the same block
     // cap threads per block at 256?
     dim3 blockDim;
     if (M >= 256) {

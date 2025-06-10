@@ -64,8 +64,8 @@ int main() {
   using Clock = std::chrono::high_resolution_clock;
   using ms = std::chrono::milliseconds;
 
-  int dim_in = 100;
-  int dim_out = 100;
+  int dim_in = 1;
+  int dim_out = 10;
   RealVec x0 = RealVec::Random(dim_in);
   RealVec real_eval(dim_out);
 
