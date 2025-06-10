@@ -60,8 +60,8 @@ public:
   void compute(const RealVec &x0, RealVec &real_eval) {
 
     // create dual vector to feed the function as input
-    FwArgType x0d(this->_M);
-    FwRetType eval(this->_M);
+    FwArgType x0d(this->_N);
+    FwRetType eval(this->_N);
     for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
@@ -84,8 +84,8 @@ public:
 
   void compute_parallel(const RealVec &x0, RealVec &real_eval) {
     // create dual vector to feed the function as input
-    FwArgType x0d(this->_M);
-    FwRetType eval(this->_M);
+    FwArgType x0d(this->_N);
+    FwRetType eval(this->_N);
     for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
@@ -214,7 +214,7 @@ void jacobian_kernel(
   // evaluate function tid_y with seeded input
   y_dual = cuda_fn(x0_dual, tid_y);
 
-  jac[tid_x * N + tid_y] = y_dual.getInf();
+  jac[tid_x + tid_y * N] = y_dual.getInf();
 
 }
 
@@ -278,7 +278,7 @@ public:
     jacobian_kernel<T><<<gridDim, blockDim>>>(M, N, x0_device, jac_device, _cuda_fn);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
-    CUDA_CHECK_ERROR(cudaMemcpy(this->_J.data(), jac_device, M * N * sizeof(double), cudaMemcpyDeviceToHost));
+    CUDA_CHECK_ERROR(cudaMemcpy(this->_J.data(), jac_device, M * N * sizeof(T), cudaMemcpyDeviceToHost));
     CUDA_CHECK_ERROR(cudaFree(jac_device));
   }
 

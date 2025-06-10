@@ -1,30 +1,27 @@
-%%cuda -c "--gpu-architecture sm_75 -DUSE_CUDA -DEIGEN_USE_GPU -I /content/drive/MyDrive/autodiff/src/Eigen-3.4.0, -I "
-// test_jacobian_cuda.cpp
+//%%cuda -c "--gpu-architecture sm_75 -DUSE_CUDA -DEIGEN_USE_GPU -I /content/drive/MyDrive/autodiff/src/Eigen-3.4.0, -I "
 #include <iostream>
 #include <Eigen/Dense>
+#include "example-functions.hpp"
 #include <chrono>
-#include "/content/drive/MyDrive/autodiff/src/autodiff/forward/CudaSupport.hpp"
-#include "/content/drive/MyDrive/autodiff/src/examples/newton/example-functions.hpp"
-#include "/content/drive/MyDrive/autodiff/src/autodiff/forward/autodiff.hpp"
+#include "../../autodiff/forward/CudaSupport.hpp"
+#include "../../autodiff/forward/autodiff.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
-
-
 
 int main() {
     using Clock = std::chrono::high_resolution_clock;
 
     // Problem dimensions
-    int dim_in = 512;   // Input dimension
-    int dim_out = 512;  // Output dimension
+    int dim_in = 3;   // Input dimension
+    int dim_out = 2;  // Output dimension
 
     // Create input point
     Eigen::VectorXd x0 = Eigen::VectorXd::Random(dim_in);
     Eigen::VectorXd real_eval_cpu(dim_out);
 
     // Create Jacobian object
-    newton::ForwardJac<double> jacobian(dim_out, dim_in, testfun::test_fun0);
+    newton::ForwardJac<double> jacobian(dim_out, dim_in, testfun::test_fun);
 
     // Test regular CPU compute
     auto t1 = Clock::now();
@@ -38,7 +35,7 @@ int main() {
 
 #ifdef USE_CUDA
 
-    newton::CudaFunctionWrapper<double> cudafun = testfun::createcudafn0();
+    newton::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
 
     newton::CudaJac<double> jacobian_cu(dim_out, dim_in, cudafun);
     // Test CUDA compute
