@@ -141,51 +141,8 @@ template <typename T>
 using JacType = typename NewtonTraits<T>::JacType;
 template <typename T>
 using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
-template <typename T, CudaDeviceFn<T> F>
-using SetupKernelFn = typename NewtonTraits<T>::SetupKernelFn<F>;
-template <typename T, CudaDeviceFn<T> F>
-using SetupKernelFn = typename NewtonTraits<T>::template SetupKernelFn<F>;
 
 
-////THREADS IN THE SAME BLOCK SHOULD EXECUTE THE SAME FUNCTION
-
-template<typename T, CudaDeviceFn<T> fn_to_be_registered>
-CUDA_GLOBAL \
-void register_fn(CudaDeviceFn<double> *device_fn_array, int idx) {
-    device_fn_array[idx] = fn_to_be_registered;
-}
-
-
-CUDA_HOST_DEVICE \
-template <typename T>
-struct CudaFunctionWrapper {
-  
-  CudaDeviceFn<T> *_device_fns;
-  int _out_dim, _out_max_dim;
-
-  CudaFunctionWrapper(int out_max_dim): 
-    _out_dim(0), _out_max_dim(out_max_dim) {
-      CUDA_CHECK_ERROR(cudaMalloc(&_device_fns, _out_max_dim * sizeof(CudaDeviceFn<T>)));
-    }
-
-  template <CudaDeviceFn<T> device_fn>
-  void add_output() {
-    if (_out_dim >= _out_max_dim) {
-      std::cout << "Attempting to add functions over the maximum size" << std::endl;
-      exit(0);
-    }
-    register_fn<T, device_fn> <<<1, 1>>>(_device_fns, _out_dim);
-    CUDA_CHECK_ERROR(cudaGetLastError());
-    CUDA_CHECK_ERROR(cudaDeviceSynchronize());
-    _out_dim ++;
-  }
-
-  CUDA_HOST_DEVICE \
-  CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
-    return _device_fns[y_i](x);
-  }
-  
-};
 
 template <typename T>
 CUDA_GLOBAL 
@@ -193,7 +150,7 @@ void jacobian_kernel(
   int M, int N,
   const T *x0, 
   double *jac, 
-  CudaFunctionWrapper<T> cuda_fn
+  CudaDeviceFn<T> cuda_fn
 ) {
   int tid_x = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid_x >= N) return;
@@ -231,11 +188,9 @@ template <typename T>
 class CudaJac final : 
 public JacobianBase<T>
 {
-  
-
 public:
   CudaJac(
-    std::size_t M, std::size_t N, CudaFunctionWrapper<T> cuda_fn
+    std::size_t M, std::size_t N, CudaDeviceFn<T> cuda_fn
   ): JacobianBase<T>(M, N, nullptr),
     _cuda_fn(cuda_fn)
   {
@@ -248,13 +203,13 @@ public:
 
     double *jac_device;
     T *x0_device;
-    CudaFunctionWrapper<T> *cudafn_device;
+    CudaDeviceFn<T> *cudafn_device;
 
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, M * N * sizeof(T)));
 
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(T)));
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(T), cudaMemcpyHostToDevice));
-    CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, M * sizeof(CudaFunctionWrapper<T>)));
+    CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, sizeof(CudaDeviceFn<T>)));
 
     // Since all threads which write in the same column of the jacobian are executing the same functions
     // place them in the same block
@@ -286,7 +241,7 @@ public:
     return this->_J;
   }
 protected:
-  CudaFunctionWrapper<T> _cuda_fn;
+  CudaDeviceFn<T> _cuda_fn;
 };
 #else
 #endif
