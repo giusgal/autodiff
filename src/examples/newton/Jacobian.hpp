@@ -147,25 +147,28 @@ using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
 void register_fn(CudaDeviceFn<double> *device_fn, int idx) {
-    device_fn_ptr = fn_to_be_registered;
+    device_fn = fn_to_be_registered;
 }
 
 
+template <typename T, CudaDeviceFn<T> device_fn>
 CUDA_HOST_DEVICE \
-template <typename T>
 struct CudaFunctionWrapper {
   
   CudaDeviceFn<T> *_device_fn;
-  
-  template <CudaDeviceFn<T> device_fn>
-  CudaFunctionWrapper(): 
-    {
+
+  CudaFunctionWrapper() {
       CUDA_CHECK_ERROR(cudaMalloc(&_device_fn, sizeof(CudaDeviceFn<T>)));
-      register_fn<T, device_fn> <<<1, 1>>>(_device_fn);
-      CUDA_CHECK_ERROR(cudaGetLastError());
-      CUDA_CHECK_ERROR(cudaDeviceSynchronize());
-    }
+  };
+
+  template <CudaDeviceFn<T> device_fn>
+  void register_fn() {
+    
+    register_fn<T, device_fn> <<<1, 1>>>(_device_fn);
+    CUDA_CHECK_ERROR(cudaGetLastError());
+    CUDA_CHECK_ERROR(cudaDeviceSynchronize());
   }
+
 
   CUDA_HOST_DEVICE \
   CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
