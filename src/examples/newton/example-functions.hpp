@@ -12,9 +12,11 @@ namespace testfun {
         dvec res(2);
         res[0] = x[0] * 3.0;
         res[1] = x[0] * 2.0;
+        return res;
     }
 
-    dv cudafun(const dvec &x, const int out_idx) {
+    #ifdef USE_CUDA
+    CUDA_DEVICE dv cudafun(const dvec &x, const int out_idx) {
         switch (out_idx)
         {
         case 0:
@@ -26,5 +28,12 @@ namespace testfun {
         default:
             break;
         }
+        return 0;
     }
+    
+    newton::CudaFunctionWrapper<double> createwrapper() {
+        newton::CudaFunctionWrapper<double> cu_wrapper<cudafun>();
+        return cu_wrapper;
+    }
+    #endif
 } // namespace testfun

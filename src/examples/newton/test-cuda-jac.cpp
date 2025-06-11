@@ -35,8 +35,9 @@ int main() {
 
 #ifdef USE_CUDA
 
+    newton::CudaFunctionWrapper<double> cudafun = testfun::createwrapper();
 
-    newton::CudaJac<double> jacobian_cu(dim_out, dim_in, &testfun::cudafun);
+    newton::CudaJac<double> jacobian_cu(dim_out, dim_in, cudafun);
     // Test CUDA compute
     auto t3 = Clock::now();
     jacobian_cu.compute(x0);

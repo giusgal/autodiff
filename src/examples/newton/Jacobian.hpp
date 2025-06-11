@@ -144,13 +144,43 @@ using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
 
 
 
+template<typename T, CudaDeviceFn<T> fn_to_be_registered>
+CUDA_GLOBAL \
+void register_fn(CudaDeviceFn<double> *device_fn, int idx) {
+    device_fn_ptr = fn_to_be_registered;
+}
+
+
+CUDA_HOST_DEVICE \
+template <typename T>
+struct CudaFunctionWrapper {
+  
+  CudaDeviceFn<T> *_device_fn;
+  
+  template <CudaDeviceFn<T> device_fn>
+  CudaFunctionWrapper(): 
+    {
+      CUDA_CHECK_ERROR(cudaMalloc(&_device_fn, sizeof(CudaDeviceFn<T>)));
+      register_fn<T, device_fn> <<<1, 1>>>(_device_fn);
+      CUDA_CHECK_ERROR(cudaGetLastError());
+      CUDA_CHECK_ERROR(cudaDeviceSynchronize());
+    }
+  }
+
+  CUDA_HOST_DEVICE \
+  CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
+    return _device_fn(x, y_i);
+  }
+  
+};
+
 template <typename T>
 CUDA_GLOBAL 
 void jacobian_kernel(
   int M, int N,
   const T *x0, 
   double *jac, 
-  CudaDeviceFn<T> cuda_fn
+  CudaFunctionWrapper<T> cuda_fn
 ) {
   int tid_x = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid_x >= N) return;
@@ -188,9 +218,11 @@ template <typename T>
 class CudaJac final : 
 public JacobianBase<T>
 {
+  
+
 public:
   CudaJac(
-    std::size_t M, std::size_t N, CudaDeviceFn<T> cuda_fn
+    std::size_t M, std::size_t N, CudaFunctionWrapper<T> cuda_fn
   ): JacobianBase<T>(M, N, nullptr),
     _cuda_fn(cuda_fn)
   {
@@ -203,13 +235,13 @@ public:
 
     double *jac_device;
     T *x0_device;
-    CudaDeviceFn<T> *cudafn_device;
+    CudaFunctionWrapper<T> *cudafn_device;
 
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, M * N * sizeof(T)));
 
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(T)));
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(T), cudaMemcpyHostToDevice));
-    CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, sizeof(CudaDeviceFn<T>)));
+    CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, M * sizeof(CudaFunctionWrapper<T>)));
 
     // Since all threads which write in the same column of the jacobian are executing the same functions
     // place them in the same block
@@ -241,7 +273,7 @@ public:
     return this->_J;
   }
 protected:
-  CudaDeviceFn<T> _cuda_fn;
+  CudaFunctionWrapper<T> _cuda_fn;
 };
 #else
 #endif
