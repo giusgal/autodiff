@@ -33,7 +33,7 @@ namespace testfun {
     
     newton::CudaFunctionWrapper<double> createwrapper() {
         newton::CudaFunctionWrapper<double> cu_wrapper();
-        cu_wrapper.register_fn<cudafun>()
+        cu_wrapper.register_fn<cudafun>();
         return cu_wrapper;
     }
     #endif
