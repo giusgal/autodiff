@@ -155,8 +155,9 @@ void register_fn(CudaDeviceFn<double> *device_fn_array, int idx) {
     device_fn_array[idx] = fn_to_be_registered;
 }
 
-template <typename T>
+
 CUDA_HOST_DEVICE \
+template <typename T>
 struct CudaFunctionWrapper {
   
   CudaDeviceFn<T> *_device_fns;
