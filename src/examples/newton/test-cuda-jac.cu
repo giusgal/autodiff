@@ -1,10 +1,10 @@
-//%%cuda -c "--gpu-architecture sm_75 -DUSE_CUDA -DEIGEN_USE_GPU -I /content/drive/MyDrive/autodiff/src/Eigen-3.4.0, -I "
+// test_jacobian_cuda.cpp
 #include <iostream>
 #include <Eigen/Dense>
-#include "example-functions.hpp"
 #include <chrono>
-#include "../../autodiff/forward/CudaSupport.hpp"
-#include "../../autodiff/forward/autodiff.hpp"
+#include "/content/autodiff/src/autodiff/forward/CudaSupport.hpp"
+#include "/content/autodiff/src/examples/newton/example-functions.hpp"
+#include "/content/autodiff/src/autodiff/forward/autodiff.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
@@ -13,8 +13,8 @@ int main() {
     using Clock = std::chrono::high_resolution_clock;
 
     // Problem dimensions
-    int dim_in = 3;   // Input dimension
-    int dim_out = 2;  // Output dimension
+    int dim_in = 416;   // Input dimension
+    int dim_out = 416;  // Output dimension
 
     // Create input point
     Eigen::VectorXd x0 = Eigen::VectorXd::Random(dim_in);

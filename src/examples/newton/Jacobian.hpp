@@ -61,7 +61,7 @@ public:
 
     // create dual vector to feed the function as input
     FwArgType x0d(this->_N);
-    FwRetType eval(this->_N);
+    FwRetType eval(this->_M);
     for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
@@ -85,7 +85,7 @@ public:
   void compute_parallel(const RealVec &x0, RealVec &real_eval) {
     // create dual vector to feed the function as input
     FwArgType x0d(this->_N);
-    FwRetType eval(this->_N);
+    FwRetType eval(this->_M);
     for(int i = 0; i < this->_N; i++) {
       x0d[i] = dv(x0[i], 0.0);
     }
@@ -213,8 +213,8 @@ void jacobian_kernel(
 
   // evaluate function tid_y with seeded input
   y_dual = cuda_fn(x0_dual, tid_y);
-
-  jac[tid_x + tid_y * N] = y_dual.getInf();
+  printf("[jacobian_kernel] y_dual.inf for y_i=%d, x_i=%d, idx=%d is %f\n", tid_y, tid_x, tid_x + tid_y * N, y_dual.getInf());
+  jac[tid_x * M + tid_y] = y_dual.getInf();
 
 }
 
@@ -253,7 +253,6 @@ public:
 
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(T)));
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(T), cudaMemcpyHostToDevice));
-    std::cout << "Size of wrapper: " << M * sizeof(CudaFunctionWrapper<T>) << std::endl;
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, M * sizeof(CudaFunctionWrapper<T>)));
 
     // Since all threads which write in the same column of the jacobian are executing the same functions
