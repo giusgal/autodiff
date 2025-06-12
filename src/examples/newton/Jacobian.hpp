@@ -143,14 +143,16 @@ template <typename T>
 using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
 
 
-CUDA_GLOBAL \
+
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
+CUDA_GLOBAL \
 void register_fn(CudaDeviceFn<double> *device_fn) {
     *device_fn = fn_to_be_registered;
 }
 
-CUDA_HOST_DEVICE \
+
 template <typename T>
+CUDA_HOST_DEVICE \
 struct CudaFunctionWrapper {
   
   CudaDeviceFn<T> *_device_fn;
