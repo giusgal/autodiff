@@ -30,7 +30,6 @@ int main() {
     auto cpu_time = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
     std::cout << "CPU Jacobian norm:\n" << jacobian.getJacobian().norm() << std::endl;
-    std::cout << "CPU Function Value: " << real_eval_cpu.transpose() << std::endl;
     std::cout << "CPU Time: " << cpu_time << " μs\n\n";
 
 #ifdef USE_CUDA
