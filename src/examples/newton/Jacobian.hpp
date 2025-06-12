@@ -162,7 +162,7 @@ struct CudaFunctionWrapper {
     }
 
   template <CudaDeviceFn<T> device_fn>
-  void add_output() {
+  void register_fn() {
     register_fn<T, device_fn> <<<1, 1>>>(_device_fn);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
@@ -171,7 +171,7 @@ struct CudaFunctionWrapper {
 
   CUDA_HOST_DEVICE \
   CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
-    return *(_device_fn)(x);
+    return (*_device_fn)(x, y_i);
   }
   
 };
