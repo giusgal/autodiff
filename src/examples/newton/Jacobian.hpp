@@ -151,8 +151,8 @@ using SetupKernelFn = typename NewtonTraits<T>::template SetupKernelFn<F>;
 
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
-void register_fn(CudaDeviceFn<double> *device_fn_array, int idx) {
-    device_fn_array[idx] = fn_to_be_registered;
+void register_fn(CudaDeviceFn<double> *device_fn) {
+    *device_fn = fn_to_be_registered;
 }
 
 
@@ -160,29 +160,22 @@ CUDA_HOST_DEVICE \
 template <typename T>
 struct CudaFunctionWrapper {
   
-  CudaDeviceFn<T> *_device_fns;
-  int _out_dim, _out_max_dim;
+  CudaDeviceFn<T> *_device_fn;
 
-  CudaFunctionWrapper(int out_max_dim): 
-    _out_dim(0), _out_max_dim(out_max_dim) {
-      CUDA_CHECK_ERROR(cudaMalloc(&_device_fns, _out_max_dim * sizeof(CudaDeviceFn<T>)));
+  CudaFunctionWrapper() {
+      CUDA_CHECK_ERROR(cudaMalloc(&_device_fn, sizeof(CudaDeviceFn<T>)));
     }
 
   template <CudaDeviceFn<T> device_fn>
   void add_output() {
-    if (_out_dim >= _out_max_dim) {
-      std::cout << "Attempting to add functions over the maximum size" << std::endl;
-      exit(0);
-    }
-    register_fn<T, device_fn> <<<1, 1>>>(_device_fns, _out_dim);
+    register_fn<T, device_fn> <<<1, 1>>>(_device_fns);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
-    _out_dim ++;
   }
 
   CUDA_HOST_DEVICE \
   CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
-    return _device_fns[y_i](x);
+    return *(_device_fns)(x);
   }
   
 };

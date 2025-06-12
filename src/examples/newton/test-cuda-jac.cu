@@ -13,8 +13,8 @@ int main() {
     using Clock = std::chrono::high_resolution_clock;
 
     // Problem dimensions
-    int dim_in = 416;   // Input dimension
-    int dim_out = 416;  // Output dimension
+    int dim_in = 2;   // Input dimension
+    int dim_out = 1;  // Output dimension
 
     // Create input point
     Eigen::VectorXd x0 = Eigen::VectorXd::Random(dim_in);
