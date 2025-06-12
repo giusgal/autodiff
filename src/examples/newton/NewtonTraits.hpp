@@ -19,8 +19,7 @@ public:
   using FwNLSType = std::function<FwRetType(const FwArgType &)>;
 
   using CudaRetType = dv;
-  using CudaDeviceFn = dv (*)(const FwArgType&);
-  template <CudaDeviceFn F> using SetupKernelFn = void (*)(CudaDeviceFn*, int);
+  using CudaDeviceFn = dv (*)(const FwArgType&, const int out_idx);
 
   // using var = autodiff::reverse::Var<T>;
   // using RevArgType = Eigen::Matrix<var, Eigen::Dynamic, 1>;

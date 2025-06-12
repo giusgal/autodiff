@@ -6,7 +6,7 @@
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
-            
+
 namespace testfun {
     dvec test_fun(const dvec &x) {
         dvec res(1);
@@ -22,6 +22,5 @@ namespace testfun {
         cudafun.add_output<cu_f0>();
         return cudafun;
     }
-
     #endif
 } // namespace testfun

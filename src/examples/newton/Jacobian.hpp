@@ -141,13 +141,8 @@ template <typename T>
 using JacType = typename NewtonTraits<T>::JacType;
 template <typename T>
 using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
-template <typename T, CudaDeviceFn<T> F>
-using SetupKernelFn = typename NewtonTraits<T>::SetupKernelFn<F>;
-template <typename T, CudaDeviceFn<T> F>
-using SetupKernelFn = typename NewtonTraits<T>::template SetupKernelFn<F>;
 
 
-////THREADS IN THE SAME BLOCK SHOULD EXECUTE THE SAME FUNCTION
 
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
@@ -156,8 +151,8 @@ void register_fn(CudaDeviceFn<double> *device_fn) {
 }
 
 
-CUDA_HOST_DEVICE \
 template <typename T>
+CUDA_HOST_DEVICE \
 struct CudaFunctionWrapper {
   
   CudaDeviceFn<T> *_device_fn;
@@ -172,6 +167,7 @@ struct CudaFunctionWrapper {
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
   }
+
 
   CUDA_HOST_DEVICE \
   CudaRetType<T> operator()(const CudaArgType<T> &x, int y_i) const {
