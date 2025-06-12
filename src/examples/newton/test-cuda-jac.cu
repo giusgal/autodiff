@@ -13,10 +13,10 @@ int main() {
     using Clock = std::chrono::high_resolution_clock;
 
     // Problem dimensions
-    int dim_in = 2;   // Input dimension
-    int dim_out = 1;  // Output dimension
+    int dim_in = testfun::input_dim;   // Input dimension
+    int dim_out = testfun::output_dim;  // Output dimension
 
-    // Create input point
+    // Create input vector
     Eigen::VectorXd x0 = Eigen::VectorXd::Random(dim_in);
     Eigen::VectorXd real_eval_cpu(dim_out);
 
@@ -29,7 +29,7 @@ int main() {
     auto t2 = Clock::now();
     auto cpu_time = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-    std::cout << "CPU Jacobian:\n" << jacobian.getJacobian() << std::endl;
+    std::cout << "CPU Jacobian norm:\n" << jacobian.getJacobian().norm() << std::endl;
     std::cout << "CPU Function Value: " << real_eval_cpu.transpose() << std::endl;
     std::cout << "CPU Time: " << cpu_time << " μs\n\n";
 
@@ -44,7 +44,7 @@ int main() {
     auto t4 = Clock::now();
     auto cuda_time = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
 
-    std::cout << "CUDA Jacobian:\n" << jacobian_cu.getJacobian() << std::endl;
+    std::cout << "CUDA Jacobian norm:\n" << jacobian_cu.getJacobian().norm() << std::endl;
     std::cout << "CUDA Time: " << cuda_time << " μs\n\n";
 
     // Calculate speedup
