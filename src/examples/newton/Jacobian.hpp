@@ -146,7 +146,7 @@ using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
 
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
-void register_fn(CudaDeviceFn<double> *device_fn) {
+void register_fn_device(CudaDeviceFn<double> *device_fn) {
     *device_fn = fn_to_be_registered;
 }
 
@@ -162,8 +162,8 @@ struct CudaFunctionWrapper {
     }
 
   template <CudaDeviceFn<T> device_fn>
-  void register_fn() {
-    register_fn<T, device_fn> <<<1, 1>>>(_device_fn);
+  void register_fn_host() {
+    register_fn_device<T, device_fn> <<<1, 1>>>(_device_fn);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
   }

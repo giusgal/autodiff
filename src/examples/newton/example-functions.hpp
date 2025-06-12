@@ -32,7 +32,7 @@ namespace testfun {
     };
     newton::CudaFunctionWrapper<double> createcudafn() {
         newton::CudaFunctionWrapper<double> cudafun;
-        cudafun.register_fn<cu_f0>();
+        cudafun.register_fn_host<cu_f0>();
         return cudafun;
     }
     #endif
