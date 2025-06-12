@@ -203,7 +203,6 @@ void jacobian_kernel(
 
   // evaluate function tid_y with seeded input
   y_dual = cuda_fn(x0_dual, tid_y);
-  printf("[jacobian_kernel] y_dual.inf for y_i=%d, x_i=%d, idx=%d is %f\n", tid_y, tid_x, tid_x + tid_y * N, y_dual.getInf());
   jac[tid_x * M + tid_y] = y_dual.getInf();
 
 }
