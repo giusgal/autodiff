@@ -16,7 +16,7 @@ namespace testfun {
 
     #ifdef USE_CUDA
 
-    CUDA_DEVICE dv cu_f0(const dvec &x) { return x[0] * 1.0 + x[1] * 2.0 + x[2] * 4.0; };
+    CUDA_DEVICE dv cu_f0(const dvec &x, const int y) { return x[0] * 1.0 + x[1] * 2.0 + x[2] * 4.0; };
     newton::CudaFunctionWrapper<double> createcudafn() {
         newton::CudaFunctionWrapper<double> cudafun;
         cudafun.add_output<cu_f0>();
