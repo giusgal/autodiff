@@ -41,10 +41,10 @@ public:
                 data_ = new std::byte[BLOCK_SIZE];
                 blocks_start_.push_back(data_);
             }
+            ++current_block_;
+            remaining_size_ = BLOCK_SIZE;
         }
 
-        ++current_block_;
-        remaining_size_ = BLOCK_SIZE;
 
         // TODO: Here we assume that size <= BLOCK_SIZE
         //  We should check wheter this is true or not and in the latter
