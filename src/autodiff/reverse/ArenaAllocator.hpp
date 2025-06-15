@@ -9,26 +9,37 @@
 namespace autodiff {
 namespace reverse {
 
+// Why not std::pmr::unsynchronized_pool_resource?
+//  1. Objects of different sizes are put in different pools (not contiguos)
+//  2. It's not possible to reuse the same underlying memory multiple times
+//  3. Dispatching overhead to decide which pool to use
+// Why not std::pmr::monotonic_buffer_resource?
+//  1. It's not possible to reuse the same underlying memory multiple times
+// => We need a custom allocator
+
 template <size_t BLOCK_SIZE = 4096>
 class ArenaAllocator {
     using Byte = std::byte;
 public:
-    ArenaAllocator() {
+    ArenaAllocator():
+        remaining_size_{BLOCK_SIZE},
+        current_block_{0}
+    {
+        // TODO: exceptions
         data_ = new Byte[BLOCK_SIZE];
         blocks_start_.push_back(data_);
-        remaining_size_ = BLOCK_SIZE;
-        current_block_ = 0;
     }
 
     ~ArenaAllocator() {
+        // TODO: check this
         for(void * block_start: blocks_start_) {
             delete[] static_cast<Byte*>(block_start);
         }
         data_ = nullptr;
     }
 
-    // allignment must be a power of 2 (if not then UB for std::align)
-    void * alloc(size_t size, size_t allignment) {
+    // alignment must be a power of 2 (if not then UB for std::align)
+    void * alloc(size_t size, size_t alignment) {
         if(size > BLOCK_SIZE) [[unlikely]] {
             throw std::bad_alloc();
         }
@@ -39,7 +50,7 @@ public:
         //      pointer and the "remaining_size_" variable.
         //  ii) On failure => "res" is nullptr and no updates to the variables
         //      take place.
-        void * res = std::align(allignment, size, data_, remaining_size_);
+        void * res = std::align(alignment, size, data_, remaining_size_);
         
         if(!res) [[unlikely]] {
 
@@ -52,6 +63,7 @@ public:
 
             } else {
                 // allocate new block
+                // TODO: exceptions
                 data_ = new Byte[BLOCK_SIZE];
                 blocks_start_.push_back(data_);
 
@@ -66,7 +78,7 @@ public:
             //  a new block then "new" (malloc) has already taken care
             //  of the alignment for us, but here we are considering an
             //  "alignment" parameter so it must be done just to be sure.
-            res = std::align(allignment, size, data_, remaining_size_);
+            res = std::align(alignment, size, data_, remaining_size_);
 
             // This can happen if, for some strange allignment constraints,
             //  the allocation request doesn't fit in the empty block even tough

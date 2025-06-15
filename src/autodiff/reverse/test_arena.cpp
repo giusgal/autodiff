@@ -23,7 +23,7 @@ ArenaAllocator arena;
 template <typename T>
 T * allocate() {
     void * ptr = arena.alloc(sizeof(T), alignof(T));
-    return static_cast<T*>(ptr);
+    return std::launder(static_cast<T*>(ptr));
 }
 
 template <size_t N>
@@ -32,20 +32,11 @@ struct A {
 };
 
 int main() {
-    using Type = A<4095>;
-
-    std::cout << sizeof(Type) << std::endl;
-
-    Type * a = allocate<Type>();
-    Type * b = allocate<Type>();
-
-    std::cout << arena.n_blocks() << std::endl;
-    std::cout << arena.current_block() << std::endl;
-
-    arena.free();
-
-    std::cout << arena.n_blocks() << std::endl;
-    std::cout << arena.current_block() << std::endl;
+    using AddNode = AddNode<double>;
+    using SubNode = SubNode<double>;
+    using ProdNode = ProdNode<double>;
+    using SqrtNode = SqrtNode<double>;
+    using ExpNode = ExpNode<double>;
 
     return 0;
 }

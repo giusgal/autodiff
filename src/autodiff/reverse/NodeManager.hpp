@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "Node.hpp"
+#include "ArenaAllocator.hpp"
 
 namespace autodiff {
 namespace reverse {
@@ -54,10 +55,15 @@ public:
     void clear() {
         // std::cout << nodes_.size() << std::endl;
         nodes_.clear();
+        arena_.free();
     }
 
-    void reserve(size_t dim) {
-        nodes_.reserve(dim);
+    void release() {
+        // TODO: return memory from both the arena and the vector
+    }
+
+    void reserve(size_t n_nodes) {
+        nodes_.reserve(n_nodes);
     }
 
     void clear_grad() {
@@ -90,16 +96,25 @@ public:
 private:
     NodeManager() = default;
 
-    std::vector<std::unique_ptr<Node<T>>> nodes_;
+    // std::vector<std::unique_ptr<Node<T>>> nodes_;
+
+    ArenaAllocator<4096> arena_;
+    // TODO: manage exceptions
+    std::vector<Node<T>*> nodes_;
 };
 
 template <typename U>
 size_t new_node(U const & value) {
     NodeManager<U> & manager = NodeManager<U>::instance();
 
-    manager.nodes_.emplace_back(
-        std::make_unique<IndNode<U>>(value)
-    );
+    void * ptr =
+        manager.arena_.alloc(sizeof(IndNode<U>), alignof(IndNode<U>));
+
+    IndNode<U> * node_ptr = new (ptr) IndNode<U>{value};
+
+    // TODO: Maybe std::launder?
+    manager.nodes_.emplace_back(node_ptr);
+
     return manager.nodes_.size()-1;
 }
 
@@ -107,11 +122,15 @@ template <template <typename> class NodeType, typename U>
 size_t new_node(size_t first) {
     NodeManager<U> & manager = NodeManager<U>::instance();
 
-    manager.nodes_.emplace_back(
-        std::make_unique<NodeType<U>>(
-            manager.nodes_[first].get()
-        )
-    );
+    void * ptr =
+        manager.arena_.alloc(sizeof(NodeType<U>), alignof(NodeType<U>));
+
+    NodeType<U> * node_ptr = new (ptr) NodeType<U>{
+        manager.nodes_[first]
+    };
+
+    manager.nodes_.emplace_back(node_ptr);
+
     return manager.nodes_.size()-1;
 }
 
@@ -119,12 +138,16 @@ template <template <typename> class NodeType, typename U>
 size_t new_node(size_t first, size_t second) {
     NodeManager<U> & manager = NodeManager<U>::instance();
 
-    manager.nodes_.emplace_back(
-        std::make_unique<NodeType<U>>(
-            manager.nodes_[first].get(),
-            manager.nodes_[second].get()
-        )
-    );
+    void * ptr =
+        manager.arena_.alloc(sizeof(NodeType<U>), alignof(NodeType<U>));
+
+    NodeType<U> * node_ptr = new (ptr) NodeType<U>{
+        manager.nodes_[first],
+        manager.nodes_[second]
+    };
+
+    manager.nodes_.emplace_back(node_ptr);
+
     return manager.nodes_.size()-1;
 }
 
