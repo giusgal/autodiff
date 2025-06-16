@@ -21,9 +21,12 @@ namespace reverse {
  * a topological ordering of the nodes of the computationl graph before the
  * backward pass.
  * In fact, as expressions involving `Var` instances are evaluated, the corresponding
- * computational graph nodes are automatically created and appended to an 
- * `std::vector` in the order of their creation — which naturally forms a valid 
- * topological order of the computational graph.
+ * computational graph nodes are automatically created and inserted in a
+ * memory pool (arena allocator) in the order of their creation (which naturally forms a valid 
+ * topological order of the computational graph).
+ * 
+ * The class is a singleton in order to force all the allocations to be made in a single
+ * memory pool.
  */
 template <typename T>
 class NodeManager {
@@ -35,55 +38,44 @@ public:
     NodeManager& operator=(NodeManager &&) = delete;
 
     static NodeManager& instance() {
-        // Guaranteed thread-safe in C++11 and later
-        static NodeManager instance_;
-        return instance_;
+        static NodeManager instance;
+        return instance;
     }
 
-    // Templated factory functions
+    // *********** Templated factory functions ***********
+    // Thanks to templates we can add a new node to the tape
+    //  without the need to explicitly define a factory method
+    //  for that specific node.
+    // The only thing that must be done is to use the appropriate
+    //  method based on the general type of node (IndNode/UnaryNode/BinaryNode)
+    
+    // Factory function for IndNode(s)
     template <typename U>
     friend size_t new_node(U const & value);
 
-    // TODO: constraints on NodeType
+    // Factory function for UnaryNode(s)
     template <template <typename> class NodeType, typename U>
     friend size_t new_node(size_t first);
 
-    // TODO: constraints on NodeType
+    // Factory function for BinaryNode(s)
     template <template <typename> class NodeType, typename U>
     friend size_t new_node(size_t first, size_t second);
 
-    void clear() {
-        // std::cout << nodes_.size() << std::endl;
-        nodes_.clear();
-        arena_.free();
-    }
-
-    void release() {
-        // TODO: return memory from both the arena and the vector
-    }
-
-    void reserve(size_t n_nodes) {
-        nodes_.reserve(n_nodes);
-    }
-
-    void clear_grad() {
-        for(auto & node: nodes_) {
-            node->clear_grad();
-        }
-    }
-
-    size_t size() const {
-        return nodes_.size();
-    }
-
+    // *********** Derivatives calculation/update/access ***********
     void backward(size_t root) {
         // set root node's gradient to default value
-        nodes_[root]->update_grad(T{1});
+        nodes_[root]->update_grad(T{1.0});
 
         // nodes are already in topological order
         auto iter = nodes_.rbegin() + (nodes_.size() - root - 1);
         for(; iter != nodes_.rend(); ++iter) {
             (*iter)->backward();
+        }
+    }
+
+    void clear_grad() {
+        for(auto & node: nodes_) {
+            node->clear_grad();
         }
     }
 
@@ -93,13 +85,33 @@ public:
     T get_node_value(size_t idx) {
         return nodes_[idx]->value();
     }
+
+    // *********** Utility functions ***********
+    void clear() {
+        // resets the vector without modifying the capacity
+        nodes_.clear();
+        
+        // resets the arena allocator without releasing the used memory
+        arena_.free();
+    }
+
+    // TODO: return memory from both the arena and the vector
+    // void release() {
+    // }
+
+    void reserve(size_t n_nodes) {
+        nodes_.reserve(n_nodes);
+    }
+
+    size_t size() const {
+        return nodes_.size();
+    }
+
 private:
     NodeManager() = default;
 
-    // std::vector<std::unique_ptr<Node<T>>> nodes_;
-
-    ArenaAllocator<4096> arena_;
     // TODO: manage exceptions
+    ArenaAllocator<4096> arena_;
     std::vector<Node<T>*> nodes_;
 };
 

@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -g -I/usr/include/eigen3
-LDFLAGS = -lcgraph -lgvc
+# LDFLAGS = -lcgraph -lgvc
 
 TARGET = test
 SRCS = test.cpp
