@@ -15,7 +15,16 @@
 namespace autodiff {
 namespace reverse {
 
-void gradient(
+/**
+ * Computes the gradient of a function along with the value of that
+ * function at the given point.
+ * 
+ * @param f Function whose gradient is to be computed
+ * @param x The point where the function and the gradient must be evaluated
+ * @param f_x (OUT) The value of the function at the given point
+ * @param grad (OUT) The gradient of the function at the given point
+ */
+inline void gradient(
     std::function<Var<double>(Eigen::Vector<Var<double>, Eigen::Dynamic>)> f,
     Eigen::Vector<double, Eigen::Dynamic> const & x,
     double & f_x,
@@ -44,7 +53,16 @@ void gradient(
     NodeManager::instance().clear();
 }
 
-void jacobian(
+/**
+ * Computes the jacobian of a function along with the value of that
+ * function at the given point.
+ * 
+ * @param f Function whose jacobian is to be computed
+ * @param x The point where the function and the jacobian must be evaluated
+ * @param f_x (OUT) The value of the function at the given point
+ * @param jac (OUT) The jacobian of the function at the given point
+ */
+inline void jacobian(
     std::function<Eigen::Vector<Var<double>, Eigen::Dynamic>(Eigen::Vector<Var<double>, Eigen::Dynamic>)> f,
     Eigen::Vector<double, Eigen::Dynamic> const & x,
     Eigen::Vector<double, Eigen::Dynamic> & f_x,

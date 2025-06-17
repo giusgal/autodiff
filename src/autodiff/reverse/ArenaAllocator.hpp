@@ -10,13 +10,30 @@ namespace autodiff {
 namespace reverse {
 
 // Why not std::pmr::unsynchronized_pool_resource?
-//  1. Objects of different sizes are put in different pools (not contiguos)
+//  1. Objects of different sizes are put in different pools (not contiguous)
 //  2. It's not possible to reuse the same underlying memory multiple times
 //  3. Dispatching overhead to decide which pool to use
 // Why not std::pmr::monotonic_buffer_resource?
 //  1. It's not possible to reuse the same underlying memory multiple times
 // => We need a custom allocator
 
+/**
+ * @class ArenaAllocator
+ * @brief Memory pool that can increase in size and that allows to reuse
+ * the underlying memory multiple times
+ * @tparam BLOCK_SIZE The size of the blocks that are allocated
+ * 
+ * Block#0                 Block#1                    Block#N             
+ * +---+-+-----+------+    +----+-------+-----+       +------------------+
+ * |   |x|     |      |    |    |       |     |       |                  |
+ * |obj|x| obj | obj  |    |obj |  obj  |     |  ...  |                  |
+ * |   |x|     |      |    |    |       |     |       |                  |
+ * +---+-+-----+------+    +----+-------+-----+       +------------------+
+ *      ^                               ^             ^
+ *      |                               |             |                   
+ *      Unused space due to             data_         A block that is not currently                   
+ *      alignment                                     used that was previously allocated
+ */
 template <size_t BLOCK_SIZE = 4096>
 class ArenaAllocator {
     using Byte = std::byte;
@@ -39,6 +56,14 @@ public:
     }
 
     // alignment must be a power of 2 (if not then UB for std::align)
+    /**
+     * Returns a pointer to a region of memory where an object of
+     * size `size` and with alignment constraint `alignment`
+     * can be constructed
+     * 
+     * @param size The size of the object to be constructed
+     * @param alignment Alignment constraint of the object
+     */
     void * alloc(size_t size, size_t alignment) {
         if(size > BLOCK_SIZE) [[unlikely]] {
             throw std::bad_alloc();
@@ -99,6 +124,9 @@ public:
         return tmp;
     }
 
+    /**
+     * Resets the arena allocator without releasing the used memory
+     */
     void free() {
         data_ = blocks_start_[0];
         remaining_size_ = BLOCK_SIZE;

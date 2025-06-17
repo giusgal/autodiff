@@ -17,12 +17,17 @@ using NodePtr = Node<T> * const;
 // TODO: (maybe) forward() function for lazy evaluation
 /**
  * @class Node
- * @brief An abstract class which represents a generic node in the computational graph.
+ * @brief An abstract class which represents a generic node in the computational graph
  * @tparam T The type of the underlying variable
  */
 template <typename T>
 class Node {
 public:
+    /**
+     * Creates a new node from a given value
+     * 
+     * @param value The value of the node
+     */
     Node(T const & value): value_(value), grad_() {}
 
     virtual void backward() = 0;
@@ -34,6 +39,11 @@ public:
     T grad() const {
         return grad_;
     }
+
+    /**
+     * A function that simplifies the update of the derivative
+     * of the node during the backward pass
+     */
     void update_grad(T const & grad) {
         grad_ += grad;
     }

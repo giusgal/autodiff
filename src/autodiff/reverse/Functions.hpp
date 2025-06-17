@@ -6,7 +6,7 @@
 
 /**
  * The actual definition for all the functions that inherit from the
- * `Node` class goes here
+ *  `Node` class goes here.
  */
 
 namespace autodiff {

@@ -15,20 +15,39 @@ namespace reverse {
 template <typename T>
 class Var {
 public:
+    /**
+     * Creates a new var which doesn't track any node in the Tape
+     */
     Var() = default;
 
+    /**
+     * Creates a new Var which tracks a newly created Independent Node in
+     * the Tape
+     * 
+     * @param value The value of the variable
+     */
     Var(T const & value) {
         node_idx_ = new_node<T>(value);
     }
 
+    /**
+     * Computes the derivative of this variable wrt all the input variables
+     */
     void backward() {
         NodeManager<T>::instance().backward(node_idx_);
     }
 
+    /**
+     * Returns the derivative (wrt this variable) of the variable on which the
+     * `backward` method was invoked
+     */
     T grad() const {
         return NodeManager<T>::instance().get_node_grad(node_idx_);
     }
 
+    /**
+     * Returns the value of this variable
+     */
     T value() const {
         return NodeManager<T>::instance().get_node_value(node_idx_);
     }
@@ -172,13 +191,18 @@ public:
     }
 
 private:
+    /**
+     * Creates a new variable from a given index and returns it
+     */
     static Var<T> new_var_from_idx(size_t idx) {
         Var<T> tmp;
         tmp.node_idx_ = idx;
         return tmp;
     }
 
-    // The index of the node which is "tracked" by this variable
+    /**
+     * The index of the `Node` which is tracked by this variable
+     */
     size_t node_idx_;
 };
 

@@ -49,30 +49,60 @@ public:
     // The only thing that must be done is to use the appropriate
     //  method based on the general type of node (IndNode/UnaryNode/BinaryNode)
     
-    // Factory function for IndNode(s)
+    /**
+     * Factory function for IndNode(s)
+     * 
+     * @tparam U The type of the underlying variables
+     * @param value The value of the `Node`
+     */
     template <typename U>
     friend size_t new_node(U const & value);
 
-    // Factory function for UnaryNode(s)
+    /**
+     * Factory function for `UnaryNode`(s)
+     * 
+     * @tparam NodeType The type of the actual `UnaryNode` to create
+     * @tparam U The type of the underlying variables
+     * @param first The index of the first (and only) argument `Node` of the
+     * function the new `Node` represents
+     */
     template <template <typename> class NodeType, typename U>
     friend size_t new_node(size_t first);
 
-    // Factory function for BinaryNode(s)
+    /**
+     * Factory function for `BinaryNode`(s)
+     * 
+     * @tparam NodeType The type of the actual `BinaryNode` to create
+     * @tparam U The type of the underlying variables
+     * @param first The index of the first argument `Node` of the
+     * function the new `Node` represents
+     * @param second The index of the second argument `Node` of the
+     * function the new `Node` represents
+     */
     template <template <typename> class NodeType, typename U>
     friend size_t new_node(size_t first, size_t second);
 
     // *********** Derivatives computation/update/access ***********
+    /**
+     * Computes the derivative of the `Node` whose index is specified
+     * as an argument wrt all the input `Node`(s)
+     * 
+     * @param root The index of a `Node`
+     */
     void backward(size_t root) {
-        // set root node's gradient to default value
+        // Set root node's gradient to default value
         nodes_[root]->update_grad(T{1.0});
 
-        // nodes are already in topological order
+        // Nodes are already in topological order
         auto iter = nodes_.rbegin() + (nodes_.size() - root - 1);
         for(; iter != nodes_.rend(); ++iter) {
             (*iter)->backward();
         }
     }
 
+    /**
+     * Sets the `grad` field of each `Node` to 0
+     */
     void clear_grad() {
         for(auto & node: nodes_) {
             node->clear_grad();
@@ -87,6 +117,10 @@ public:
     }
 
     // *********** Utility functions ***********
+    /**
+     * Resets both the vector and the arena allocator without
+     * releasing the used memory
+     */
     void clear() {
         // resets the vector without modifying the capacity
         nodes_.clear();
@@ -99,10 +133,14 @@ public:
     // void release() {
     // }
 
+    // TODO: delete?
     void reserve(size_t n_nodes) {
         nodes_.reserve(n_nodes);
     }
 
+    /**
+     * Returns the number of nodes in the Tape
+     */
     size_t size() const {
         return nodes_.size();
     }
