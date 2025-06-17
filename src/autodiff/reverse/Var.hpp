@@ -33,10 +33,23 @@ public:
         return NodeManager<T>::instance().get_node_value(node_idx_);
     }
 
-    /******** OPERATORS *******/
+    /******** Math functions/operators ********/
+    Var<T> operator+() const {
+        return *this;
+    }
+
+    Var<T> operator-() const {
+        size_t idx = new_node<NegNode, T>(node_idx_);
+        return new_var_from_idx(idx);
+    }
+
     Var<T> operator+(Var<T> const & rhs) const {
         size_t idx = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
+    }
+
+    Var<T> operator+(T const & rhs) const {
+        return *this + Var<T>{rhs};
     }
 
     Var<T> operator-(Var<T> const & rhs) const {
@@ -44,16 +57,74 @@ public:
         return new_var_from_idx(idx);
     }
 
+    Var<T> operator-(T const & rhs) const {
+        return *this - Var<T>{rhs};
+    }
+
     Var<T> operator*(Var<T> const & rhs) const {
         size_t idx = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
     }
+
+    Var<T> operator*(T const & rhs) const {
+        return *this * Var<T>{rhs};
+    }
+
+    // TODO: implement div
+
+    template <typename U>
+    friend Var<U> abs(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> cos(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> sin(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> tan(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> log(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> relu(Var<U> const & arg);
+
+    template <typename U>
+    friend Var<U> tanh(Var<U> const & arg);
+
+    // TODO: implement pow
 
     template <typename U>
     friend Var<U> exp(Var<U> const & arg);
 
     template <typename U>
     friend Var<U> sqrt(Var<U> const & arg);
+
+    /******** Other Operators ********/
+    bool operator<(Var<T> const & rhs) const {
+        return (value() < rhs.value());
+    }
+
+    bool operator>(Var<T> const & rhs) const {
+        return (value() > rhs.value());
+    }
+
+    bool operator==(Var<T> const & rhs) const {
+        return (value() == rhs.value());
+    }
+
+    bool operator!=(Var<T> const & rhs) const {
+        return !(*this == rhs);
+    }
+
+    bool operator<=(Var<T> const & rhs) const {
+        return (*this < rhs) || (*this == rhs);
+    }
+
+    bool operator>=(Var<T> const & rhs) const {
+        return (*this > rhs) || (*this == rhs);
+    }
 
 private:
     static Var<T> new_var_from_idx(size_t idx) {
@@ -66,17 +137,74 @@ private:
     size_t node_idx_;
 };
 
-/******** OPERATORS *******/
-template <typename T>
-Var<T> exp(Var<T> const & arg) {
-    size_t idx = new_node<ExpNode, T>(arg.node_idx_);
-    return Var<T>::new_var_from_idx(idx);
+/******** Math functions/operators *******/
+template <typename U>
+Var<U> operator+(U const & lhs, Var<U> const & rhs) {
+    return Var<U>{lhs} + rhs;
 }
 
-template <typename T>
-Var<T> sqrt(Var<T> const & arg) {
-    size_t idx = new_node<SqrtNode, T>(arg.node_idx_);
-    return Var<T>::new_var_from_idx(idx);
+template <typename U>
+Var<U> operator-(U const & lhs, Var<U> const & rhs) {
+    return Var<U>{lhs} - rhs;
+}
+
+template <typename U>
+Var<U> operator*(U const & lhs, Var<U> const & rhs) {
+    return Var<U>{lhs} * rhs;
+}
+
+template <typename U>
+Var<U> abs(Var<U> const & arg) {
+    size_t idx = new_node<AbsNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> cos(Var<U> const & arg) {
+    size_t idx = new_node<CosNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> sin(Var<U> const & arg) {
+    size_t idx = new_node<SinNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> tan(Var<U> const & arg) {
+    size_t idx = new_node<TanNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> log(Var<U> const & arg) {
+    size_t idx = new_node<LogNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> relu(Var<U> const & arg) {
+    size_t idx = new_node<ReluNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> tanh(Var<U> const & arg) {
+    size_t idx = new_node<TanhNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> exp(Var<U> const & arg) {
+    size_t idx = new_node<ExpNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> sqrt(Var<U> const & arg) {
+    size_t idx = new_node<SqrtNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
 }
 
 }; // namespace reverse

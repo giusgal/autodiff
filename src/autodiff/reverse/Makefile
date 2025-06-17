@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -I/usr/include/eigen3
+CXXFLAGS = -g -I/usr/include/eigen3 -O3
 # LDFLAGS = -lcgraph -lgvc
 
 TARGET = test
