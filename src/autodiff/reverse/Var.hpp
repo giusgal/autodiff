@@ -38,11 +38,6 @@ public:
         return *this;
     }
 
-    Var<T> operator-() const {
-        size_t idx = new_node<NegNode, T>(node_idx_);
-        return new_var_from_idx(idx);
-    }
-
     Var<T> operator+(Var<T> const & rhs) const {
         size_t idx = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
@@ -50,6 +45,17 @@ public:
 
     Var<T> operator+(T const & rhs) const {
         return *this + Var<T>{rhs};
+    }
+
+    Var<T> & operator+=(Var<T> const & rhs) {
+        node_idx_ = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
+        return *this;
+    }
+
+
+    Var<T> operator-() const {
+        size_t idx = new_node<NegNode, T>(node_idx_);
+        return new_var_from_idx(idx);
     }
 
     Var<T> operator-(Var<T> const & rhs) const {
@@ -61,6 +67,12 @@ public:
         return *this - Var<T>{rhs};
     }
 
+    Var<T> & operator-=(Var<T> const & rhs) {
+        node_idx_ = new_node<SubNode, T>(node_idx_, rhs.node_idx_);
+        return *this;
+    }
+
+
     Var<T> operator*(Var<T> const & rhs) const {
         size_t idx = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
@@ -68,6 +80,11 @@ public:
 
     Var<T> operator*(T const & rhs) const {
         return *this * Var<T>{rhs};
+    }
+
+    Var<T> & operator*=(Var<T> const & rhs) {
+        node_idx_ = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
+        return *this;
     }
 
     // TODO: implement div
@@ -105,24 +122,42 @@ public:
     bool operator<(Var<T> const & rhs) const {
         return (value() < rhs.value());
     }
+    bool operator<(T const & rhs) const {
+        return (value() < rhs);
+    }
 
     bool operator>(Var<T> const & rhs) const {
         return (value() > rhs.value());
+    }
+    bool operator>(T const & rhs) const {
+        return (value() > rhs);
     }
 
     bool operator==(Var<T> const & rhs) const {
         return (value() == rhs.value());
     }
+    bool operator==(T const & rhs) const {
+        return (value() == rhs);
+    }
 
     bool operator!=(Var<T> const & rhs) const {
+        return !(*this == rhs);
+    }
+    bool operator!=(T const & rhs) const {
         return !(*this == rhs);
     }
 
     bool operator<=(Var<T> const & rhs) const {
         return (*this < rhs) || (*this == rhs);
     }
+    bool operator<=(T const & rhs) const {
+        return (*this < rhs) || (*this == rhs);
+    }
 
     bool operator>=(Var<T> const & rhs) const {
+        return (*this > rhs) || (*this == rhs);
+    }
+    bool operator>=(T const & rhs) const {
         return (*this > rhs) || (*this == rhs);
     }
 
