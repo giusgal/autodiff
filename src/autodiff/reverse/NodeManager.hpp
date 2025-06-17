@@ -61,7 +61,7 @@ public:
     template <template <typename> class NodeType, typename U>
     friend size_t new_node(size_t first, size_t second);
 
-    // *********** Derivatives calculation/update/access ***********
+    // *********** Derivatives computation/update/access ***********
     void backward(size_t root) {
         // set root node's gradient to default value
         nodes_[root]->update_grad(T{1.0});

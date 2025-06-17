@@ -49,6 +49,40 @@ public:
     }
 };
 
+template <typename T>
+class DivNode : public BinaryNode<T> {
+public:
+    DivNode(NodePtr<T> first, NodePtr<T> second):
+     BinaryNode<T>(first->value()/second->value(), first, second) {}
+
+    void backward() override {
+        auto den = this->second_->value();
+        this->first_->update_grad(this->grad_ * (1.0/den));
+        den *= den;
+        this->second_->update_grad(this->grad_ * (-this->first_->value()/den));
+    }
+};
+
+template <typename T>
+class PowNode : public BinaryNode<T> {
+public:
+    PowNode(NodePtr<T> first, NodePtr<T> second):
+     BinaryNode<T>(std::pow(first->value(),second->value()), first, second) {}
+
+    void backward() override {
+        auto val1 = this->first_->value();
+        auto val2 = this->second_->value();
+        this->first_->update_grad(
+            this->grad_ *
+            val2*std::pow(val1, val2-1)
+        );
+        this->second_->update_grad(
+            this->grad_ *
+            this->value()*std::log(val1)
+        );
+    }
+};
+
 /******* Unary Operators *******/
 template <typename T>
 class NegNode : public UnaryNode<T> {

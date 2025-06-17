@@ -37,16 +37,13 @@ public:
     Var<T> operator+() const {
         return *this;
     }
-
     Var<T> operator+(Var<T> const & rhs) const {
         size_t idx = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
     }
-
     Var<T> operator+(T const & rhs) const {
         return *this + Var<T>{rhs};
     }
-
     Var<T> & operator+=(Var<T> const & rhs) {
         node_idx_ = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
         return *this;
@@ -57,16 +54,13 @@ public:
         size_t idx = new_node<NegNode, T>(node_idx_);
         return new_var_from_idx(idx);
     }
-
     Var<T> operator-(Var<T> const & rhs) const {
         size_t idx = new_node<SubNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
     }
-
     Var<T> operator-(T const & rhs) const {
         return *this - Var<T>{rhs};
     }
-
     Var<T> & operator-=(Var<T> const & rhs) {
         node_idx_ = new_node<SubNode, T>(node_idx_, rhs.node_idx_);
         return *this;
@@ -77,17 +71,26 @@ public:
         size_t idx = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
         return new_var_from_idx(idx);
     }
-
     Var<T> operator*(T const & rhs) const {
         return *this * Var<T>{rhs};
     }
-
     Var<T> & operator*=(Var<T> const & rhs) {
         node_idx_ = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
         return *this;
     }
 
-    // TODO: implement div
+
+    Var<T> operator/(Var<T> const & rhs) const {
+        size_t idx = new_node<DivNode, T>(node_idx_, rhs.node_idx_);
+        return new_var_from_idx(idx);
+    }
+    Var<T> operator/(T const & rhs) const {
+        return *this / Var<T>{rhs};
+    }
+    Var<T> & operator/=(Var<T> const & rhs) {
+        node_idx_ = new_node<DivNode, T>(node_idx_, rhs.node_idx_);
+        return *this;
+    }
 
     template <typename U>
     friend Var<U> abs(Var<U> const & arg);
@@ -110,7 +113,14 @@ public:
     template <typename U>
     friend Var<U> tanh(Var<U> const & arg);
 
-    // TODO: implement pow
+    template <typename U>
+    friend Var<U> pow(Var<U> const & base, Var<U> const & exp);
+
+    template <typename U>
+    friend Var<U> pow(Var<U> const & base, U const & exp);
+
+    template <typename U>
+    friend Var<U> pow(U const & base, Var<U> const & exp);
 
     template <typename U>
     friend Var<U> exp(Var<U> const & arg);
@@ -189,6 +199,11 @@ Var<U> operator*(U const & lhs, Var<U> const & rhs) {
 }
 
 template <typename U>
+Var<U> operator/(U const & lhs, Var<U> const & rhs) {
+    return Var<U>{lhs} / rhs;
+}
+
+template <typename U>
 Var<U> abs(Var<U> const & arg) {
     size_t idx = new_node<AbsNode, U>(arg.node_idx_);
     return Var<U>::new_var_from_idx(idx);
@@ -227,6 +242,26 @@ Var<U> relu(Var<U> const & arg) {
 template <typename U>
 Var<U> tanh(Var<U> const & arg) {
     size_t idx = new_node<TanhNode, U>(arg.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> pow(Var<U> const & base, Var<U> const & exp) {
+    size_t idx = new_node<PowNode, U>(base.node_idx_, exp.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> pow(Var<U> const & base, U const & exp) {
+    Var<U> tmp = Var<U>{exp};
+    size_t idx = new_node<PowNode, U>(base.node_idx_, tmp.node_idx_);
+    return Var<U>::new_var_from_idx(idx);
+}
+
+template <typename U>
+Var<U> pow(U const & base, Var<U> const & exp) {
+    Var<U> tmp = Var<U>{base};
+    size_t idx = new_node<PowNode, U>(tmp.node_idx_, exp.node_idx_);
     return Var<U>::new_var_from_idx(idx);
 }
 
