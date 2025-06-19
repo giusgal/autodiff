@@ -1,5 +1,4 @@
 *.o
-test
 *.png
 *.jpg
 *.bkp
@@ -9,3 +8,5 @@ test
 .clangd
 .idea/
 .DS_Store
+*.csv
+build/

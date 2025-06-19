@@ -1,5 +1,5 @@
-#ifndef __AUTODIFF__H__
-#define __AUTODIFF__H__
+#ifndef __DUALVAR__HPP__
+#define __DUALVAR__HPP__
 
 #include <array>
 #include <iostream>
@@ -128,7 +128,14 @@ public:
     friend DualVar<U> pow(DualVar<U> const & base, U const & exp);
 
     template <typename U>
+    friend DualVar<U> sqrt(DualVar<U> const & arg);
+
+    template <typename U>
     friend DualVar<U> relu(DualVar<U> const & arg);
+
+    template <typename U>
+    friend DualVar<U> tanh(DualVar<U> const & arg);
+
 
     bool operator==(DualVar<T> const & rhs) {
         return (real_ == rhs.real_) && (inf_ == rhs.inf_);
@@ -254,12 +261,29 @@ DualVar<T> pow(DualVar<T> const & base, T const & exp) {
 }
 
 template <typename T>
+DualVar<T> sqrt(DualVar<T> const & arg) {
+    return DualVar<T>(
+        std::sqrt(arg.real_),
+        (1.0/(2.0*std::sqrt(arg.real_)))*arg.inf_
+    );
+}
+
+template <typename T>
 DualVar<T> relu(DualVar<T> const & arg) {
     if (arg.real_ > 0){
-        return DualVar<T>(arg.real_, 1);
+        return DualVar<T>(arg.real_, arg.inf_);
     } else {
         return DualVar<T>(0, 0);
     }
+}
+
+    template <typename T>
+    DualVar<T> tanh(DualVar<T> const & arg)
+{
+    T val = std::tanh(arg.getReal());
+    T deriv = 1.0 - val * val;
+    return DualVar<T>(val, deriv * arg.inf_);
+
 }
 
 DualVar<double> derivative(std::function<DualVar<double>(DualVar<double>)>f, double x0){
@@ -293,4 +317,4 @@ std::vector<double> gradient(std::function<DualVar<double>(std::vector<DualVar<d
 }; // namespace forward
 }; // namespace autodiff
 
-#endif // __AUTODIFF__H__
+#endif // __DUALVAR__HPP__

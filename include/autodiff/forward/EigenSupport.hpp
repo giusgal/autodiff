@@ -1,6 +1,6 @@
 #ifndef EIGENSUPPORT_HPP_
 #define EIGENSUPPORT_HPP_
-#include "autodiff.hpp"
+#include "DualVar.hpp"
 #include <Eigen/Core>
 
 namespace Eigen {
@@ -15,7 +15,7 @@ struct NumTraits<dv>
     then Real is just a typedef to T. If T is std::complex<U> 
     then Real is a typedef to U
   */
-  typedef double Real;
+  typedef dv Real;
   /*
     NonInteger gives the type that should be used for operations 
     producing non-integral values, such as quotients, square roots, etc. 

@@ -1,8 +1,8 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "../../autodiff/forward/autodiff.hpp"
+#include "../../autodiff/forward/DualVar.hpp"
 #include "../../autodiff/forward/EigenSupport.hpp"
-#include "NewtonTraits.hpp"
+#include "../../src/examples/newton/NewtonTraits.hpp"
 #include "Jacobian.hpp"
 
 namespace newton
