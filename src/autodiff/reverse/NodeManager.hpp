@@ -153,6 +153,10 @@ private:
     std::vector<Node<T>*> nodes_;
 };
 
+// [1] No need for std::launder because we are using
+//      the return value of placement new.
+//      source: https://youtu.be/5HXCbLilIzs?t=150
+
 template <typename U>
 size_t new_node(U const & value) {
     NodeManager<U> & manager = NodeManager<U>::instance();
@@ -160,9 +164,9 @@ size_t new_node(U const & value) {
     void * ptr =
         manager.arena_.alloc(sizeof(IndNode<U>), alignof(IndNode<U>));
 
+    // see [1]
     IndNode<U> * node_ptr = new (ptr) IndNode<U>{value};
 
-    // TODO: Maybe std::launder?
     manager.nodes_.emplace_back(node_ptr);
 
     return manager.nodes_.size()-1;
@@ -175,6 +179,7 @@ size_t new_node(size_t first) {
     void * ptr =
         manager.arena_.alloc(sizeof(NodeType<U>), alignof(NodeType<U>));
 
+    // see [1]
     NodeType<U> * node_ptr = new (ptr) NodeType<U>{
         manager.nodes_[first]
     };
@@ -191,6 +196,7 @@ size_t new_node(size_t first, size_t second) {
     void * ptr =
         manager.arena_.alloc(sizeof(NodeType<U>), alignof(NodeType<U>));
 
+    // see [1]
     NodeType<U> * node_ptr = new (ptr) NodeType<U>{
         manager.nodes_[first],
         manager.nodes_[second]
