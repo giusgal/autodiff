@@ -2,6 +2,7 @@
 #define __ARENAALLOCATOR_HPP__
 
 #include <cstddef>
+#include <cstring>
 #include <memory>
 #include <new>
 #include <vector>
@@ -19,43 +20,40 @@ namespace reverse {
 
 /**
  * @class ArenaAllocator
- * @brief Memory pool that can increase in size and that allows to reuse
+ * @brief Memory pool that can dynamically increase in size and that allows to reuse
  * the underlying memory multiple times
  * @tparam BLOCK_SIZE The size of the blocks that are allocated
  * 
- * Block#0                 Block#1                    Block#N             
- * +---+-+-----+------+    +----+-------+-----+       +------------------+
- * |   |x|     |      |    |    |       |     |       |                  |
- * |obj|x| obj | obj  |    |obj |  obj  |     |  ...  |                  |
- * |   |x|     |      |    |    |       |     |       |                  |
- * +---+-+-----+------+    +----+-------+-----+       +------------------+
- *      ^                               ^             ^
- *      |                               |             |                   
- *      Unused space due to             data_         A block that is not currently                   
- *      alignment                                     used that was previously allocated
+ * EXAMPLE:
+ *     Block#0                 Block#1                    Block#N             
+ *     +---+-+-----+------+    +----+-------+-----+       +------------------+
+ *     |   |x|     |      |    |    |       |     |       |                  |
+ *     |obj|x| obj | obj  |    |obj |  obj  |     |  ...  |                  |
+ *     |   |x|     |      |    |    |       |     |       |                  |
+ *     +---+-+-----+------+    +----+-------+-----+       +------------------+
+ *          ^                               ^             ^
+ *          |                               |             |                   
+ *          Unused space due to             data_         A block that is not currently
+ *          alignment                                     used that was previously allocated
  */
 template <size_t BLOCK_SIZE = 4096>
 class ArenaAllocator {
     using Byte = std::byte;
 public:
+    // No copy or move allowed
+    ArenaAllocator(ArenaAllocator const &) = delete;
+    ArenaAllocator& operator=(ArenaAllocator const &) = delete;
+    ArenaAllocator(ArenaAllocator &&) = delete;
+    ArenaAllocator& operator=(ArenaAllocator &&) = delete;
+
     ArenaAllocator():
         remaining_size_{BLOCK_SIZE},
         current_block_{0}
     {
-        // TODO: exceptions
-        data_ = new Byte[BLOCK_SIZE];
-        blocks_start_.push_back(data_);
+        blocks_start_.emplace_back(new Byte[BLOCK_SIZE]);
+        data_ = blocks_start_.back().get();
     }
 
-    ~ArenaAllocator() {
-        // TODO: check this
-        for(void * block_start: blocks_start_) {
-            delete[] static_cast<Byte*>(block_start);
-        }
-        data_ = nullptr;
-    }
-
-    // alignment must be a power of 2 (if not then UB for std::align)
     /**
      * Returns a pointer to a region of memory where an object of
      * size `size` and with alignment constraint `alignment`
@@ -63,8 +61,15 @@ public:
      * 
      * @param size The size of the object to be constructed
      * @param alignment Alignment constraint of the object
+     * 
+     * alignment must be a power of 2 (if not then UB for std::align)
      */
-    void * alloc(size_t size, size_t alignment) {
+    void * alloc(size_t const size, size_t const alignment) {
+        bool is_power_of_2 = alignment > 0 && !(alignment & (alignment-1));
+        if(!is_power_of_2) {
+            throw std::invalid_argument("alignment must be a power of 2");
+        }
+
         if(size > BLOCK_SIZE) [[unlikely]] {
             throw std::bad_alloc();
         }
@@ -84,13 +89,13 @@ public:
 
             if(current_block_ + 1 < blocks_start_.size()) {
                 // reuse next block
-                data_ = blocks_start_[current_block_+1];
+                data_ = blocks_start_[current_block_+1].get();
 
             } else {
                 // allocate new block
                 // TODO: exceptions
-                data_ = new Byte[BLOCK_SIZE];
-                blocks_start_.push_back(data_);
+                blocks_start_.emplace_back(new Byte[BLOCK_SIZE]);
+                data_ = blocks_start_.back().get();
 
             }
 
@@ -118,17 +123,24 @@ public:
         // Move the "data_" pointer forward for the next allocation and
         //  shrink the "remaining_size_"
         void * tmp = data_;
-        data_ = static_cast<Byte*>(data_) + size;
+        data_ = reinterpret_cast<Byte*>(data_) + size;
         remaining_size_ -= size;
         
         return tmp;
     }
 
     /**
+     * This functions deos nothing because this ArenaAllocator
+     *  deallocates (i.e. returns the used memory to malloc/OS)
+     *  only when it is destroyed
+     */
+    // void dealloc() {}
+
+    /**
      * Resets the arena allocator without releasing the used memory
      */
-    void free() {
-        data_ = blocks_start_[0];
+    void clear() {
+        data_ = blocks_start_[0].get();
         remaining_size_ = BLOCK_SIZE;
         current_block_ = 0;
     }
@@ -151,7 +163,7 @@ public:
 private:
     void * data_;
     size_t remaining_size_;
-    std::vector<void*> blocks_start_;
+    std::vector<std::unique_ptr<Byte[]>> blocks_start_;
     size_t current_block_;
 };
 

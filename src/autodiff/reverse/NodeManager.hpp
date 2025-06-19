@@ -126,7 +126,7 @@ public:
         nodes_.clear();
         
         // resets the arena allocator without releasing the used memory
-        arena_.free();
+        arena_.clear();
     }
 
     // TODO: return memory from both the arena and the vector
