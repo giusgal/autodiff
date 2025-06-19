@@ -43,6 +43,8 @@ public:
     // No copy or move allowed
     ArenaAllocator(ArenaAllocator const &) = delete;
     ArenaAllocator& operator=(ArenaAllocator const &) = delete;
+    // TODO: it should be movable by default so if you need it change the
+    //  2 lines below from "delete" to "default"
     ArenaAllocator(ArenaAllocator &&) = delete;
     ArenaAllocator& operator=(ArenaAllocator &&) = delete;
 
