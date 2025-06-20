@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31) # Minimum required CMake version
+cmake_minimum_required(VERSION 3.28) # Minimum required CMake version
 
 project(autodiff_project)
 
@@ -6,13 +6,15 @@ project(autodiff_project)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set for OpenMp
+# OpenMp dependency
 find_package(OpenMP REQUIRED)
+# Eigen dependency
+find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
 # Define include directories for the entire project
 include_directories(
         ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src # Add src as an include just in case, though headers should be in include
+        # ${CMAKE_SOURCE_DIR}/src # Add src as an include just in case, though headers should be in include
 )
 
 # --- Build the core autodiff library ---
@@ -77,7 +79,7 @@ add_executable(NeuralHiddenSizeComparison src/examples/models/NeuralHiddenSizeCo
 target_link_libraries(NeuralHiddenSizeComparison PRIVATE ml_components autodiff) # Link to components and core autodiff
 
 add_executable(newton_test src/examples/newton/test.cpp)
-target_link_libraries(newton_test PRIVATE ml_components autodiff) # Link to components and core autodiff
+target_link_libraries(newton_test PRIVATE ml_components autodiff Eigen3::Eigen) # Link to components and core autodif
 
 # --- Add test executables ---
 # The test/model files seem to be separate test entry points.
@@ -108,8 +110,8 @@ else()
 endif()
 
 # If src/autodiff/reverse/test.cpp is a separate test executable:
-# add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
-# target_link_libraries(autodiff_reverse_test PRIVATE autodiff)
+add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
+target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

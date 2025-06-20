@@ -10,7 +10,7 @@ using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
 using Vec = Eigen::Vector<double, Eigen::Dynamic>;
 using Mat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-constexpr size_t N = 100;
+constexpr size_t N = 10000;
 
 // std::array<double, 3>
 // finite_diff(
@@ -59,33 +59,33 @@ VecVar f_NM(VecVar x) {
 }
 
 int main() {
-    {
-        Vec x = Vec::Ones(N);
-        Vec f_x;
-        Mat jac;
-    
-        auto t1 = std::chrono::high_resolution_clock::now();
-        jacobian(f_NM, x, f_x, jac);
-        auto t2 = std::chrono::high_resolution_clock::now();
-        std::cout << "test function took "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
-              << " milliseconds\n";
-        // std::cout << jac << std::endl;
-    }
-
     // {
     //     Vec x = Vec::Ones(N);
-    //     double f_x;
-    //     Vec grad;
-
+    //     Vec f_x;
+    //     Mat jac;
+    
     //     auto t1 = std::chrono::high_resolution_clock::now();
-    //     gradient(f_N1, x, f_x, grad);
+    //     jacobian(f_NM, x, f_x, jac);
     //     auto t2 = std::chrono::high_resolution_clock::now();
     //     std::cout << "test function took "
     //           << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
     //           << " milliseconds\n";
     //     // std::cout << jac << std::endl;
     // }
+
+    {
+        Vec x = Vec::Ones(N);
+        double f_x;
+        Vec grad;
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        gradient(f_N1, x, f_x, grad);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "test function took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              << " milliseconds\n";
+        // std::cout << jac << std::endl;
+    }
 
     // {
     //     // Not recommended usage
