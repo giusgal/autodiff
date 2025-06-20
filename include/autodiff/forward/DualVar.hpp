@@ -10,7 +10,7 @@
 #include <numeric>
 #include <functional>
 #include <stdexcept>
-#include "CudaSupport.hpp"
+
 namespace autodiff {
 namespace forward {
 
@@ -22,10 +22,10 @@ public:
     // copy constructor
     DualVar(const DualVar<T> &dv) = default;
 
-    CUDA_HOST_DEVICE DualVar(T const & real):
+    DualVar(T const & real):
         real_{real} {}
 
-    CUDA_HOST_DEVICE DualVar(T const & real, T const & inf):
+    DualVar(T const & real, T const & inf):
         real_{real}, inf_{inf} {}
 
     ~DualVar() = default;
@@ -35,16 +35,15 @@ public:
             std::to_string(inf_) + ")";
     }
 
-    CUDA_HOST_DEVICE T getReal() const { return real_; }
-    CUDA_HOST_DEVICE T getInf() const { return inf_; }
+    T getReal() const { return real_; }
+    T getInf() const { return inf_; }
 
-    CUDA_HOST_DEVICE void setInf(T inf) { inf_ = inf; }
+    void setInf(T inf) { inf_ = inf; }
 
 
     /***************************************************************/
     /* NEGATE */
     /***************************************************************/
-    CUDA_HOST_DEVICE \
     DualVar<T> operator-() const {
         return DualVar<T>(-real_, -inf_);
     }
@@ -52,12 +51,10 @@ public:
     /***************************************************************/
     /* SUM */
     /***************************************************************/
-    CUDA_HOST_DEVICE \
     DualVar<T> operator+(DualVar<T> const & rhs) const {
         return DualVar<T>(real_ + rhs.real_, rhs.inf_ + inf_);
     }
 
-    CUDA_HOST_DEVICE \
     DualVar<T> operator+(T const & rhs) const {
         return DualVar<T>(real_ + rhs, inf_);
     }
@@ -65,12 +62,10 @@ public:
     /***************************************************************/
     /* SUB */
     /***************************************************************/
-    CUDA_HOST_DEVICE \
     DualVar<T> operator-(DualVar<T> const & rhs) const {
         return DualVar<T>(real_ - rhs.real_, inf_ - rhs.inf_);
     }
 
-    CUDA_HOST_DEVICE \
     DualVar<T> operator-(T const & rhs) const {
         return DualVar<T>(real_ - rhs, inf_);
     }
@@ -78,13 +73,11 @@ public:
     /***************************************************************/
     /* MUL */
     /***************************************************************/
-    CUDA_HOST_DEVICE \
     DualVar<T> operator*(DualVar<T> const & rhs) const {
         return DualVar<T>(real_ * rhs.real_,
                 real_ * rhs.inf_ + inf_ * rhs.real_);
     }
 
-    CUDA_HOST_DEVICE \
     DualVar<T> operator*(T const & rhs) const {
         return DualVar<T>(real_ * rhs, rhs * inf_);
     }
@@ -92,60 +85,58 @@ public:
     /***************************************************************/
     /* DIV */
     /***************************************************************/
-    CUDA_HOST_DEVICE \
     DualVar<T> operator/(DualVar<T> const & rhs) const {
     return DualVar<T>(real_ / rhs.real_,
         (inf_ * rhs.real_ + real_ * rhs.inf_) / (rhs.real_ * rhs.real_));
     }
 
-    CUDA_HOST_DEVICE \
     DualVar<T> operator/(T const & rhs) const {
         return DualVar<T>(real_ / rhs, inf_ * rhs / (rhs * rhs));
     }
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> operator/(U const & lhs, DualVar<U> const & rhs);
 
     /***************************************************************/
     /* MISC                                                        */
     /***************************************************************/
-    template <typename U>\
+    template <typename U>
     friend DualVar<U> abs(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> cos(DualVar<U> const & arg);
     
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> sin(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> tan(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> log(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> exp(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> pow(DualVar<U> const & base, DualVar<U> const & exp);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> pow(U const & base, DualVar<U> const & exp);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> pow(DualVar<U> const & base, U const & exp);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> sqrt(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> relu(DualVar<U> const & arg);
 
-    template <typename U> CUDA_HOST_DEVICE \
+    template <typename U>
     friend DualVar<U> tanh(DualVar<U> const & arg);
 
-    CUDA_HOST_DEVICE \
+
     bool operator==(DualVar<T> const & rhs) {
         return (real_ == rhs.real_) && (inf_ == rhs.inf_);
     }
@@ -169,7 +160,7 @@ std::ostream& operator<<(std::ostream& os, const DualVar<T>& dv) {
 /***************************************************************/
 /* SUM */
 /***************************************************************/
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs) {
     return rhs+lhs;
 }
@@ -178,7 +169,7 @@ DualVar<T> operator+(T const & lhs, DualVar<T> const & rhs) {
 /***************************************************************/
 /* SUB */
 /***************************************************************/
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs) {
     return -(rhs-lhs);
 }
@@ -186,7 +177,7 @@ DualVar<T> operator-(T const & lhs, DualVar<T> const & rhs) {
 /***************************************************************/
 /* MUL */
 /***************************************************************/
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs) {
     return rhs*lhs;
 }
@@ -194,7 +185,7 @@ DualVar<T> operator*(T const & lhs, DualVar<T> const & rhs) {
 /***************************************************************/
 /* DIV */
 /***************************************************************/
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs) {
     return DualVar<T> (lhs / rhs.real_, lhs * rhs.inf_ / (rhs.real_ * rhs.real_));
 }
@@ -202,43 +193,43 @@ DualVar<T> operator/(T const & lhs, DualVar<T> const & rhs) {
 /***************************************************************/
 /* MISC                                                        */
 /***************************************************************/
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> abs(DualVar<T> const & arg) {
     int sign_real = (arg.real_ >= 0) ? 1 : -1;
     return DualVar<T> (std::abs(arg.real_), arg.inf_ * sign_real);
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> cos(DualVar<T> const & arg) {
     return DualVar<T> (std::cos(arg.real_)
             - arg.inf_ * std::sin(arg.real_));
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> sin(DualVar<T> const & arg) {
     return DualVar<T> (std::sin(arg.real_),
             arg.inf_ * std::cos(arg.real_));
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> tan(DualVar<T> const & arg) {
     return DualVar<T> (std::tan(arg.real_), 
         arg.inf_ / (std::cos(arg.real_) * std::cos(arg.real_)));
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> log(DualVar<T> const & arg) {
     return DualVar<T>(std::log(arg.real_), arg.inf_ / arg.real_);
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> exp(DualVar<T> const & arg) {
     return DualVar<T>(std::exp(arg.real_), arg.inf_*std::exp(arg.real_));
 }
 
 /* When raising a dual number to the power of another dual number, you get
    (a+b𝜀)^(c+d𝜀) = a^c + a^(c-1)*(a*d*ln(a) + c*b)𝜀                         */
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp) {
     return DualVar<T>(
         std::pow(
@@ -253,7 +244,7 @@ DualVar<T> pow(DualVar<T> const & base, DualVar<T> const & exp) {
     );
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> pow(T const & base, DualVar<T> const & exp) {
     return DualVar<T>(
         std::pow(base, exp.real_),
@@ -261,7 +252,7 @@ DualVar<T> pow(T const & base, DualVar<T> const & exp) {
     );
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> pow(DualVar<T> const & base, T const & exp) {
     return DualVar<T>(
         std::pow(base.real_, exp), 
@@ -269,7 +260,7 @@ DualVar<T> pow(DualVar<T> const & base, T const & exp) {
     );
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> sqrt(DualVar<T> const & arg) {
     return DualVar<T>(
         std::sqrt(arg.real_),
@@ -277,7 +268,7 @@ DualVar<T> sqrt(DualVar<T> const & arg) {
     );
 }
 
-template <typename T> CUDA_HOST_DEVICE \
+template <typename T>
 DualVar<T> relu(DualVar<T> const & arg) {
     if (arg.real_ > 0){
         return DualVar<T>(arg.real_, arg.inf_);
@@ -286,11 +277,40 @@ DualVar<T> relu(DualVar<T> const & arg) {
     }
 }
 
-template <typename T> CUDA_HOST_DEVICE \
-DualVar<T> tanh(DualVar<T> const & arg) {
+    template <typename T>
+    DualVar<T> tanh(DualVar<T> const & arg)
+{
     T val = std::tanh(arg.getReal());
     T deriv = 1.0 - val * val;
     return DualVar<T>(val, deriv * arg.inf_);
+
+}
+
+DualVar<double> derivative(std::function<DualVar<double>(DualVar<double>)>f, double x0){
+    DualVar<double> res = f(DualVar<double>(x0, 1.0));
+    return res;
+}
+
+std::vector<double> gradient(std::function<DualVar<double>(std::vector<DualVar<double>>)>f, 
+    std::vector<double> x) {
+
+        std::vector<DualVar<double>> xd;
+        std::vector<double> res;
+        
+        xd.reserve(size(x));
+        res.reserve(size(x));
+
+        for(int i = 0; i < size(x); i++){
+            xd.push_back(DualVar<double>(x[i], 0.0));
+        }
+
+        for(int i = 0; i < size(x); i++){
+            xd[i].setInf(1.0);
+            res.push_back(f(xd).getInf());
+            xd[i].setInf(0.0);
+        }
+        
+        return res;
 }
 
     

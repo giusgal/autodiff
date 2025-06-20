@@ -1,6 +1,9 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "../../../include/autodiff/forward/Jacobian.hpp"
+#include "../../autodiff/forward/DualVar.hpp"
+#include "../../autodiff/forward/EigenSupport.hpp"
+#include "../../src/examples/newton/NewtonTraits.hpp"
+#include "Jacobian.hpp"
 
 namespace newton
 {
@@ -9,11 +12,10 @@ struct NewtonOpts {
   double tol;
   int dim_in;
   int dim_out;
-  int parallel;
 };
 
 template <typename T>
-class Newton : public autodiff::forward::JacobianTraits<T>
+class Newton : public NewtonTraits<T>
 {
   using NLSType = typename Newton::NLSType;
   using RealVec = typename Newton::RealVec;
@@ -25,7 +27,7 @@ public:
     const NLSType &fn, NewtonOpts opts
   ):
     _nls{fn}, _opts{opts}, 
-    _J{autodiff::forward::ForwardJac<T>(opts.dim_in, opts.dim_out, std::forward<const NLSType &>(fn))} {};
+    _J{ForwardJac<double>(opts.dim_in, opts.dim_out, std::forward<const NLSType &>(fn))} {};
 
   
   RealVec solve(const RealVec &x0) {
@@ -34,7 +36,7 @@ public:
 
     int iter = 0;
     for(; iter < _opts.maxit; iter++) {
-      x1 = _J.solve(x, resid, _opts.parallel);
+      x1 = _J.solve(x, resid);
 
       x = x - x1;
 
@@ -60,7 +62,7 @@ public:
 
 private:
 
-  autodiff::forward::ForwardJac<T> _J;
+  ForwardJac<T> _J;
   // non linear system
   NLSType _nls;
   NewtonOpts _opts;

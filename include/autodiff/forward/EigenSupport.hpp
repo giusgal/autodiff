@@ -2,10 +2,10 @@
 #define EIGENSUPPORT_HPP_
 #include "DualVar.hpp"
 #include <Eigen/Core>
-using dv = autodiff::forward::DualVar<double>;
-
 
 namespace Eigen {
+using dv = autodiff::forward::DualVar<double>;
+
 template<>
 struct NumTraits<dv>
   : NumTraits<double>
@@ -45,4 +45,4 @@ const dv& real(const dv &x) { return x; }
 dv abs2(const dv &x) { return x*x; }
 
 }
-#endif // EIGENSUPPORT_HPP_
+#endif
