@@ -5,8 +5,8 @@
 
 #include <NeuralModel.h>
 #include <Adam.h>         // Corrected include for Adam.h
-#include <optimizer/SGD.h>          // Corrected include for SGD.h
-#include <models/IModel.h>          // Corrected include for IModel.h
+#include <SGD.h>          // Corrected include for SGD.h
+#include <IModel.h>          // Corrected include for IModel.h
 
 #define TARGET_FUNCTION(x) (5.0 *(x) - 1.0) // Example: y = 3x^2 + 2x - 5
 #define TARGET_FUNCTION1(x) (3.0 * (x) * (x) + 2.0 * (x) - 5.0) // Example: y = 3x^2 + 2x - 5

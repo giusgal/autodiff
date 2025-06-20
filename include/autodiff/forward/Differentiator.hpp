@@ -6,36 +6,33 @@
 #include <functional>
 #include <Eigen/Dense>
 
-#include "../../../include/autodiff/forward/DualVar.hpp"
+#include "DualVar.hpp"
 
 
 namespace autodiff {
 namespace forward {
 
-template <typename T>
-using dv = DualVar<T>;
-template <typename T>
-using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
-template <typename T>
-using RealVec = Eigen::Matrix<T, Eigen::Dynamic, 1>;
+using dv = DualVar<double>;
+using dvec = std::vector<dv>;;
+using RealVec = std::vector<double>;
 
 template <typename T>
-DualVar<T> derivative(std::function<dv<T>(dv<T>)>f, double x0){
+DualVar<T> derivative(std::function<dv(dv)>f, double x0){
     DualVar<T> res = f(DualVar<T>(x0, 1.0));
     return res;
 }
 
-template <typename T>
-std::vector<T> gradient(std::function<dv<T>(dvec<T>)>f, std::vector<T> x) {
+
+std::vector<double> gradient(std::function<dv(dvec)>f, std::vector<double> x) {
 
     dvec xd;
-    std::vector<T> res;
+    std::vector<double> res;
 
     xd.reserve(size(x));
     res.reserve(size(x));
 
     for(int i = 0; i < size(x); i++){
-        xd.push_back(DualVar<T>(x[i], 0.0));
+        xd.push_back(DualVar(x[i], 0.0));
     }
 
     for(int i = 0; i < size(x); i++){

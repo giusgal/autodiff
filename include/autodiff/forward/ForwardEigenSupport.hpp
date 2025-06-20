@@ -3,9 +3,19 @@
 #include "DualVar.hpp"
 #include <Eigen/Core>
 
-namespace Eigen {
+
 using dv = autodiff::forward::DualVar<double>;
 
+/**
+ * This file specializes the NumTraits struct template for the
+ * DualVar<T> type to let Eigen access information
+ * on this type
+ *
+ * Taken from:
+ * "https://eigen.tuxfamily.org/dox/TopicCustomizing_CustomScalar.html"
+ */
+
+namespace Eigen {
 template<>
 struct NumTraits<dv>
   : NumTraits<double>
@@ -45,4 +55,4 @@ const dv& real(const dv &x) { return x; }
 dv abs2(const dv &x) { return x*x; }
 
 }
-#endif
+#endif // EIGENSUPPORT_HPP_

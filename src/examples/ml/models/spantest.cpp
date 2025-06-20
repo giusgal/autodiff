@@ -7,12 +7,12 @@
 #include <algorithm> // Include for std::shuffle
 
 // Include headers for your models and optimizers
-#include <models/NeuralModel.h>
-#include <models/NeuralModelOptimized.h> // Include the header for your optimized model
-#include <models/NeuralModelOpenmp.h>   // Include the header for your OpenMP model
-#include <optimizer/Adam.h>
-#include <optimizer/SGD.h>
-#include <models/IModel.h> // Assuming IModel is the base class
+#include <NeuralModel.h>
+#include <NeuralModelOptimized.h> // Include the header for your optimized model
+#include <NeuralModelOpenmp.h>   // Include the header for your OpenMP model
+#include <Adam.h>
+#include <SGD.h>
+#include <IModel.h> // Assuming IModel is the base class
 
 // Define the target function
 #define TARGET_FUNCTION(x) (5.0 *(x) - 1.0) // Example: y = 5x - 1

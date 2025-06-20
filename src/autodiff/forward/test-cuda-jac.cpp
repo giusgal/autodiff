@@ -2,7 +2,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <chrono>
-#include "../../include/autodiff/forward/Jacobian.hpp"
+#include "Jacobian.hpp"
 #include "example-functions.hpp"
 
 using dv = autodiff::forward::DualVar<double>;

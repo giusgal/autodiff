@@ -3,8 +3,8 @@
 
 #include <Eigen/Dense>
 #include <cmath>
-#include "../../include/autodiff/forward/DualVar.hpp"
-#include "../../include/autodiff/forward/CudaSupport.hpp"
+#include "DualVar.hpp"
+#include "CudaSupport.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;

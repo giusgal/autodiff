@@ -16,18 +16,6 @@
 namespace autodiff {
 namespace forward {
 
-/**
- * @class JacobianBase
- * @brief Abstract base class for Jacobian matrix computation using automatic differentiation.
- * 
- * This class provides the common interface and data members for computing Jacobian matrices
- * of vector-valued functions f: R^N → R^M.
- * 
- * The class serves as a foundation for different implementation strategies (forward-mode AD,
- * CUDA-accelerated computation, etc.) and provides basic matrix storage and problem dimensions.
- * 
- * @tparam T The underlying scalar type for computations 
- */
 template <typename T>
 class JacobianBase : public JacobianTraits<T>
 {
@@ -50,36 +38,7 @@ protected:
 
 };
 
-/**
- * @class ForwardJac
- * @brief Forward-mode automatic differentiation implementation for Jacobian computation.
- * 
- * This class computes Jacobian matrices using forward-mode automatic differentiation with
- * dual numbers. For a function f: R^N → R^M, it performs N forward passes, each time
- * seeding one input variable with a unit perturbation (setting its infinitesimal part to 1)
- * while others remain at 0.
- * 
- * The computation strategy:
- *    For each input variable x_j (j = 0, ..., N-1):
- *    - Create dual number vector with x_j having infinitesimal part = 1
- *    - Evaluate f(x) to get dual result
- *    - Extract infinitesimal parts as column j of the Jacobian
- *
- * 
- * Features:
- * - Sequential and OpenMP parallel computation modes
- * - Integration with Eigen
- * - Support for Newton solving
- * 
- * Limitations:
- * - There is some wasted computation since the real part of the function evaluation 
- *   is discarded most of the time
- * 
- * @tparam T The underlying scalar type for computations 
- * 
- * @example
- * See test files for examples
- */
+
 template <typename T>
 class ForwardJac final : 
 public JacobianBase<T>
@@ -99,7 +58,7 @@ public:
   };
 
 
-  void compute(const RealVec &x0, RealVec &real_eval = nullptr) {
+  void compute(const RealVec &x0, RealVec &real_eval) {
 
     // create dual vector to feed the function as input
     FwArgType x0d(this->_N);
@@ -117,10 +76,9 @@ public:
       x0d[i].setInf(0.0);
     }
     // write the value of fn in real_eval pointer
-    if (real_eval != nullptr) {
-      for (int i = 0; i < this->_M; i++) {
-        real_eval[i] = eval[i].getReal();
-      }
+    
+    for (int i = 0; i < this->_M; i++) {
+      real_eval[i] = eval[i].getReal();
     }
   
   }
@@ -250,35 +208,13 @@ void jacobian_kernel(
 
 }
 
-/**
- * @class CudaJac
- * @brief CUDA-accelerated Jacobian computation using forward-mode automatic differentiation.
- * 
- * This class leverages GPU parallelization to compute Jacobian matrices for large-scale problems.
- * Each GPU thread computes one element J(i,j) of the Jacobian matrix by evaluating the
- * function with appropriately seeded dual number inputs. Greater parallelism has been prioritized
- * over memory utilization.
- * 
- * Parallelization strategy:
- * - Each thread (tid_x, tid_y) computes J(tid_y, tid_x) = df_{tid_y}/dx_{tid_x}
- * - Threads are organized blocks to optimize memory access patterns. 
- * - All threads in a block evaluate the same function output to avoid control divergence.
- * 
- * Limitations:
- * - Functions must be expressed by the user in a fairly restrictive manner, explained below in more detail
- * - Memory overhead for large problems due to all threads requiring a copy of the input to seed
- * - There is quite a lot of wasted computation since all threads assigned to a specific output will 
- *   evaluate the real part of the same function at the same point.
- * 
- * @tparam T The underlying scalar type for computations (typically float or double)
- * 
- * @example
- * See test files for examples
- */
+
 template <typename T>
 class CudaJac final : 
 public JacobianBase<T>
 {
+  
+
 public:
   CudaJac(
     std::size_t M, std::size_t N, CudaFunctionWrapper<T> cuda_fn
@@ -296,18 +232,15 @@ public:
     T *x0_device;
     CudaFunctionWrapper<T> *cudafn_device;
 
-    // Allocate space for the jacobian on the device
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, M * N * sizeof(T)));
 
-    // Allocate space and copy the input on the device
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, N * sizeof(T)));
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), N * sizeof(T), cudaMemcpyHostToDevice));
-
-    // Allocate space for the function on the device
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, M * sizeof(CudaFunctionWrapper<T>)));
 
-    // Since all threads which write in the same row of the jacobian are executing the same functions
+    // Since all threads which write in the same column of the jacobian are executing the same functions
     // place them in the same block
+    // cap threads per block at 256?
     dim3 blockDim;
     if (M >= 256) {
         blockDim = dim3(256, 1);
@@ -324,13 +257,9 @@ public:
         (N + blockDim.x - 1) / blockDim.x,
         (M + blockDim.y - 1) / blockDim.y
     );
-    
-    // Launch kernel
     jacobian_kernel<T><<<gridDim, blockDim>>>(M, N, x0_device, jac_device, _cuda_fn);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
-
-    // Retrieve output and free device memory
     CUDA_CHECK_ERROR(cudaMemcpy(this->_J.data(), jac_device, M * N * sizeof(T), cudaMemcpyDeviceToHost));
     CUDA_CHECK_ERROR(cudaFree(jac_device));
   }

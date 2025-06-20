@@ -1,11 +1,11 @@
 #ifndef TWOLAYERNEURALS_H
 #define TWOLAYERNEURALS_H
 #include <vector>
-#include "../../autodiff/forward/autodiff.hpp"
+//#include "DualVar.hpp"
 #include <iostream>
 #include <random>
 #include <algorithm>
-#include "../../src/examples/optimizer/Optimizer.h"
+#include "Optimizer.h"
 
 class TwoLayerNeurals
 {

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <Eigen/Core>
 #include <chrono>
-#include "../../include/autodiff/forward/DualVar.hpp"
-#include "../../include/autodiff/forward/Jacobian.hpp"
+#include "DualVar.hpp"
+#include "Jacobian.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;

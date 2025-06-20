@@ -1,13 +1,14 @@
 #ifndef LINEARMODEL_H
 #define LINEARMODEL_H
 
-#include "../autodiff/forward/DualVar.hpp"
+#include "DualVar.hpp"
 #include <iostream>
 #include <vector>
 #include <random>
 #include <algorithm>
 
 #include "IModel.h"
+#include "Differentiator.hpp"
 #include "../optimizer/Optimizer.h"
 using namespace autodiff::forward;
 

@@ -2,9 +2,9 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <chrono>
-#include "../../include/autodiff/forward/DualVar.hpp"
-#include "../../include/autodiff/forward/Jacobian.hpp"
-#include "../../include/autodiff/forward/CudaSupport.hpp"
+#include "DualVar.hpp"
+#include "Jacobian.hpp"
+#include "CudaSupport.hpp"
 #include "example-functions.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
