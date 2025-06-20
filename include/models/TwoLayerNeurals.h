@@ -1,0 +1,21 @@
+#ifndef TWOLAYERNEURALS_H
+#define TWOLAYERNEURALS_H
+#include <vector>
+#include "../../autodiff/forward/autodiff.hpp"
+#include <iostream>
+#include <random>
+#include <algorithm>
+#include "../../src/examples/optimizer/Optimizer.h"
+
+class TwoLayerNeurals
+{
+    std::vector<std::vector<double>> weights1;
+    std::vector<std::vector<double>> weights2;
+    std::vector<double> bias1;
+    std::vector<double> bias2;
+    int input_size, hidden_size, output_size;
+
+
+};
+
+#endif //TWOLAYERNEURALS_H
