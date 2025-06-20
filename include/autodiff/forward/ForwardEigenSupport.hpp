@@ -1,11 +1,11 @@
 #ifndef EIGENSUPPORT_HPP_
 #define EIGENSUPPORT_HPP_
-#include "autodiff.hpp"
+#include "DualVar.hpp"
 #include <Eigen/Core>
-
-namespace Eigen {
 using dv = autodiff::forward::DualVar<double>;
 
+
+namespace Eigen {
 template<>
 struct NumTraits<dv>
   : NumTraits<double>
@@ -15,7 +15,7 @@ struct NumTraits<dv>
     then Real is just a typedef to T. If T is std::complex<U> 
     then Real is a typedef to U
   */
-  typedef double Real;
+  typedef dv Real;
   /*
     NonInteger gives the type that should be used for operations 
     producing non-integral values, such as quotients, square roots, etc. 
@@ -39,11 +39,10 @@ struct NumTraits<dv>
     MulCost = 3
   };
 };
-CUDA_HOST_DEVICE \
+
 const dv& conj(const dv &x) { return x; }
-CUDA_HOST_DEVICE \
 const dv& real(const dv &x) { return x; }
 dv abs2(const dv &x) { return x*x; }
 
 }
-#endif
+#endif // EIGENSUPPORT_HPP_

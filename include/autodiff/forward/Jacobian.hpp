@@ -1,22 +1,23 @@
-#pragma once
+#ifndef JACOBIAN_HPP_
+#define JACOBIAN_HPP_
+
 #include <functional>
 #include <Eigen/Dense>
-#include "NewtonTraits.hpp"
 #include <omp.h>
-#include "../../autodiff/forward/CudaSupport.hpp"
+
 #ifdef USE_CUDA
-#define CUDA_LINSYS_MAXOUT 10
 #include <cuda_runtime.h>
-
-
 #endif
 
+#include "JacobianTraits.hpp"
+#include "ForwardEigenSupport.hpp"
+#include "CudaSupport.hpp"
 
-namespace newton 
-{
+namespace autodiff {
+namespace forward {
 
 template <typename T>
-class JacobianBase : public NewtonTraits<T>
+class JacobianBase : public JacobianTraits<T>
 {
 public:
   JacobianBase(
@@ -83,6 +84,7 @@ public:
   }
 
   void compute_parallel(const RealVec &x0, RealVec &real_eval) {
+
     // create dual vector to feed the function as input
     FwArgType x0d(this->_N);
     FwRetType eval(this->_M);
@@ -128,20 +130,16 @@ public:
 #ifdef USE_CUDA
 
 template <typename T>
-using RealVec = typename NewtonTraits<T>::RealVec;
+using CudaArgType = typename JacobianTraits<T>::CudaArgType;
 template <typename T>
-using dv = typename NewtonTraits<T>::dv;
+using CudaRetType = typename JacobianTraits<T>::CudaRetType;
 template <typename T>
-using CudaArgType = typename NewtonTraits<T>::FwArgType;
-template <typename T>
-using CudaNLSType = typename NewtonTraits<T>::CudaNLSType;
-template <typename T>
-using CudaRetType = dv<T>;
-template <typename T>
-using JacType = typename NewtonTraits<T>::JacType;
-template <typename T>
-using CudaDeviceFn = typename NewtonTraits<T>::CudaDeviceFn;
+using CudaDeviceFn = typename JacobianTraits<T>::CudaDeviceFn;
 
+template <typename T>
+using RealVec = typename JacobianTraits<T>::RealVec;
+template <typename T>
+using JacType = typename JacobianTraits<T>::JacType;
 
 
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
@@ -207,13 +205,6 @@ void jacobian_kernel(
 
 }
 
-#endif
-
-#ifdef USE_CUDA
-
-
-
-
 
 template <typename T>
 class CudaJac final : 
@@ -270,40 +261,21 @@ public:
     CUDA_CHECK_ERROR(cudaFree(jac_device));
   }
 
+  RealVec solve(const RealVec &x, RealVec &resid) {
+    compute(x, resid);
+    return this->_J.fullPivLu().solve(resid);
+  }
+
   JacType<T> getJacobian() {
     return this->_J;
   }
+
+  
 protected:
   CudaFunctionWrapper<T> _cuda_fn;
 };
-#else
 #endif
+}; // namespace forward
+}; // namespace autodiff
 
-
-
-// template <typename T>
-// class ManualJac : public JacobianBase<T>
-// {
-// public:
-//   ManualJac(
-//     fn_type<T> &_jacfn, _M, _N
-//   ):
-//   jacfn{_jacfn}, M{_M}, N{_N} {};
-
-//   Eigen::MatrixXd compute(fn_io_type<T> &x0) {
-//     return jacfn(x0);
-//   }
-
-
-// };
-
-
-//TODO
-
-// template <typename T>
-// class ReverseJac : public JacobianBase<Var<T>> {
-
-// }
-
-
-}// namespace newton
+#endif // JACOBIAN_HPP_

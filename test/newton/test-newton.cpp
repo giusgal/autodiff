@@ -1,7 +1,7 @@
 #include <iostream>
 #include <functional>
 #include <Eigen/Core>
-#include "Newton.hpp"
+#include "../../src/examples/newton/Newton.hpp"
 #include <chrono>
 
 #define DIM 3

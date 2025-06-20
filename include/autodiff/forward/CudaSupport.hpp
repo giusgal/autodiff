@@ -1,15 +1,13 @@
-#pragma once
+#ifndef CUDA_SUPPORT_HPP_
+#define CUDA_SUPPORT_HPP_
 
 #ifdef USE_CUDA
 
 #include <cuda_runtime.h>
 
 #define CUDA_HOST_DEVICE __host__ __device__
-
 #define CUDA_DEVICE __device__
-
 #define CUDA_GLOBAL __global__
-
 #define CUDA_CHECK_ERROR(err) \
   do { \
     cudaError_t err_ = (err); \
@@ -27,6 +25,6 @@
 #define CUDA_CHECK_ERROR(err) ((void)0)
 
 
-
-
 #endif // USE_CUDA
+
+#endif //CUDA_SUPPORT_HPP_

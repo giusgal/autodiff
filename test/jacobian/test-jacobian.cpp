@@ -1,11 +1,8 @@
 #include <iostream>
 #include <Eigen/Core>
 #include <chrono>
-#include "Newton.hpp"
-#include "../../autodiff/forward/autodiff.hpp"
-#ifdef USE_CUDA
-#include "cuda.h"
-#endif
+#include "../../include/autodiff/forward/DualVar.hpp"
+#include "../../include/autodiff/forward/Jacobian.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
@@ -18,31 +15,6 @@ dvec test_fun(const dvec &x) {
   res[1] = sin(x[0] * x[1]);
   return res;
 }
-
-//#ifdef USE_CUDA
-template <typename T>
-using fn_t = T (*) (T &);
-//__device__
-dvec cuda_fn(dvec & x) {
-  int N = 10;
-  int M = 10;
-  dvec res(M);
-  for (int i = 0; i < M; ++i) {
-    res[i] = dv(0.0, 0.0);
-    for (int j = 0; j < N; ++j) {
-        res[i] = res[i] + sin(x[j] + i) * cos(x[j] * (i+1));
-      }
-      // nonlinear
-      res[i] = res[i] + exp(x[i % N]);
-  }
-  return res;
-}
-//__device__ 
-fn_t<dvec> p_fn_dvec = cuda_fn;
-
-
-
-//#endif
 
 std::function<dvec(const dvec&)> make_big_test_fun(int N, int M) {
     return [N, M](const dvec& x) {
@@ -70,7 +42,7 @@ int main() {
   RealVec real_eval(dim_out);
 
   auto big_fun = make_big_test_fun(dim_in, dim_out);
-  newton::ForwardJac<double> fjac(dim_out, dim_in, big_fun);
+  autodiff::forward::ForwardJac<double> fjac(dim_out, dim_in, big_fun);
 
   // Sequential
   auto t1 = Clock::now();

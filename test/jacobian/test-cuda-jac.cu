@@ -2,9 +2,10 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <chrono>
-#include "/content/autodiff/src/autodiff/forward/CudaSupport.hpp"
-#include "/content/autodiff/src/examples/newton/example-functions.hpp"
-#include "/content/autodiff/src/autodiff/forward/autodiff.hpp"
+#include "../../include/autodiff/forward/DualVar.hpp"
+#include "../../include/autodiff/forward/Jacobian.hpp"
+#include "../../include/autodiff/forward/CudaSupport.hpp"
+#include "example-functions.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
@@ -21,7 +22,7 @@ int main() {
     Eigen::VectorXd real_eval_cpu(dim_out);
 
     // Create Jacobian object
-    newton::ForwardJac<double> jacobian(dim_out, dim_in, testfun::test_fun);
+    autodiff::forward::ForwardJac<double> jacobian(dim_out, dim_in, testfun::test_fun);
 
     // Test regular CPU compute
     auto t1 = Clock::now();
@@ -34,9 +35,9 @@ int main() {
 
 #ifdef USE_CUDA
 
-    newton::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
+    autodiff::forward::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
 
-    newton::CudaJac<double> jacobian_cu(dim_out, dim_in, cudafun);
+    autodiff::forward::CudaJac<double> jacobian_cu(dim_out, dim_in, cudafun);
     // Test CUDA compute
     auto t3 = Clock::now();
     jacobian_cu.compute(x0);

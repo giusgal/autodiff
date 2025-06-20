@@ -1,5 +1,0 @@
-python3 -m venv .venv
-source .venv/bin/activate
-pip install matplotlib pandas
-python plot_models.py
-deactivate
