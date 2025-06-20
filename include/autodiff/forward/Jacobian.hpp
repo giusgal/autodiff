@@ -264,7 +264,7 @@ public:
     CUDA_CHECK_ERROR(cudaFree(jac_device));
   }
 
-  RealVec solve(const RealVec &x, RealVec &resid) {
+  RealVec<T> solve(const RealVec<T> &x, RealVec<T> &resid) {
     compute(x, resid);
     return this->_J.fullPivLu().solve(resid);
   }
