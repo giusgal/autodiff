@@ -92,8 +92,10 @@ public:
       x0d[i] = dv(x0[i], 0.0);
     }
 
+    // reference is necessary to ensure gcc compatibility
+    auto& J_ref = this->_J;
     #pragma omp parallel for \
-      firstprivate(x0d) lastprivate(eval) shared(this->_J)
+      firstprivate(x0d) lastprivate(eval) shared(J_ref)
     for (int i = 0; i < this->_N; i++) {
       x0d[i].setInf(1.0);
       eval = this->_fn(x0d);
