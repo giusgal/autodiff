@@ -58,19 +58,12 @@ VecVar f_NM(VecVar x) {
     return y;
 }
 
-/*
- * TODO:
- *  1. Refactor Var/NodeManager (Done)
- *  2. Implement more operators
- *  3. Implement a memory pool/arena allocator (No ok maybe no)
- * */
 int main() {
     // {
     //     Vec x = Vec::Ones(N);
     //     Vec f_x;
     //     Mat jac;
-    //
-    //
+    
     //     auto t1 = std::chrono::high_resolution_clock::now();
     //     jacobian(f_NM, x, f_x, jac);
     //     auto t2 = std::chrono::high_resolution_clock::now();
