@@ -130,6 +130,9 @@ public:
 #ifdef USE_CUDA
 
 template <typename T>
+using dv = typename JacobianTraits<T>::dv;
+
+template <typename T>
 using CudaArgType = typename JacobianTraits<T>::CudaArgType;
 template <typename T>
 using CudaRetType = typename JacobianTraits<T>::CudaRetType;
@@ -189,7 +192,7 @@ void jacobian_kernel(
 
   // create local (dualvar) copy of input vector
   CudaArgType<T> x0_dual(N);
-  dv<T> y_dual;
+  CudaRetType<T> y_dual;
 
   // prep local input
   for(int i = 0; i < N; i++) {
