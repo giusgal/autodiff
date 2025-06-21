@@ -24,7 +24,15 @@ if(ENABLE_CUDA)
     
     # Find CUDA toolkit
     find_package(CUDAToolkit REQUIRED)
-    
+
+    if(CUDAToolkit_FOUND)
+        message(STATUS "CUDA Toolkit found at: ${CUDAToolkit_ROOT}")
+        message(STATUS "CUDA Version: ${CUDAToolkit_VERSION}")
+        message(STATUS "CUDA Include Dirs: ${CUDAToolkit_INCLUDE_DIRS}")
+    else()
+        message(FATAL_ERROR "CUDA Toolkit not found!")
+    endif()
+
     # --gpu-architecture sm_75
     set(CMAKE_CUDA_ARCHITECTURES "75") 
     
@@ -59,6 +67,17 @@ target_include_directories(autodiff INTERFACE
         ${CMAKE_SOURCE_DIR}/include/autodiff/reverse
 
 )
+
+if(ENABLE_CUDA)
+    # Add CUDA include directories to autodiff library
+    target_include_directories(autodiff INTERFACE ${CUDAToolkit_INCLUDE_DIRS})
+    
+    # Add CUDA compile definitions to autodiff library
+    target_compile_definitions(autodiff INTERFACE USE_CUDA EIGEN_USE_GPU)
+    
+    # Link CUDA runtime to autodiff library
+    target_link_libraries(autodiff INTERFACE CUDA::cudart)
+endif()
 
 # --- Build a library for models and optimizers ---
 # This groups headers and potentially sources for models and optimizers.
