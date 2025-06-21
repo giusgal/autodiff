@@ -171,7 +171,7 @@ void jacobian_kernel(
   if (tid_y >= output_dim) return;
 
   // create local (dualvar) copy of input vector
-  DualVec<T> x0_dual(N);
+  DualVec<T> x0_dual(input_dim);
   DualVar<T> y_dual;
 
   // prep local input
