@@ -264,7 +264,7 @@ DualVar<T> abs(DualVar<T> const & arg) {
 
 template <typename T> CUDA_HOST_DEVICE \
 DualVar<T> cos(DualVar<T> const & arg) {
-    return DualVar<T> (std::cos(arg.real_)
+    return DualVar<T> (std::cos(arg.real_),
             - arg.inf_ * std::sin(arg.real_));
 }
 
