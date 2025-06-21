@@ -6,15 +6,22 @@ project(autodiff_project)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+FetchContent_MakeAvailable(googletest)
+
 # OpenMp dependency
 find_package(OpenMP REQUIRED)
 # Eigen dependency
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
+
 # Option to enable CUDA support
 option(ENABLE_CUDA "Enable CUDA compilation" OFF)
-
-
 
 # Enable CUDA if requested
 if(ENABLE_CUDA)
@@ -179,6 +186,14 @@ add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
 target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
 
 
+enable_testing()
+
+add_executable(dualvar_test test/dualvar_test.cpp)
+target_link_libraries(dualvar_test autodiff GTest::gtest_main)
+
+
+include(GoogleTest)
+gtest_discover_tests(dualvar_test)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

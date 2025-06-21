@@ -162,9 +162,47 @@ public:
     template <typename U> CUDA_HOST_DEVICE \
     friend DualVar<U> tanh(DualVar<U> const & arg);
 
-    CUDA_HOST_DEVICE \
-    bool operator==(DualVar<T> const & rhs) {
-        return (real_ == rhs.real_) && (inf_ == rhs.inf_);
+    /******** Other Operators ********/
+    bool operator<(DualVar<T> const & rhs) const {
+        return (real_ < rhs.real_);
+    }
+    bool operator<(T const & rhs) const {
+        return (real_ < rhs);
+    }
+
+    bool operator>(DualVar<T> const & rhs) const {
+        return (real_ > rhs.real_);
+    }
+    bool operator>(T const & rhs) const {
+        return (real_ > rhs);
+    }
+
+    bool operator==(DualVar<T> const & rhs) const {
+        return (real_ == rhs.real_);
+    }
+    bool operator==(T const & rhs) const {
+        return (real_ == rhs);
+    }
+
+    bool operator!=(DualVar<T> const & rhs) const {
+        return (real_ != rhs.real);
+    }
+    bool operator!=(T const & rhs) const {
+        return (real_ != rhs);
+    }
+
+    bool operator<=(DualVar<T> const & rhs) const {
+        return (real_ <= rhs.real_);
+    }
+    bool operator<=(T const & rhs) const {
+        return (real_ <= rhs);
+    }
+
+    bool operator>=(DualVar<T> const & rhs) const {
+        return (real_ >= rhs.real_);
+    }
+    bool operator>=(T const & rhs) const {
+        return (real_ >= rhs);
     }
 
 private:
