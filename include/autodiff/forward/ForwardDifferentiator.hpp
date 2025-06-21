@@ -150,7 +150,7 @@ struct CudaFunctionWrapper {
 
 
   CUDA_HOST_DEVICE \
-  DualVec<T> operator()(const DualVec<T> &x, int y_i) const {
+  DualVar<T> operator()(const DualVec<T> &x, int y_i) const {
     return (*_device_fn)(x, y_i);
   }
   
