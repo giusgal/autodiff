@@ -42,7 +42,7 @@ batch_size = 16
 hidden_size of the neural model is 8. There are a total of 3*8 + 1 parameters.
 ```
 
-![linear vs neural model](model_comparison.png)
+![linear vs neural model](../../img/model_comparison.png)
 
 
 ### Neural network model with different hidden sizes
