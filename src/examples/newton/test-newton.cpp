@@ -11,10 +11,29 @@
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
 
-dvec fun_j(const dvec &x){
+using var = autodiff::reverse::Var<double>;
+using varVec = Eigen::Matrix<var, Eigen::Dynamic, 1>;
+
+dvec fun_j(const dvec &x) {
     dvec res(2);
     res << 5.0 * x(0) * x(0) + x(1) * x(1) * x(0) + sin(2.0 * x(1)) * sin(2.0 * x(1)) - 2.0,
          autodiff::forward::pow(std::exp(1), 2.0 * x(0)-x(1)) + 4.0 * x(1) - 3.0;
+
+    return res;
+}
+
+varVec funRev(varVec const & x) {
+    varVec res(2);
+
+    res <<
+        (
+         5.0 * x(0) * x(0) + x(1) * x(1) * x(0) +
+         sin(2.0 * x(1)) * sin(2.0 * x(1)) - 2.0
+        ),
+        (
+         pow(std::exp(1), 2.0 * x(0)-x(1)) +
+         4.0 * x(1) - 3.0
+        );
 
     return res;
 }
@@ -79,40 +98,57 @@ void test_newton(int n_runs, newton::NewtonOpts opts, std::function<dvec(const d
 
 
 int main() {
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
 
-  using std::chrono::high_resolution_clock;
-  using std::chrono::duration;
-  using std::chrono::milliseconds;
-  
-  int nruns = 2;
-  int dim_in = 200;
-  int dim_out = 200;
-  std::function<dvec(const dvec &)> fun_array[nruns];
+    int nruns = 2;
+    int dim_in = 200;
+    int dim_out = 200;
+    std::function<dvec(const dvec &)> fun_array[nruns];
 
-  for(int i = 0; i < nruns; i++) {
+    for(int i = 0; i < nruns; i++) {
     fun_array[i] = create_test_fn(dim_in, dim_out);
-  }
+    }
 
-  auto nonLinFun = [](const dvec &x) -> dvec {
+    auto nonLinFun = [](const dvec &x) -> dvec {
     dvec res(2);
     res << 5.0 * x(0) * x(0) + x(1) * x(1) * x(0) + sin(2.0 * x(1)) * sin(2.0 * x(1)) - 2.0,
          autodiff::forward::pow(std::exp(1), 2.0 * x(0)-x(1)) + 4.0 * x(1) - 3.0;
 
     return res;
-  };
+    };
 
-  newton::NewtonOpts newtonopts;
-  newtonopts.maxit = 100;
-  newtonopts.tol = 1e-6;
-  newtonopts.dim_in = dim_in;
-  newtonopts.dim_out = dim_out;
+    newton::NewtonOpts newtonopts;
+    newtonopts.maxit = 100;
+    newtonopts.tol = 1e-6;
+    newtonopts.dim_in = dim_in;
+    newtonopts.dim_out = dim_out;
 
 
-  auto tstart = high_resolution_clock::now();
-  test_newton(nruns, newtonopts, fun_array);
-  auto tend = high_resolution_clock::now();
-  duration<double, std::milli> elapsed = tend - tstart;
-  std::cout << "Time taken with sequential Jacobian " << elapsed.count() << std::endl;
+    // auto tstart = high_resolution_clock::now();
+    // test_newton(nruns, newtonopts, fun_array);
+    // auto tend = high_resolution_clock::now();
+    // duration<double, std::milli> elapsed = tend - tstart;
+    // std::cout << "Time taken with sequential Jacobian "
+    //     << elapsed.count() << std::endl;
+
+    // Reverse test
+    newton::NewtonOpts newtonoptsRev = {
+        .maxit = 100,
+        .tol = 1e-6,
+        .dim_in = 2,
+        .dim_out = 2
+    };
+    newton::ReverseJac J(newtonoptsRev.dim_out, newtonoptsRev.dim_in, funRev);
+    newton::Newton nsolver(J, newtonoptsRev);
+    Eigen::VectorXd init_guess = Eigen::VectorXd::Random(newtonoptsRev.dim_in);
+    auto tstartRev = high_resolution_clock::now();
+    auto res = nsolver.solve(init_guess);
+    auto tendRev = high_resolution_clock::now();
+    duration<double, std::milli> elapsed = tendRev - tstartRev;
+    std::cout << "Time taken with Reverse Jacobian "
+        << elapsed.count() << std::endl;
 }
 
 

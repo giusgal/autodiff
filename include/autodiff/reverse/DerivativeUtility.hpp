@@ -25,7 +25,7 @@ namespace reverse {
  * @param grad (OUT) The gradient of the function at the given point
  */
 inline void gradient(
-    std::function<Var<double>(Eigen::Vector<Var<double>, Eigen::Dynamic>)> f,
+    std::function<Var<double>(Eigen::Vector<Var<double>, Eigen::Dynamic> const &)> f,
     Eigen::Vector<double, Eigen::Dynamic> const & x,
     double & f_x,
     Eigen::Vector<double, Eigen::Dynamic> & grad
@@ -63,7 +63,7 @@ inline void gradient(
  * @param jac (OUT) The jacobian of the function at the given point
  */
 inline void jacobian(
-    std::function<Eigen::Vector<Var<double>, Eigen::Dynamic>(Eigen::Vector<Var<double>, Eigen::Dynamic>)> f,
+    std::function<Eigen::Vector<Var<double>, Eigen::Dynamic>(Eigen::Vector<Var<double>, Eigen::Dynamic> const &)> f,
     Eigen::Vector<double, Eigen::Dynamic> const & x,
     Eigen::Vector<double, Eigen::Dynamic> & f_x,
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> & jac

@@ -14,63 +14,80 @@
 #include "CudaSupport.hpp"
 #include "ForwardDifferentiator.hpp"
 
+#include "EigenSupport.hpp"
+#include "DerivativeUtility.hpp"
+
 namespace newton {
 
-
-class JacobianBase : public JacobianTraits
-{
+/**
+ * @class JacobianBase
+ * @brief An abstract class which represents a generic jacobian
+ */
+class JacobianBase : public JacobianTraits {
 public:
-  JacobianBase(
-    std::size_t M, std::size_t N
-  ): _M{M}, _N{N} {
-  };
-  // initialize matrix?
+    JacobianBase(std::size_t M, std::size_t N): _M{M}, _N{N}, _J{M,N} {}
 
-  virtual ~JacobianBase() = default;
+    virtual ~JacobianBase() = default;
 
-  virtual void compute(const RealVec &, RealVec &) = 0;
+    virtual void compute(const RealVec &, RealVec &) = 0;
+    virtual RealVec solve(const RealVec &, RealVec &) = 0;
 
-  virtual RealVec solve(const RealVec &, RealVec &) = 0;
-
+    JacType getJacobian() const {
+        return _J;
+    }
 protected:
-  std::size_t _M, _N;
-  JacType _J;
+    size_t _M;
+    size_t _N;
+    JacType _J;
 };
 
 
-class ForwardJac final : 
-public JacobianBase
-{
-  // using dv = typename ForwardJac::dv;
-  // using FwArgType = typename ForwardJac::FwArgType;
-  // using FwRetType = typename ForwardJac::FwRetType;
-  // using FwNLSType = typename ForwardJac::fwNLSType;
-  // using JacType = typename ForwardJac::JacType;
-  // using RealVec = typename ForwardJac::RealVec;
-
+/**
+ * @class ForwardJacobian 
+ * @brief ForwardJacobian allows to solve systems involving
+ *  the jacobian of a given non-linear function using 
+ *  forward-mode automatic differtentiation
+ */
+class ForwardJac final : public JacobianBase {
 public:
-  ForwardJac(
-    std::size_t M, std::size_t N, const FwNLSType &fn
-  ): JacobianBase(M, N) {
-    this->_J = JacType(M, N);
-    this->_fn = fn;
-  };
-  
-  void compute(const RealVec &x0, RealVec &real_eval) override {
-    jacobian<double>(this->_fn, x0, real_eval, this->_J);
-  }
+    ForwardJac(std::size_t M, std::size_t N, FwNLSType const & fn):
+        JacobianBase(M, N), _fn{fn} {}
 
-  RealVec solve(const RealVec &x, RealVec &resid) override {
-    // update the jacobian
-    compute(x, resid);
-    return this->_J.fullPivLu().solve(resid);
-  }
+    void compute(const RealVec & x0, RealVec & real_eval) override {
+        jacobian<double>(_fn, x0, real_eval, this->_J);
+    }
 
-  JacType getJacobian() {
-    return this->_J;
-  }
+    RealVec solve(const RealVec & x, RealVec & resid) override {
+        // update the jacobian
+        compute(x, resid);
+        return this->_J.fullPivLu().solve(resid);
+    }
 protected:
-  FwNLSType _fn;
+    FwNLSType const & _fn;
+};
+
+/**
+ * @class ReverseJac
+ * @brief ReverseJac allows to solve systems involving
+ *  the jacobian of a given non-linear function using
+ *  reverse-mode automatic differtentiation
+ */
+class ReverseJac final : public JacobianBase {
+public:
+    ReverseJac(std::size_t M, std::size_t N, RvNLSType const & fn):
+      JacobianBase(M, N), _fn{fn} {}
+  
+    void compute(const RealVec & x0, RealVec & real_eval) override {
+        jacobian(_fn, x0, real_eval, this->_J);
+    }
+
+    RealVec solve(const RealVec & x, RealVec & resid) override {
+        // update the jacobian
+        compute(x, resid);
+        return this->_J.fullPivLu().solve(resid);
+    }
+protected:
+    RvNLSType const & _fn;
 };
 
 #ifdef USE_CUDA
