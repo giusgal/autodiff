@@ -35,15 +35,17 @@ int main() {
     std::cout << "CPU Time: " << cpu_time << " μs\n\n";
 
 #ifdef USE_CUDA
+    Eigen::MatrixXd jc(dim_out, dim_in);
+    Eigen::VectorXd real_eval(dim_out);
 
     autodiff::forward::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
     // Test CUDA compute
     auto t3 = Clock::now();
-    autodiff::forward::jacobian_cuda<double>(cudafun, x0, real_eval, j);
+    autodiff::forward::jacobian_cuda<double>(cudafun, x0, real_eval, jc);
     auto t4 = Clock::now();
     auto cuda_time = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
 
-    std::cout << "CUDA Jacobian norm:\n" << jacobian_cu.getJacobian().norm() << std::endl;
+    std::cout << "CUDA Jacobian norm:\n" << jc.norm() << std::endl;
     std::cout << "CUDA Time: " << cuda_time << " μs\n\n";
 
     // Calculate speedup
