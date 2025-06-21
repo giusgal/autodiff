@@ -1,6 +1,6 @@
 #include <functional>
 #include <Eigen/Dense>
-#include "../../../include/autodiff/forward/Jacobian.hpp"
+#include "Jacobian.hpp"
 
 namespace newton
 {

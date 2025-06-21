@@ -68,7 +68,7 @@ class NeuralModelOptimized : public NeuralModel
                 std::vector<std::pair<double, double>> batch(data.begin() + i, data.begin() + batch_end);
 
                 //now compute the gradient of these small batch
-                auto grad = gradient(
+                auto grad = gradient<double>(
                 [&](const std::vector<DualVar<double>>& p){
                     std::vector<DualVar<double>> p_span(p);
                     return loss_func_fused(batch, p_span);

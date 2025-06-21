@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "IModel.h"
-#include "Differentiator.hpp"
+#include "ForwardDifferentiator.hpp"
 #include "../optimizer/Optimizer.h"
 using namespace autodiff::forward;
 
@@ -76,7 +76,7 @@ protected:
                 std::vector<std::pair<double, double>> batch(
                     data.begin() + i,
                     data.begin() + std::min(i + batch_size, static_cast<int>(data.size())));
-                auto grad = gradient([&](const std::vector<DualVar<double>> &p)
+                auto grad = gradient<double>([&](const std::vector<DualVar<double>> &p)
                 {
                     return loss_func(batch, p[0], p[1]);
                 }, params);

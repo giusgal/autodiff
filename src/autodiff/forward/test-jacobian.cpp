@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <chrono>
 #include "DualVar.hpp"
-#include "Jacobian.hpp"
+#include "ForwardDifferentiator.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
@@ -36,27 +36,28 @@ int main() {
   using Clock = std::chrono::high_resolution_clock;
   using ms = std::chrono::milliseconds;
 
-  int dim_in = 1;
-  int dim_out = 10;
+  int dim_in = 10;
+  int dim_out = 1000;
   RealVec x0 = RealVec::Random(dim_in);
   RealVec real_eval(dim_out);
 
   auto big_fun = make_big_test_fun(dim_in, dim_out);
-  autodiff::forward::ForwardJac<double> fjac(dim_out, dim_in, big_fun);
 
   // Sequential
   auto t1 = Clock::now();
-  fjac.compute(x0, real_eval);
+  Eigen::MatrixXd j(dim_out, dim_in);
+  autodiff::forward::jacobian<double>(big_fun, x0, real_eval, j);
   auto t2 = Clock::now();
-  std::cout << "Sequential Jacobian norm:\n" << fjac.getJacobian().norm() << std::endl;
+  std::cout << "Sequential Jacobian norm:\n" << j.norm() << std::endl;
   std::cout << "Function value norm: " << real_eval.transpose().norm() << std::endl;
   std::cout << "Sequential time: " << std::chrono::duration_cast<ms>(t2 - t1).count() << " ms\n";
 
   // Parallel
+  Eigen::MatrixXd j1(dim_out, dim_in);
   auto t3 = Clock::now();
-  fjac.compute_parallel(x0, real_eval);
+  autodiff::forward::jacobian_parallel<double>(big_fun, x0, real_eval, j1);
   auto t4 = Clock::now();
-  std::cout << "Prallel Jacobian norm:\n" << fjac.getJacobian().norm() << std::endl;
+  std::cout << "Prallel Jacobian norm:\n" << j1.norm() << std::endl;
   std::cout << "Function value norm: " << real_eval.transpose().norm() << std::endl;
   std::cout << "Parallel time: " << std::chrono::duration_cast<ms>(t4 - t3).count() << " ms\n";
 

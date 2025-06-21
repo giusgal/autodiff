@@ -6,7 +6,7 @@
 #define NEURALMODEL_H
 
 #include "DualVar.hpp"
-#include "Differentiator.hpp"
+#include "ForwardDifferentiator.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -152,7 +152,7 @@ public:
 
                 //now compute the gradient of these small batch
                 //batch is the data, p is the parameters params for neural weights
-                auto grad = gradient(
+                auto grad = gradient<double>(
                 [&](const std::vector<DualVar<double>>& p){
                     return loss_func(batch, p);
                 }, params);

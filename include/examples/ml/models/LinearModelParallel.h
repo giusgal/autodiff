@@ -40,7 +40,7 @@ class LinearModelParallel : public LinearModel{
                 );
 
                 // Compute this batch’s gradient
-                auto grad = gradient(
+                auto grad = gradient<double>(
                     [&](const std::vector<DualVar<double>>& p) {
                         return loss_func(batch, p[0], p[1]);
                     },

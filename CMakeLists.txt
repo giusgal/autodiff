@@ -118,5 +118,10 @@ endif()
 add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
 target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
 
+
+# --- Add forward example executables --- 
+add_executable(forward_jacobian_test src/autodiff/forward/test-jacobian.cpp)
+target_link_libraries(forward_jacobian_test PRIVATE autodiff Eigen3::Eigen)
+
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

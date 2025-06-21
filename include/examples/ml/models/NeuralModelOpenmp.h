@@ -54,7 +54,7 @@ public:
                             actual_samples_in_batch[thread_id] = current_thread_batch.size();
                             // 'params' is std::vector<double> from NeuralModel
                             // 'gradient' function handles using these doubles with the DualVar lambda
-                            batch_gradients[thread_id] = gradient(
+                            batch_gradients[thread_id] = gradient<double>(
                                 [&](const std::vector<DualVar<double>>& p_local) { // Lambda uses DualVar
                                     std::span<const DualVar<double>> p_span(p_local.data(), p_local.size());
                                     return loss_func_fused(current_thread_batch, p_span);
