@@ -90,7 +90,7 @@ protected:
     RvNLSType const & _fn;
 };
 
-#ifdef USE_CUDA
+#ifdef __CUDACC__
 
 // template <typename T>
 // using dv = typename JacobianTraits<T>::dv;
@@ -138,7 +138,7 @@ public:
 protected:
   CudaFunctionWrapper<double> _cuda_fn;
 };
-#endif
+#endif // __CUDACC__
 }; // namespace newton
 
 #endif // JACOBIAN_HPP_
