@@ -39,7 +39,7 @@ int main() {
     autodiff::forward::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
     // Test CUDA compute
     auto t3 = Clock::now();
-    autodiff::forward::jacobian<double>(cudafun, x0, real_eval, j);
+    autodiff::forward::jacobian_cuda<double>(cudafun, x0, real_eval, j);
     auto t4 = Clock::now();
     auto cuda_time = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
 

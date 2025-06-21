@@ -205,7 +205,7 @@ void jacobian_cuda(
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, output_dim * input_dim * sizeof(T)));
 
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, input_dim * sizeof(T)));
-    CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x0.data(), input_dim * sizeof(T), cudaMemcpyHostToDevice));
+    CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x.data(), input_dim * sizeof(T), cudaMemcpyHostToDevice));
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, output_dim * sizeof(CudaFunctionWrapper<T>)));
 
     // Since all threads which write in the same column of the jacobian are executing the same functions
