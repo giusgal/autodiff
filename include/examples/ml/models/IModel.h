@@ -2,8 +2,7 @@
 // Created on 5/16/25.
 //
 
-#ifndef IMODEL_H
-#define IMODEL_H
+#pragma once
 
 #include <vector>
 #include <utility>
@@ -25,5 +24,3 @@ class IModel
     //print the model's parameters
     virtual void print_parameters() const = 0;
 };
-
-#endif //IMODEL_H

@@ -1,10 +1,9 @@
-#ifndef __DERIVATIVEUTILITY_HPP__
-#define __DERIVATIVEUTILITY_HPP__
+#pragma once
 
 #include <Eigen/Core>
 #include <functional>
 #include "NodeManager.hpp"
-#include "EigenSupport.hpp"
+#include "ReverseEigenSupport.hpp"
 #include "Var.hpp"
 
 /**
@@ -99,5 +98,3 @@ inline void jacobian(
 
 }; // namespace reverse 
 }; // namespace autodiff
-
-#endif // __DERIVATIVEUTILITY_HPP__

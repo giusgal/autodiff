@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <chrono>
 #include "DualVar.hpp"
-#include "ForwardDifferentiator.hpp"
+#include "ForwardUtility.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;

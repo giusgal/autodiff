@@ -1,5 +1,4 @@
-#ifndef JACOBIAN_TRAITS_HPP_
-#define JACOBIAN_TRAITS_HPP_
+#pragma once
 
 #include <Eigen/Dense>
 #include <vector>
@@ -36,5 +35,3 @@ public:
 };
 
 }; // namespace newton
-
-#endif // JACOBIAN_TRAITS_HPP_

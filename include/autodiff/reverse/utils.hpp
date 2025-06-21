@@ -1,5 +1,4 @@
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+#pragma once
 
 #include <graphviz/gvc.h>
 #include <graphviz/cgraph.h>
@@ -103,5 +102,3 @@ save_graph_to_file(
 }
 
 }; //namespace utils
-
-#endif // __UTILS_HPP__

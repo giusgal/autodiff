@@ -1,5 +1,4 @@
-#ifndef LINEARMODELPARALLEL_H
-#define LINEARMODELPARALLEL_H
+#pragma once
 
 #include "LinearModel.h"
 
@@ -71,5 +70,3 @@ class LinearModelParallel : public LinearModel{
 }
 
 };
-
-#endif //LINEARMODELPARALLEL_H

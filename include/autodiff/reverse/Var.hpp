@@ -1,5 +1,4 @@
-#ifndef __VAR_HPP__
-#define __VAR_HPP__
+#pragma once
 
 #include "NodeManager.hpp"
 #include "Functions.hpp"
@@ -303,5 +302,3 @@ Var<U> sqrt(Var<U> const & arg) {
 
 }; // namespace reverse
 }; // namespace autodiff 
-
-#endif // __VAR_HPP__

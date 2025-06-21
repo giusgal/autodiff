@@ -182,8 +182,8 @@ endif()
 
 # --- Add reverse example executables --- TODO: remove 
 # If src/autodiff/reverse/test.cpp is a separate test executable:
-add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
-target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
+# add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
+# target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
 
 
 enable_testing()

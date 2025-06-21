@@ -1,5 +1,4 @@
-#ifndef __NODEMANAGER_HPP__
-#define __NODEMANAGER_HPP__
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -209,5 +208,3 @@ size_t new_node(size_t first, size_t second) {
 
 }; // namespace reverse
 }; // namespace autodiff
- 
-#endif // __NODEMANAGER_HPP__

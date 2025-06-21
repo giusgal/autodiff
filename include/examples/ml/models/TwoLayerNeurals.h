@@ -1,5 +1,5 @@
-#ifndef TWOLAYERNEURALS_H
-#define TWOLAYERNEURALS_H
+#pragma once
+
 #include <vector>
 //#include "DualVar.hpp"
 #include <iostream>
@@ -17,5 +17,3 @@ class TwoLayerNeurals
 
 
 };
-
-#endif //TWOLAYERNEURALS_H

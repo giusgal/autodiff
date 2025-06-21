@@ -1,5 +1,4 @@
-#ifndef __NODE_HPP__
-#define __NODE_HPP__
+#pragma once
 
 #include <cstddef>
 
@@ -108,5 +107,3 @@ protected:
 
 }; // namespace reverse
 }; // namespace autodiff 
-
-#endif // __NODE_HPP__

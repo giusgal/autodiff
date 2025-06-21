@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <Eigen/Dense>
 #include "Jacobian.hpp"
@@ -58,5 +60,4 @@ private:
   NewtonOpts _opts;
 };
 
-
-} // namespace newton
+}; // namespace newton

@@ -1,5 +1,4 @@
-#ifndef __ARENAALLOCATOR_HPP__
-#define __ARENAALLOCATOR_HPP__
+#pragma once
 
 #include <cstddef>
 #include <cstring>
@@ -171,5 +170,3 @@ private:
 
 }; // namespace reverse
 }; // namespace autodiff 
-
-#endif // __ARENAALLOCATOR_HPP__

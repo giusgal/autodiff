@@ -5,8 +5,8 @@
 #include <cmath>
 #include <span>
 
-#include <NeuralModel.h> // Assuming this defines NeuralModel, Optimizer, DualVar, gradient
-#include <omp.h>         // For OpenMP
+#include <NeuralModel.h>
+#include <omp.h>
 
 class NeuralModelOpenmp : public NeuralModel
 {

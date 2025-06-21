@@ -1,5 +1,4 @@
-#ifndef CUDA_SUPPORT_HPP_
-#define CUDA_SUPPORT_HPP_
+#pragma once
 
 /* 
   Allows annotating all functions that need to be available within the kernel with aliases which are 
@@ -32,5 +31,3 @@
 
 
 #endif // USE_CUDA
-
-#endif //CUDA_SUPPORT_HPP_

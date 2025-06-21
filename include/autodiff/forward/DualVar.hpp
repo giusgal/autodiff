@@ -1,5 +1,4 @@
-#ifndef __DUALVAR__HPP__
-#define __DUALVAR__HPP__
+#pragma once
 
 #include <array>
 #include <iostream>
@@ -185,7 +184,7 @@ public:
     }
 
     bool operator!=(DualVar<T> const & rhs) const {
-        return (real_ != rhs.real);
+        return (real_ != rhs.real_);
     }
     bool operator!=(T const & rhs) const {
         return (real_ != rhs);
@@ -351,5 +350,3 @@ DualVar<T> tanh(DualVar<T> const & arg) {
     
 }; // namespace forward
 }; // namespace autodiff
-
-#endif // __DUALVAR__HPP__

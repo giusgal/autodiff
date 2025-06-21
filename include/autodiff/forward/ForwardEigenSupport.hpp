@@ -1,5 +1,5 @@
-#ifndef EIGENSUPPORT_HPP_
-#define EIGENSUPPORT_HPP_
+#pragma once
+
 #include "DualVar.hpp"
 #include <Eigen/Core>
 
@@ -55,4 +55,3 @@ const dv& real(const dv &x) { return x; }
 dv abs2(const dv &x) { return x*x; }
 
 }
-#endif // EIGENSUPPORT_HPP_

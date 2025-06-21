@@ -1,5 +1,4 @@
-#ifndef LINEARMODEL_H
-#define LINEARMODEL_H
+#pragma once
 
 #include "DualVar.hpp"
 #include <iostream>
@@ -8,7 +7,7 @@
 #include <algorithm>
 
 #include "IModel.h"
-#include "ForwardDifferentiator.hpp"
+#include "ForwardUtility.hpp"
 #include "../optimizer/Optimizer.h"
 using namespace autodiff::forward;
 
@@ -109,5 +108,3 @@ protected:
     }
 
 };
-
-#endif //LINEARMODEL_H

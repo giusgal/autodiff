@@ -1,5 +1,4 @@
-#ifndef FORWARD_DIFFERENTIATOR__HPP__
-#define FORWARD_DIFFERENTIATOR__HPP__
+#pragma once
 
 #include <vector>
 #include <functional>
@@ -239,5 +238,3 @@ void jacobian_cuda(
 
 }; // namespace forward
 }; // namespace autodiff
-
-#endif // FORWARD_DIFFERENTIATOR__HPP__

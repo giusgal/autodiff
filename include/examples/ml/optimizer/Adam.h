@@ -1,5 +1,4 @@
-#ifndef ADAM_H
-#define ADAM_H
+#pragma once
 
 #include <cmath>
 #include <algorithm>
@@ -65,5 +64,3 @@ public:
         }
     }
 };
-
-#endif // ADAM_H

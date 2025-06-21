@@ -2,11 +2,10 @@
 // Created on 5/16/25.
 //
 
-#ifndef NEURALMODEL_H
-#define NEURALMODEL_H
+#pragma once
 
 #include "DualVar.hpp"
-#include "ForwardDifferentiator.hpp"
+#include "ForwardUtility.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -207,6 +206,3 @@ public:
         std::cout << "]\n";
     }
 };
-
-
-#endif //NEURALMODEL_H

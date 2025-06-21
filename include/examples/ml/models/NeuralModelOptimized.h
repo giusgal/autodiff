@@ -1,5 +1,5 @@
-#ifndef NEURALMODELOPTIMIZED_H
-#define NEURALMODELOPTIMIZED_H
+#pragma once
+
 #include <span>
 
 #include "NeuralModel.h"
@@ -81,5 +81,3 @@ class NeuralModelOptimized : public NeuralModel
     }
 
 };
-
-#endif //NEURALMODELOPTIMIZED_H

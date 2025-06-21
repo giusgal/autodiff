@@ -1,5 +1,4 @@
-#ifndef __FUNCTIONS_HPP__
-#define __FUNCTIONS_HPP__
+#pragma once
 
 #include "Node.hpp"
 #include <cmath>
@@ -204,7 +203,3 @@ public:
 
 }; // namespace reverse
 }; // namespace autodiff 
-
-
-
-#endif // __FUNCTIONS_HPP__

@@ -1,5 +1,4 @@
-#ifndef JACOBIAN_HPP_
-#define JACOBIAN_HPP_
+#pragma once
 
 #include <functional>
 #include <Eigen/Dense>
@@ -12,10 +11,10 @@
 #include "JacobianTraits.hpp"
 #include "ForwardEigenSupport.hpp"
 #include "CudaSupport.hpp"
-#include "ForwardDifferentiator.hpp"
+#include "ForwardUtility.hpp"
 
-#include "EigenSupport.hpp"
-#include "DerivativeUtility.hpp"
+#include "ReverseEigenSupport.hpp"
+#include "ReverseUtility.hpp"
 
 namespace newton {
 
@@ -140,5 +139,3 @@ protected:
 };
 #endif // __CUDACC__
 }; // namespace newton
-
-#endif // JACOBIAN_HPP_

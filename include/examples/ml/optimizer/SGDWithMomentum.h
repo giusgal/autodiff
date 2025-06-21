@@ -2,8 +2,8 @@
 // Created by sheldon on 5/14/25.
 //
 
-#ifndef SGDWITHMOMENTUM_H
-#define SGDWITHMOMENTUM_H
+#pragma once
+
 #include <vector>
 
 #include "Optimizer.h"
@@ -28,5 +28,3 @@ public:
         }
     }
 };
-
-#endif //SGDWITHMOMENTUM_H

@@ -1,6 +1,5 @@
+#pragma once
 
-#ifndef SGD_H
-#define SGD_H
 #include "Optimizer.h"
 
 /* the simplest gradient descent */
@@ -18,5 +17,3 @@ public:
     }
 
 };
-
-#endif //SGD_H

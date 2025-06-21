@@ -1,5 +1,4 @@
-#ifndef __EIGENSUPPORT_HPP__
-#define __EIGENSUPPORT_HPP__
+#pragma once
 
 #include "Var.hpp"
 #include <Eigen/Core>
@@ -60,5 +59,3 @@ inline autodiff::reverse::Var<double> abs2(autodiff::reverse::Var<double> const 
 
 }; // namespace reverse
 }; // namespace autodiff
-
-#endif // __EIGENSUPPORT_HPP__
