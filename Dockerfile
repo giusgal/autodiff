@@ -86,5 +86,5 @@ COPY --from=build /app/build/autodiff_reverse_test .
 # Set the default command to run one of the test executables.
 # You can override this when you run the container.
 # Example: docker run <image_name> ./neural_test
-CMD ["./linear_neural_comparison"]
+#CMD ["./linear_neural_comparison"]
 
