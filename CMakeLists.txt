@@ -11,6 +11,36 @@ find_package(OpenMP REQUIRED)
 # Eigen dependency
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
+# Option to enable CUDA support
+option(ENABLE_CUDA "Enable CUDA compilation" OFF)
+
+
+
+# Enable CUDA if requested
+if(ENABLE_CUDA)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 20)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    
+    # Find CUDA toolkit
+    find_package(CUDAToolkit REQUIRED)
+    
+    # --gpu-architecture sm_75
+    set(CMAKE_CUDA_ARCHITECTURES "75") 
+    
+    # Add CUDA-specific compiler flags
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+    
+    # Add preprocessor definitions for CUDA
+    add_compile_definitions(USE_CUDA EIGEN_USE_GPU)
+    
+
+    message(STATUS "CUDA support enabled")
+else()
+    message(STATUS "CUDA support disabled")
+endif()
+
+
 # Define include directories for the entire project
 include_directories(
         ${CMAKE_SOURCE_DIR}/include
@@ -115,6 +145,13 @@ if(OpenMP_FOUND)
     message(STATUS "OpenMP found and linked for CXX.") # Optional: for confirmation
 else()
     message(WARNING "OpenMP not found. Parallel features will be disabled or cause errors.")
+endif()
+
+# Link CUDA libraries to autodiff if CUDA is enabled
+if(ENABLE_CUDA)
+    add_executable(test_cuda_jac src/autodiff/forward/test-cuda-jac.cu)
+    target_link_libraries(test_cuda_jac PRIVATE autodiff Eigen3::Eigen CUDA::cudart CUDA::cublas)
+    set_property(TARGET test_cuda_jac PROPERTY CUDA_RUNTIME_LIBRARY Shared)
 endif()
 
 # --- Add reverse example executables --- TODO: remove 

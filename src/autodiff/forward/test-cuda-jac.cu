@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <chrono>
 #include "DualVar.hpp"
-#include "Jacobian.hpp"
+#include "ForwardDifferentiator.hpp"
 #include "CudaSupport.hpp"
 #include "example-functions.hpp"
 
@@ -22,11 +22,12 @@ int main() {
     Eigen::VectorXd real_eval_cpu(dim_out);
 
     // Create Jacobian object
-    autodiff::forward::ForwardJac<double> jacobian(dim_out, dim_in, testfun::test_fun);
+    Eigen::MatrixXd j(dim_out, dim_in);
+    
 
     // Test regular CPU compute
     auto t1 = Clock::now();
-    jacobian.compute(x0, real_eval_cpu);
+    autodiff::forward::jacobian<double>(testfun::test_fun, x0, real_eval, j);
     auto t2 = Clock::now();
     auto cpu_time = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
@@ -36,11 +37,9 @@ int main() {
 #ifdef USE_CUDA
 
     autodiff::forward::CudaFunctionWrapper<double> cudafun = testfun::createcudafn();
-
-    autodiff::forward::CudaJac<double> jacobian_cu(dim_out, dim_in, cudafun);
     // Test CUDA compute
     auto t3 = Clock::now();
-    jacobian_cu.compute(x0);
+    autodiff::forward::jacobian<double>(cudafun, x0, real_eval, j);
     auto t4 = Clock::now();
     auto cuda_time = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
 

@@ -44,8 +44,8 @@ int main() {
   auto big_fun = make_big_test_fun(dim_in, dim_out);
 
   // Sequential
-  auto t1 = Clock::now();
   Eigen::MatrixXd j(dim_out, dim_in);
+  auto t1 = Clock::now();
   autodiff::forward::jacobian<double>(big_fun, x0, real_eval, j);
   auto t2 = Clock::now();
   std::cout << "Sequential Jacobian norm:\n" << j.norm() << std::endl;
