@@ -36,7 +36,7 @@ int main() {
   using Clock = std::chrono::high_resolution_clock;
   using ms = std::chrono::milliseconds;
 
-  int dim_in = 10;
+  int dim_in = 1000;
   int dim_out = 1000;
   RealVec x0 = RealVec::Random(dim_in);
   RealVec real_eval(dim_out);
@@ -51,15 +51,6 @@ int main() {
   std::cout << "Sequential Jacobian norm:\n" << j.norm() << std::endl;
   std::cout << "Function value norm: " << real_eval.transpose().norm() << std::endl;
   std::cout << "Sequential time: " << std::chrono::duration_cast<ms>(t2 - t1).count() << " ms\n";
-
-  // Parallel
-  Eigen::MatrixXd j1(dim_out, dim_in);
-  auto t3 = Clock::now();
-  autodiff::forward::jacobian_parallel<double>(big_fun, x0, real_eval, j1);
-  auto t4 = Clock::now();
-  std::cout << "Prallel Jacobian norm:\n" << j1.norm() << std::endl;
-  std::cout << "Function value norm: " << real_eval.transpose().norm() << std::endl;
-  std::cout << "Parallel time: " << std::chrono::duration_cast<ms>(t4 - t3).count() << " ms\n";
 
   return 0;
 }

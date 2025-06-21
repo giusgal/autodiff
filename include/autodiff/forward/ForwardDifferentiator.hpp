@@ -1,5 +1,5 @@
-#ifndef __FORWARD_DIFFERENTIATOR__HPP__
-#define __FORWARD_DIFFERENTIATOR__HPP__
+#ifndef FORWARD_DIFFERENTIATOR__HPP__
+#define FORWARD_DIFFERENTIATOR__HPP__
 
 #include <vector>
 #include <functional>
@@ -87,40 +87,6 @@ RealVec<T> gradient(
  */
 template <typename T>
 inline void jacobian(
-    std::function<DualVec<T>(DualVec<T>)> f,
-    RealVec<T> const & x,
-    RealVec<T> & f_x,
-    JacType<T> & jac
-) {
-
-    std::size_t input_dim = x.size();
-    std::size_t output_dim = f_x.size();
-
-    // create dual vector to feed the function as input
-    DualVec<T> x0d(input_dim);
-    DualVec<T> eval(output_dim);
-
-    for(int i = 0; i < input_dim; i++) {
-      x0d[i] = DualVar(x[i], 0.0);
-    }
-
-    for (int i = 0; i < input_dim; i++) {
-      x0d[i].setInf(1.0);
-      eval = f(x0d);
-      for (int j = 0; j < output_dim; j++) {
-        jac(j, i) = eval[j].getInf();
-      }
-      x0d[i].setInf(0.0);
-    }
-
-    // write the value of fn in f_x pointer (recycle last evaluation)
-    for (int i = 0; i < output_dim; i++) {
-      f_x[i] = eval[i].getReal();
-    }
-}
-
-template <typename T>
-inline void jacobian_parallel(
     std::function<DualVec<T>(DualVec<T>)> f,
     RealVec<T> const & x,
     RealVec<T> & f_x,
@@ -274,4 +240,4 @@ void jacobian_cuda(
 }; // namespace forward
 }; // namespace autodiff
 
-#endif // __FORWARD_DIFFERENTIATOR__HPP__
+#endif // FORWARD_DIFFERENTIATOR__HPP__

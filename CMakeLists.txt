@@ -102,12 +102,16 @@ add_executable(newton_test src/examples/newton/test-newton.cpp)
 target_link_libraries(newton_test PRIVATE newton autodiff Eigen3::Eigen) # Link to components and core autodif
 
 
+# --- Add forward example executables --- 
+add_executable(forward_jacobian_test src/autodiff/forward/test-jacobian.cpp)
+target_link_libraries(forward_jacobian_test PRIVATE autodiff Eigen3::Eigen)
 
 # Linking executable files to OpenMP library for parallelization
 if(OpenMP_FOUND)
     target_link_libraries(span_modelsize_test PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(span_test PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(newton_test PUBLIC OpenMP::OpenMP_CXX)
+    target_link_libraries(forward_jacobian_test PUBLIC OpenMP::OpenMP_CXX)
     message(STATUS "OpenMP found and linked for CXX.") # Optional: for confirmation
 else()
     message(WARNING "OpenMP not found. Parallel features will be disabled or cause errors.")
@@ -119,9 +123,6 @@ add_executable(autodiff_reverse_test src/autodiff/reverse/test.cpp)
 target_link_libraries(autodiff_reverse_test PRIVATE autodiff Eigen3::Eigen)
 
 
-# --- Add forward example executables --- 
-add_executable(forward_jacobian_test src/autodiff/forward/test-jacobian.cpp)
-target_link_libraries(forward_jacobian_test PRIVATE autodiff Eigen3::Eigen)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

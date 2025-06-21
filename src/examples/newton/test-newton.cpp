@@ -57,7 +57,8 @@ std::function<dvec(const dvec &)> create_test_fn(int N, int M) {
 void test_newton(int n_runs, newton::NewtonOpts opts, std::function<dvec(const dvec &)> * fun_array){
   for (int i = 0; i < n_runs; i++) {
     auto fn = fun_array[i];
-    newton::Newton<double> nsolver(fn, opts);
+    newton::ForwardJac fj(opts.dim_out, opts.dim_in, fn);
+    newton::Newton nsolver(fj, opts);
     Eigen::VectorXd init_guess = Eigen::VectorXd::Random(opts.dim_in);
     auto res = nsolver.solve(init_guess);
     
@@ -105,7 +106,6 @@ int main() {
   newtonopts.tol = 1e-6;
   newtonopts.dim_in = dim_in;
   newtonopts.dim_out = dim_out;
-  newtonopts.parallel = 0;
 
 
   auto tstart = high_resolution_clock::now();
@@ -113,14 +113,6 @@ int main() {
   auto tend = high_resolution_clock::now();
   duration<double, std::milli> elapsed = tend - tstart;
   std::cout << "Time taken with sequential Jacobian " << elapsed.count() << std::endl;
-
-  newtonopts.parallel = 1;
-  tstart = high_resolution_clock::now();
-  test_newton(nruns, newtonopts, fun_array);
-  tend = high_resolution_clock::now();
-  elapsed = tend - tstart;
-  std::cout << "Time taken with parallel Jacobian " << elapsed.count() << std::endl;
-
 }
 
 

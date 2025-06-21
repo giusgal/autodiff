@@ -9,23 +9,16 @@ struct NewtonOpts {
   double tol;
   int dim_in;
   int dim_out;
-  int parallel;
 };
 
-template <typename T>
-class Newton : public autodiff::forward::JacobianTraits<T>
+class Newton : public newton::JacobianTraits
 {
-  using NLSType = typename Newton::NLSType;
-  using RealVec = typename Newton::RealVec;
 public: 
-
-  Newton() = default;
-
   Newton(
-    const NLSType &fn, NewtonOpts opts
+    JacobianBase & J, NewtonOpts opts
   ):
-    _nls{fn}, _opts{opts}, 
-    _J{autodiff::forward::ForwardJac<T>(opts.dim_in, opts.dim_out, std::forward<const NLSType &>(fn))} {};
+    _opts{opts}, 
+    _J{J} {};
 
   
   RealVec solve(const RealVec &x0) {
@@ -34,7 +27,7 @@ public:
 
     int iter = 0;
     for(; iter < _opts.maxit; iter++) {
-      x1 = _J.solve(x, resid, _opts.parallel);
+      x1 = _J.solve(x, resid);
 
       x = x - x1;
 
@@ -60,9 +53,8 @@ public:
 
 private:
 
-  autodiff::forward::ForwardJac<T> _J;
+  JacobianBase & _J;
   // non linear system
-  NLSType _nls;
   NewtonOpts _opts;
 };
 
