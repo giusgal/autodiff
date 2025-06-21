@@ -1,0 +1,9 @@
+# Ignore the local build directory to ensure a clean build inside Docker.
+build/
+
+# Ignore IDE-specific folders
+.idea/
+.vscode/
+
+# Ignore git folder
+.git/
