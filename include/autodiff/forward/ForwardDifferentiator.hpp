@@ -122,7 +122,7 @@ inline void jacobian(
     }
 }
 
-#ifdef USE_CUDA
+#ifdef __CUDACC__
 
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
