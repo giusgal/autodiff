@@ -33,5 +33,6 @@ echo "---"
 # -it       : Allocate a pseudo-TTY and keep STDIN open (interactive mode).
 # $IMAGE_NAME : The image to run.
 # /bin/bash : Overrides the default CMD and starts a bash shell.
-docker run --rm -it $IMAGE_NAME /bin/bash
+#docker run --rm $IMAGE_NAME /bin/bash
+docker run --rm -it -v "$(pwd):/app/autodiff" $IMAGE_NAME /bin/bash
 

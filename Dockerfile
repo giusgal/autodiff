@@ -15,10 +15,12 @@ RUN apt-get update && \
     gpg \
     ca-certificates && \
     # Add the Kitware repository to get an up-to-date version of CMake (required version >= 3.28)
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null && \
-    apt-get update && \
-    apt-get install -y cmake
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg 
+
+   RUN echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" > /etc/apt/sources.list.d/kitware.list 
+     
+   RUN apt-get update
+   RUN apt-get install -y cmake
 
 # Install project-specific dependencies: Eigen3 and OpenMP
 RUN apt-get install -y \
@@ -27,7 +29,7 @@ RUN apt-get install -y \
     # Clean up apt cache to reduce image size
     rm -rf /var/lib/apt/lists/*
 
-# Set the working directory inside the container
+# Set the working directory inside the container:
 WORKDIR /app
 
 # Copy the entire project source code into the working directory
@@ -49,6 +51,26 @@ RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory for the final image
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    g++ \
+    wget \
+    gpg \
+    ca-certificates && \
+    # Add the Kitware repository to get an up-to-date version of CMake (required version >= 3.28)
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg 
+
+   RUN echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" > /etc/apt/sources.list.d/kitware.list 
+     
+   RUN apt-get update
+   RUN apt-get install -y cmake
+
+# Install project-specific dependencies: Eigen3 and OpenMP
+RUN apt-get install -y \
+    libeigen3-dev \
+    libomp-dev
 
 # Copy all the compiled executables from the build stage into the final image
 COPY --from=build /app/build/linear_neural_comparison .
