@@ -27,7 +27,7 @@ int main() {
 
     // Test regular CPU compute
     auto t1 = Clock::now();
-    autodiff::forward::jacobian<double>(testfun::test_fun, x0, real_eval_cpu j);
+    autodiff::forward::jacobian<double>(testfun::test_fun, x0, real_eval_cpu, j);
     auto t2 = Clock::now();
     auto cpu_time = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
