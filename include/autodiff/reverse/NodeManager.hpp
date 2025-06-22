@@ -126,6 +126,11 @@ public:
         
         // resets the arena allocator without releasing the used memory
         arena_.clear();
+
+        // allocate a first dummy node
+        void * ptr = arena_.alloc(sizeof(IndNode<T>), alignof(IndNode<T>));
+        IndNode<T> * node_ptr = new (ptr) IndNode<T>{T{0.0}};
+        nodes_.emplace_back(node_ptr);
     }
 
     // TODO: return memory from both the arena and the vector
@@ -133,9 +138,9 @@ public:
     // }
 
     // TODO: delete?
-    void reserve(size_t n_nodes) {
-        nodes_.reserve(n_nodes);
-    }
+    // void reserve(size_t n_nodes) {
+    //     nodes_.reserve(n_nodes);
+    // }
 
     /**
      * Returns the number of nodes in the Tape
@@ -145,7 +150,12 @@ public:
     }
 
 private:
-    NodeManager() = default;
+    NodeManager() {
+        // allocate a first dummy node
+        void * ptr = arena_.alloc(sizeof(IndNode<T>), alignof(IndNode<T>));
+        IndNode<T> * node_ptr = new (ptr) IndNode<T>{T{0.0}};
+        nodes_.emplace_back(node_ptr);
+    }
 
     // TODO: manage exceptions
     ArenaAllocator<4096> arena_;

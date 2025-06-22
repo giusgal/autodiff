@@ -17,7 +17,7 @@ public:
     /**
      * Creates a new var which doesn't track any node in the Tape
      */
-    Var() = default;
+    Var(): node_idx_{0} {}
 
     /**
      * Creates a new Var which tracks a newly created Independent Node in
@@ -66,6 +66,11 @@ public:
         node_idx_ = new_node<AddNode, T>(node_idx_, rhs.node_idx_);
         return *this;
     }
+    Var<T> & operator+=(T const & rhs) {
+        Var<T> tmp = Var<T>{rhs};
+        node_idx_ = new_node<AddNode, T>(node_idx_, tmp.node_idx_);
+        return *this;
+    }
 
 
     Var<T> operator-() const {
@@ -83,6 +88,11 @@ public:
         node_idx_ = new_node<SubNode, T>(node_idx_, rhs.node_idx_);
         return *this;
     }
+    Var<T> & operator-=(T const & rhs) {
+        Var<T> tmp = Var<T>{rhs};
+        node_idx_ = new_node<SubNode, T>(node_idx_, tmp.node_idx_);
+        return *this;
+    }
 
 
     Var<T> operator*(Var<T> const & rhs) const {
@@ -96,6 +106,11 @@ public:
         node_idx_ = new_node<ProdNode, T>(node_idx_, rhs.node_idx_);
         return *this;
     }
+    Var<T> & operator*=(T const & rhs) {
+        Var<T> tmp = Var<T>{rhs};
+        node_idx_ = new_node<ProdNode, T>(node_idx_, tmp.node_idx_);
+        return *this;
+    }
 
 
     Var<T> operator/(Var<T> const & rhs) const {
@@ -107,6 +122,11 @@ public:
     }
     Var<T> & operator/=(Var<T> const & rhs) {
         node_idx_ = new_node<DivNode, T>(node_idx_, rhs.node_idx_);
+        return *this;
+    }
+    Var<T> & operator/=(T const & rhs) {
+        Var<T> tmp = Var<T>{rhs};
+        node_idx_ = new_node<DivNode, T>(node_idx_, tmp.node_idx_);
         return *this;
     }
 
@@ -298,6 +318,37 @@ template <typename U>
 Var<U> sqrt(Var<U> const & arg) {
     size_t idx = new_node<SqrtNode, U>(arg.node_idx_);
     return Var<U>::new_var_from_idx(idx);
+}
+
+/******** Other Operators ********/
+template <typename U>
+bool operator<(U const & lhs, Var<U> const & rhs) {
+    return (lhs < rhs.value());
+}
+
+template <typename U>
+bool operator>(U const & lhs, Var<U> const & rhs) {
+    return (lhs > rhs.value());
+}
+
+template <typename U>
+bool operator==(U const & lhs, Var<U> const & rhs) {
+    return (lhs == rhs.value());
+}
+
+template <typename U>
+bool operator!=(U const & lhs, Var<U> const & rhs) {
+    return (lhs != rhs.value());
+}
+
+template <typename U>
+bool operator<=(U const & lhs, Var<U> const & rhs) {
+    return (lhs <= rhs.value());
+}
+
+template <typename U>
+bool operator>=(U const & lhs, Var<U> const & rhs) {
+    return (lhs >= rhs.value());
 }
 
 }; // namespace reverse
