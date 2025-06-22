@@ -51,6 +51,8 @@ public:
     ArenaAllocator& operator=(ArenaAllocator const &) = delete;
     
     // Move allowed
+    //  (we need to declare them because deleting the copy and
+    //  copy-assignment, deletes these as well)
     ArenaAllocator(ArenaAllocator &&) = default;
     ArenaAllocator& operator=(ArenaAllocator &&) = default;
 
@@ -156,21 +158,11 @@ public:
         current_block_ = 0;
     }
 
-    size_t n_blocks() const {
-        return blocks_start_.size();
-    }
-
-    size_t current_block() const {
-        return current_block_;
-    }
-
-    size_t remaining_size() const {
-        return remaining_size_;
-    }
-
-    size_t total_size() const {
-        return n_blocks()*BLOCK_SIZE;
-    }
+    size_t n_blocks() const { return blocks_start_.size(); }
+    size_t current_block() const { return current_block_; }
+    size_t remaining_size() const { return remaining_size_; }
+    size_t total_size() const { return n_blocks()*BLOCK_SIZE; }
+    void * data() const { return data_; }
 private:
     void * data_;
     size_t remaining_size_;

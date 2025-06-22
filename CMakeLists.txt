@@ -202,11 +202,16 @@ target_link_libraries(var_test autodiff GTest::gtest_main)
 add_executable(reverse_utility_test test/reverse_utility_test.cpp)
 target_link_libraries(reverse_utility_test autodiff GTest::gtest_main Eigen3::Eigen)
 
+# ArenaAllocator tests
+add_executable(arena_allocator_test test/arena_allocator_test.cpp)
+target_link_libraries(arena_allocator_test autodiff GTest::gtest_main)
+
 include(GoogleTest)
 gtest_discover_tests(dualvar_test)
 gtest_discover_tests(fw_diff_test)
 gtest_discover_tests(var_test)
 gtest_discover_tests(reverse_utility_test)
+gtest_discover_tests(arena_allocator_test)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.
