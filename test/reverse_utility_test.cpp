@@ -11,6 +11,7 @@
 using Var = autodiff::reverse::Var<double>;
 using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
 using Vec = Eigen::Vector<double, Eigen::Dynamic>;
+using Jac = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
 void gradient_finite_diff(
     std::function<double(Vec const &)> f,
@@ -29,34 +30,40 @@ void gradient_finite_diff(
     }
 }
 
+void jacobian_finite_diff(
+    std::function<Vec(Vec const &)> f,
+    Vec const & x,
+    Vec & f_x,
+    Jac & jac
+) {
+    constexpr double incr = 0.000001;
+
+    f_x = f(x);
+
+    jac.resize(f_x.size(), x.size());
+    for(size_t j = 0; j < x.size(); ++j) {
+        Vec h = Vec::Zero(x.size());
+        h(j) = incr;
+
+        jac.block(0,j,jac.rows(),1) = (f(x + h) - f(x))/incr;
+    }
+}
+
 template <typename OutType, typename InType>
 OutType f_N1_1(InType const & x) {
     // 2 inputs
     return sin(x(0)) + log(1.0 + exp(x(1))) + 0.5 * x(0) * x(1);
 }
 
-// template <typename OutType, typename InType>
-// OutType f_N1_2(InType const & x) {
-//     // 42 inputs
-//     OutType y = 0.0;
-//
-//     y += sin(x(0)) * cos(x(1)) + tan(x(2)) / (1.0 + exp(-x(3)));
-//     y += log(1.0 + exp(x(4))) * sqrt(abs(x(5))) - 0.5 * x(6) * x(7);
-//     y += pow(x(8), 2.0) + pow(x(9), 3.0) - exp(-x(10)) * sin(x(11));
-//     y += sqrt(pow(x(12), 2.0) + pow(x(13), 2.0)) * cos(x(14));
-//     y += log(abs(x(15)) + 1.0) * tanh(x(16)) + pow(x(17), x(18));
-//     y += sin(x(19) * x(20)) + cos(x(21) + x(22)) - x(23) / (1.0 + abs(x(24)));
-//     y += exp(x(25)) * log(x(26) * x(27) + 1.0) - pow(x(28), 0.5) * tan(x(29));
-//     y += 0.25 * pow(sin(x(30) + x(31)), 2.0) + 0.75 * cos(x(32) * x(33));
-//     y += tanh(x(34)) * sqrt(abs(x(35))) + pow(x(36) + x(37), 1.5);
-//     y += log(1.0 + exp(sin(x(38) * cos(x(39))))) * (x(40) - x(41));
-//
-//     return y;
-// }
-
-
 template <typename OutType, typename InType>
-OutType f_NM(InType const & x) {
+OutType f_NM_1(InType const & x) {
+    OutType res(2);
+
+    res <<
+        sin(x(0)) + log(1.0 + exp(x(1))) + 0.5 * x(0) * x(1),
+        tanh(x(1)) + sqrt(abs(x(1))) * x(0) * x(1);
+
+    return res;
 }
 
 TEST(ReverseUtilityTest, GradientTest1) {
@@ -74,17 +81,19 @@ TEST(ReverseUtilityTest, GradientTest1) {
     }
 }
 
-// TEST(ReverseUtilityTest, GradientTest2) {
-//     Vec grad_fd;
-//     Vec grad_ad;
-//     Vec x = Vec::Ones(42);
-//     double f_x;
-//
-//     gradient_finite_diff(f_N1_2<double, Vec>, x, f_x, grad_fd);
-//     autodiff::reverse::gradient(f_N1_1<Var, VecVar>, x, f_x, grad_ad);
-//
-//     double eps = 0.0001;
-//     for(size_t i = 0; i < grad_ad.size(); ++i) {
-//         ASSERT_NEAR(grad_fd(i), grad_ad(i), eps) << "Test failed at i = " << i;
-//     }
-// }
+TEST(ReverseUtilityTest, JacobianTest1) {
+    Jac jac_fd;
+    Jac jac_ad;
+    Vec x = Vec::Ones(2);
+    Vec f_x;
+
+    jacobian_finite_diff(f_NM_1<Vec, Vec>, x, f_x, jac_fd);
+    autodiff::reverse::jacobian(f_NM_1<VecVar, VecVar>, x, f_x, jac_ad);
+
+    double eps = 0.0001;
+    for(size_t i = 0; i < jac_ad.rows(); ++i) {
+        for(size_t j = 0; j < jac_ad.cols(); ++j) {
+            ASSERT_NEAR(jac_fd(i,j), jac_ad(i,j), eps);
+        }
+    }
+}
