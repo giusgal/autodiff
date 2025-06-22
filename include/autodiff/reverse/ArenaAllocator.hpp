@@ -58,7 +58,9 @@ public:
         remaining_size_{BLOCK_SIZE},
         current_block_{0}
     {
-        blocks_start_.emplace_back(new Byte[BLOCK_SIZE]);
+        // Note: by doing this we avoid memory leaks
+        auto new_block = std::make_unique<Byte[]>(BLOCK_SIZE);
+        blocks_start_.emplace_back(std::move(new_block));
         data_ = blocks_start_.back().get();
     }
 
@@ -101,8 +103,9 @@ public:
 
             } else {
                 // allocate new block
-                // TODO: exceptions
-                blocks_start_.emplace_back(new Byte[BLOCK_SIZE]);
+                // Note: by doing this we avoid memory leaks
+                auto new_block = std::make_unique<Byte[]>(BLOCK_SIZE);
+                blocks_start_.emplace_back(std::move(new_block));
                 data_ = blocks_start_.back().get();
 
             }
