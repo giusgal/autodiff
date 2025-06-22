@@ -19,6 +19,10 @@
     ```bash
     cmake ..
     ```
+    To enable CUDA computation, pass the following option to CMake:
+    ```bash
+    cmake -DENABLE_CUDA=ON ..
+    ```
 4.  Build the project
     ```bash
     make
