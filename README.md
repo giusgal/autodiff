@@ -53,3 +53,13 @@ chmod u+x run_interactive.sh
 3. Then you can take a break. After some minutes, you will find yourself inside the Docker container!
    You can either run the tests or create the build folder in the project folder and start developing.
 
+## Plotting results
+Some tests generate CSV files; for some, there are corresponding Python scripts to plot the CSV results. You can call those scripts like the following:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install matplotlib pandas
+python plot_models.py
+deactivate
+```
+You can create a Python environment to execute those files. This will make your installation clean.
