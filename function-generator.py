@@ -106,9 +106,8 @@ def generate_header_file(input_dim: int, output_dim: int, complexity: int, expr_
     header_content = f'''#pragma once
 #include <Eigen/Dense>
 #include <cmath>
-#include "../../autodiff/forward/CudaSupport.hpp"
-#include "../../autodiff/forward/autodiff.hpp"
-#include "Jacobian.hpp"
+#include "DualVar.hpp"
+#include "CudaSupport.hpp"
 
 using dv = autodiff::forward::DualVar<double>;
 using dvec = Eigen::Matrix<dv, Eigen::Dynamic, 1>;
@@ -161,8 +160,8 @@ namespace testfun {{
         return acc;
     };
 
-    newton::CudaFunctionWrapper<double> createcudafn() {
-        newton::CudaFunctionWrapper<double> cudafun;
+    autodiff::forward::CudaFunctionWrapper<double> createcudafn() {
+        autodiff::forward::CudaFunctionWrapper<double> cudafun;
         cudafun.register_fn_host<cu_f0>();
         return cudafun;
     }

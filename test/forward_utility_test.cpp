@@ -13,7 +13,7 @@ protected:
     void SetUp() override {
         // Test values
         x = 3.0; 
-        eps = 1e-10;
+        eps = 1e-15;
     }
 
     double x, y, z;
