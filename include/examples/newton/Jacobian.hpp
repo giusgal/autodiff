@@ -24,20 +24,9 @@ namespace newton {
  */
 class JacobianBase : public JacobianTraits {
 public:
-    JacobianBase(std::size_t M, std::size_t N): _M{M}, _N{N}, _J{M,N} {}
-
     virtual ~JacobianBase() = default;
 
-    virtual void compute(const RealVec &, RealVec &) = 0;
     virtual RealVec solve(const RealVec &, RealVec &) = 0;
-
-    JacType getJacobian() const {
-        return _J;
-    }
-protected:
-    size_t _M;
-    size_t _N;
-    JacType _J;
 };
 
 
@@ -49,20 +38,16 @@ protected:
  */
 class ForwardJac final : public JacobianBase {
 public:
-    ForwardJac(std::size_t M, std::size_t N, FwNLSType const & fn):
-        JacobianBase(M, N), _fn{fn} {}
-
-    void compute(const RealVec & x0, RealVec & real_eval) override {
-        jacobian<double>(_fn, x0, real_eval, this->_J);
-    }
+    ForwardJac(FwNLSType const & fn): fn_{fn} {}
 
     RealVec solve(const RealVec & x, RealVec & resid) override {
+        JacType J;
         // update the jacobian
-        compute(x, resid);
-        return this->_J.fullPivLu().solve(resid);
+        autodiff::forward::jacobian<double>(fn_, x, resid, J);
+        return J.fullPivLu().solve(resid);
     }
 protected:
-    FwNLSType const & _fn;
+    FwNLSType const & fn_;
 };
 
 /**
@@ -73,20 +58,16 @@ protected:
  */
 class ReverseJac final : public JacobianBase {
 public:
-    ReverseJac(std::size_t M, std::size_t N, RvNLSType const & fn):
-      JacobianBase(M, N), _fn{fn} {}
-  
-    void compute(const RealVec & x0, RealVec & real_eval) override {
-        jacobian(_fn, x0, real_eval, this->_J);
-    }
+    ReverseJac(RvNLSType const & fn): fn_{fn} {}
 
     RealVec solve(const RealVec & x, RealVec & resid) override {
+        JacType J;
         // update the jacobian
-        compute(x, resid);
-        return this->_J.fullPivLu().solve(resid);
+        autodiff::reverse::jacobian(fn_, x, resid, J);
+        return J.fullPivLu().solve(resid);
     }
 protected:
-    RvNLSType const & _fn;
+    RvNLSType const & fn_;
 };
 
 #ifdef __CUDACC__

@@ -1,13 +1,16 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <vector>
 #include <functional>
 #include "DualVar.hpp"
 #include "Var.hpp"
 
 namespace newton {
 
+/**
+ * @class JacobianTraits
+ * @brief Type aliases used by the Jacobian/Newton classes
+ */
 struct JacobianTraits {
 public:
     // Forward traits
@@ -31,7 +34,6 @@ public:
     // "double" traits
     using RealVec = Eigen::Matrix<double, Eigen::Dynamic, 1>;
     using JacType = Eigen::MatrixXd;
-
 };
 
 }; // namespace newton

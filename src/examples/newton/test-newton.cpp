@@ -73,28 +73,28 @@ std::function<dvec(const dvec &)> create_test_fn(int N, int M) {
     };
 }
 
-void test_newton(int n_runs, newton::NewtonOpts opts, std::function<dvec(const dvec &)> * fun_array){
-  for (int i = 0; i < n_runs; i++) {
-    auto fn = fun_array[i];
-    newton::ForwardJac fj(opts.dim_out, opts.dim_in, fn);
-    newton::Newton nsolver(fj, opts);
-    Eigen::VectorXd init_guess = Eigen::VectorXd::Random(opts.dim_in);
-    auto res = nsolver.solve(init_guess);
-    
-    // test that f(res) is approx. 0
-    dvec res_dual(opts.dim_in), eval(opts.dim_out);
-    for(int i = 0; i < opts.dim_in; i++) {
-      res_dual[i] = dv(res[i]);
-    }
-    eval = fn(res_dual);
-
-    for(int i = 0; i < opts.dim_out; i++) {
-      // assert(eval[i].getReal() < 0.001);
-      ;
-    }
-
-  }
-}
+// void test_newton(int n_runs, newton::NewtonOpts opts, std::function<dvec(const dvec &)> * fun_array) {
+//   for (int i = 0; i < n_runs; i++) {
+//     auto fn = fun_array[i];
+//     newton::ForwardJac fj(opts.dim_out, opts.dim_in, fn);
+//     newton::Newton nsolver(fj, opts);
+//     Eigen::VectorXd init_guess = Eigen::VectorXd::Random(opts.dim_in);
+//     auto res = nsolver.solve(init_guess);
+//     
+//     // test that f(res) is approx. 0
+//     dvec res_dual(opts.dim_in), eval(opts.dim_out);
+//     for(int i = 0; i < opts.dim_in; i++) {
+//       res_dual[i] = dv(res[i]);
+//     }
+//     eval = fn(res_dual);
+//
+//     for(int i = 0; i < opts.dim_out; i++) {
+//       // assert(eval[i].getReal() < 0.001);
+//       ;
+//     }
+//
+//   }
+// }
 
 
 int main() {
@@ -108,7 +108,7 @@ int main() {
     std::function<dvec(const dvec &)> fun_array[nruns];
 
     for(int i = 0; i < nruns; i++) {
-    fun_array[i] = create_test_fn(dim_in, dim_out);
+        fun_array[i] = create_test_fn(dim_in, dim_out);
     }
 
     auto nonLinFun = [](const dvec &x) -> dvec {
@@ -122,9 +122,6 @@ int main() {
     newton::NewtonOpts newtonopts;
     newtonopts.maxit = 100;
     newtonopts.tol = 1e-6;
-    newtonopts.dim_in = dim_in;
-    newtonopts.dim_out = dim_out;
-
 
     // auto tstart = high_resolution_clock::now();
     // test_newton(nruns, newtonopts, fun_array);
@@ -136,13 +133,11 @@ int main() {
     // Reverse test
     newton::NewtonOpts newtonoptsRev = {
         .maxit = 100,
-        .tol = 1e-6,
-        .dim_in = 2,
-        .dim_out = 2
+        .tol = 1e-6
     };
-    newton::ReverseJac J(newtonoptsRev.dim_out, newtonoptsRev.dim_in, funRev);
+    newton::ReverseJac J(funRev);
     newton::Newton nsolver(J, newtonoptsRev);
-    Eigen::VectorXd init_guess = Eigen::VectorXd::Random(newtonoptsRev.dim_in);
+    Eigen::VectorXd init_guess = Eigen::VectorXd::Random(2);
     auto tstartRev = high_resolution_clock::now();
     auto res = nsolver.solve(init_guess);
     auto tendRev = high_resolution_clock::now();
@@ -150,8 +145,3 @@ int main() {
     std::cout << "Time taken with Reverse Jacobian "
         << elapsed.count() << std::endl;
 }
-
-
-
-
-
