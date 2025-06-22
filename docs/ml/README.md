@@ -57,7 +57,7 @@ epochs = 1000
 
 ```
 
-![neural models with different sizes](model_comparison_hidden_sweep.png)
+![neural models with different sizes](../../img/model_comparison_hidden_sweep.png)
 
 
 ### Tests of performance between standard, optimized, and openMP models
@@ -74,13 +74,13 @@ epochs = 1000
 The performance:
 As you can see the optimized model is a constant speed-up compared to the serial model, where using more threads gives an exponential speed-up.
 
-![neural performance](model_performance.png)
+![neural performance](../../img/model_performance.png)
 
 The approximation:
 
 Talking about this approximation, we can see that the optimized and standard models are good approximations, but when we talk about AI, too much approximation can lead to overfitting. Whereas the parallelized model is not that approximated, because the averaged gradients somehow destroy the SGD effect, it generally approximates well the trend.
 
-![neural approximation](three_models_verification.png)
+![neural approximation](../../img/three_models_verification.png)
 
 
 
