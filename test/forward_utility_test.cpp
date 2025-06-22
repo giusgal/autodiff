@@ -90,8 +90,8 @@ TEST_F(fwdiff, jacobian_calculation) {
     RealVec<double> point(2);
     point << 2.0, 3.0;
     
-    RealVec<double> f_x(2);  // Function values at point
-    JacType<double> jac(2, 2);  // Jacobian matrix
+    RealVec<double> f_x(2);  
+    JacType<double> jac(2, 2);  
     
     jacobian(f, point, f_x, jac);
     

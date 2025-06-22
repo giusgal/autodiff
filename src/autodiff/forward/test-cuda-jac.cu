@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <chrono>
 #include "DualVar.hpp"
-#include "ForwardDifferentiator.hpp"
+#include "ForwardUtility.hpp"
 #include "CudaSupport.hpp"
 #include "example-functions.hpp"
 
