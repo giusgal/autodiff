@@ -20,9 +20,9 @@ using CudaDeviceFn = DualVar<T> (*)(const DualVec<T>&, const int out_idx);
 
 
 template <typename T>
-DualVar<T> derivative(std::function<DualVar<T>(DualVar<T>)> f, T x0){
+T derivative(std::function<DualVar<T>(DualVar<T>)> f, T x0){
     DualVar<T> res = f(DualVar<T>(x0, 1.0));
-    return res;
+    return res.getInf();
 }
 
 template <typename T>
@@ -54,19 +54,16 @@ RealVec<T> gradient(
     std::function<DualVar<T>(DualVec<T>)> f,  
     RealVec<T> x
 ) {
-    DualVec<T> xd;
-    RealVec<T> res;
-
-    xd.reserve(x.size());
-    res.reserve(x.size());
+    DualVec<T> xd(x.size());
+    RealVec<T> res(x.size());
 
     for(int i = 0; i < x.size(); i++){
-        xd.push_back(DualVar<T>(x[i], 0.0));
+        xd[i] = DualVar<T>(x[i], 0.0);
     }
 
     for(int i = 0; i < x.size(); i++){
         xd[i].setInf(1.0);
-        res.push_back(f(xd).getInf());
+        res[i] = f(xd).getInf();
         xd[i].setInf(0.0);
     }
 
