@@ -188,19 +188,25 @@ endif()
 
 enable_testing()
 
+# --- Forward tests ---
 add_executable(dualvar_test test/dualvar_test.cpp)
 target_link_libraries(dualvar_test autodiff GTest::gtest_main)
 
 add_executable(fw_diff_test test/forward_utility_test.cpp)
 target_link_libraries(fw_diff_test autodiff GTest::gtest_main Eigen3::Eigen)
 
+# --- Reverse tests ---
 add_executable(var_test test/var_test.cpp)
 target_link_libraries(var_test autodiff GTest::gtest_main)
+
+add_executable(reverse_utility_test test/reverse_utility_test.cpp)
+target_link_libraries(reverse_utility_test autodiff GTest::gtest_main Eigen3::Eigen)
 
 include(GoogleTest)
 gtest_discover_tests(dualvar_test)
 gtest_discover_tests(fw_diff_test)
 gtest_discover_tests(var_test)
+gtest_discover_tests(reverse_utility_test)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

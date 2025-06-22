@@ -39,13 +39,20 @@ template <size_t BLOCK_SIZE = 4096>
 class ArenaAllocator {
     using Byte = std::byte;
 public:
-    // No copy or move allowed
+    // Copy not allowed
+    // Why?
+    //  Actually we could copy the content of the arena
+    //  into another arena but:
+    //   1. There aren't many cases where a copy would
+    //      be useful
+    //   2. The operation would be slow for arenas that
+    //      contain a lot of objects
     ArenaAllocator(ArenaAllocator const &) = delete;
     ArenaAllocator& operator=(ArenaAllocator const &) = delete;
-    // TODO: it should be movable by default so if you need it change the
-    //  2 lines below from "delete" to "default"
-    ArenaAllocator(ArenaAllocator &&) = delete;
-    ArenaAllocator& operator=(ArenaAllocator &&) = delete;
+    
+    // Move allowed
+    ArenaAllocator(ArenaAllocator &&) = default;
+    ArenaAllocator& operator=(ArenaAllocator &&) = default;
 
     ArenaAllocator():
         remaining_size_{BLOCK_SIZE},
