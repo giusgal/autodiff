@@ -57,6 +57,19 @@ TEST_F(DualVarTest, Addition) {
     auto sum3 = 3.0 + x;
     EXPECT_EQ(sum3.getReal(), 5.0);
     EXPECT_EQ(sum3.getInf(), 1.0);
+
+    //DualVar + DualVar
+    auto sum_assign1 = x;
+    sum_assign1 += x;
+    EXPECT_EQ(sum_assign1.getReal(), 4.0);
+    EXPECT_EQ(sum_assign1.getInf(), 2.0);
+
+    //DualVar + Scalar
+    auto sum_assign2 = x;
+    sum_assign2 += 5.0;
+    EXPECT_EQ(sum_assign2.getReal(), 7.0);
+    EXPECT_EQ(sum_assign2.getInf(), 1.0);
+
 }
 
 // Test subtraction operations
@@ -75,6 +88,18 @@ TEST_F(DualVarTest, Subtraction) {
     auto diff3 = 5.0 - x;
     EXPECT_EQ(diff3.getReal(), 3.0);
     EXPECT_EQ(diff3.getInf(), -1.0);
+
+    //DualVar - DualVar
+    auto sub_assign1 = x;
+    sub_assign1 -= z;
+    EXPECT_EQ(sub_assign1.getReal(), -2.0);
+    EXPECT_EQ(sub_assign1.getInf(), -1.0);
+
+    //DualVar - Scalar
+    auto sub_assign2 = x;
+    sub_assign2 -= 5.0;
+    EXPECT_EQ(sub_assign2.getReal(), -3.0);
+    EXPECT_EQ(sub_assign2.getInf(), 1.0);
 }
 
 // Test multiplication operations
@@ -93,6 +118,19 @@ TEST_F(DualVarTest, Multiplication) {
     auto prod3 = 3.0 * x;
     EXPECT_EQ(prod3.getReal(), 6.0);
     EXPECT_EQ(prod3.getInf(), 3.0);
+
+    //DualVar * DualVar
+    auto prod_assign1 = x;
+    prod_assign1 *= z; // (2,1) * (4,2) = (8, 2*2 + 1*4) = (8, 8)
+    EXPECT_EQ(prod_assign1.getReal(), 8.0);
+    EXPECT_EQ(prod_assign1.getInf(), 8.0);
+
+    //DualVar * Scalar
+    auto prod_assign2 = x;
+    prod_assign2 *= 3.0;
+    EXPECT_EQ(prod_assign2.getReal(), 6.0);
+    EXPECT_EQ(prod_assign2.getInf(), 1.0);
+    
 }
 
 // Test division operations
@@ -111,6 +149,18 @@ TEST_F(DualVarTest, Division) {
     auto quot3 = 6.0 / y;  // 6 / (3,0) = (2, -6*0/(3*3)) = (2, 0)
     EXPECT_EQ(quot3.getReal(), 2.0);
     EXPECT_EQ(quot3.getInf(), 0.0);
+
+    //DualVar / DualVar
+    auto quot_assign1 = x;
+    quot_assign1 /= y; // (2,1) / (3,0) = (2/3, (1*3 - 2*0)/(3*3)) = (2/3, 1/3)
+    EXPECT_NEAR(quot_assign1.getReal(), 2.0/3.0, eps);
+    EXPECT_NEAR(quot_assign1.getInf(), 1.0/3.0, eps);
+
+    //DualVar / Scalar
+    auto quot_assign2 = x;
+    quot_assign2 /= 2.0; // (2,1) / (2, 0) = (1, (1*2 - 2*0) / (2*2)) = (1, 0.5)
+    EXPECT_EQ(quot_assign2.getReal(), 1.0);
+    EXPECT_EQ(quot_assign2.getInf(), 0.5);
 }
 
 // Test trigonometric functions
@@ -217,19 +267,6 @@ TEST_F(DualVarTest, ReLU) {
     EXPECT_EQ(relu_zero.getInf(), 0.0);
 }
 
-// Test equality operator
-TEST_F(DualVarTest, EqualityOperator) {
-    DualVar<double> a(2.0, 1.0);
-    DualVar<double> b(2.0, 1.0);
-    DualVar<double> c(2.0, 2.0);
-    DualVar<double> d(3.0, 1.0);
-
-    EXPECT_TRUE(a == b);
-    // we only care about real part
-    EXPECT_TRUE(a == c);
-    EXPECT_FALSE(a == d);
-}
-
 // Test getValue method
 TEST_F(DualVarTest, GetValue) {
     DualVar<double> test(3.14, 2.71);
@@ -280,3 +317,104 @@ TEST_F(DualVarTest, FunctionComposition) {
     EXPECT_NEAR(composed.getReal(), expected_real, eps);
     EXPECT_NEAR(composed.getInf(), expected_inf, eps);
 }
+
+// Test comparison operators
+TEST_F(DualVarTest, ComparisonOperators) {
+    DualVar<double> a(2.0, 1.0);
+    DualVar<double> b(3.0, 2.0);
+    DualVar<double> c(2.0, 5.0);  // Same real part as a, different inf part
+    DualVar<double> d(1.0, 1.0);
+
+    // Test less than operator (<)
+    EXPECT_TRUE(a < b);     // 2 < 3
+    EXPECT_FALSE(b < a);    // 3 < 2
+    EXPECT_FALSE(a < c);    // 2 < 2 (equal real parts)
+    EXPECT_FALSE(c < a);    // 2 < 2 (equal real parts)
+    EXPECT_TRUE(d < a);     // 1 < 2
+
+    // Test less than with scalar
+    EXPECT_TRUE(a < 3.0);   // 2 < 3
+    EXPECT_FALSE(a < 1.0);  // 2 < 1
+    EXPECT_FALSE(a < 2.0);  // 2 < 2
+
+    // Test greater than operator (>)
+    EXPECT_TRUE(b > a);     // 3 > 2
+    EXPECT_FALSE(a > b);    // 2 > 3
+    EXPECT_FALSE(a > c);    // 2 > 2 (equal real parts)
+    EXPECT_FALSE(c > a);    // 2 > 2 (equal real parts)
+    EXPECT_TRUE(a > d);     // 2 > 1
+
+    // Test greater than with scalar
+    EXPECT_TRUE(a > 1.0);   // 2 > 1
+    EXPECT_FALSE(a > 3.0);  // 2 > 3
+    EXPECT_FALSE(a > 2.0);  // 2 > 2
+
+    // Test equality operator (==)
+    EXPECT_TRUE(a == c);    // 2 == 2 (only compares real parts)
+    EXPECT_FALSE(a == b);   // 2 == 3
+    EXPECT_FALSE(a == d);   // 2 == 1
+
+    // Test equality with scalar
+    EXPECT_TRUE(a == 2.0);  // 2 == 2
+    EXPECT_FALSE(a == 3.0); // 2 == 3
+    EXPECT_FALSE(a == 1.0); // 2 == 1
+
+    // Test inequality operator (!=)
+    EXPECT_FALSE(a != c);   // 2 != 2 (only compares real parts)
+    EXPECT_TRUE(a != b);    // 2 != 3
+    EXPECT_TRUE(a != d);    // 2 != 1
+
+    // Test inequality with scalar
+    EXPECT_FALSE(a != 2.0); // 2 != 2
+    EXPECT_TRUE(a != 3.0);  // 2 != 3
+    EXPECT_TRUE(a != 1.0);  // 2 != 1
+
+    // Test less than or equal operator (<=)
+    EXPECT_TRUE(a <= b);    // 2 <= 3
+    EXPECT_FALSE(b <= a);   // 3 <= 2
+    EXPECT_TRUE(a <= c);    // 2 <= 2 (equal real parts)
+    EXPECT_TRUE(c <= a);    // 2 <= 2 (equal real parts)
+    EXPECT_TRUE(d <= a);    // 1 <= 2
+
+    // Test less than or equal with scalar
+    EXPECT_TRUE(a <= 3.0);  // 2 <= 3
+    EXPECT_FALSE(a <= 1.0); // 2 <= 1
+    EXPECT_TRUE(a <= 2.0);  // 2 <= 2
+
+    // Test greater than or equal operator (>=)
+    EXPECT_TRUE(b >= a);    // 3 >= 2
+    EXPECT_FALSE(a >= b);   // 2 >= 3
+    EXPECT_TRUE(a >= c);    // 2 >= 2 (equal real parts)
+    EXPECT_TRUE(c >= a);    // 2 >= 2 (equal real parts)
+    EXPECT_TRUE(a >= d);    // 2 >= 1
+
+    // Test greater than or equal with scalar
+    EXPECT_TRUE(a >= 1.0);  // 2 >= 1
+    EXPECT_FALSE(a >= 3.0); // 2 >= 3
+    EXPECT_TRUE(a >= 2.0);  // 2 >= 2
+}
+
+// Test edge cases for comparison operators
+TEST_F(DualVarTest, ComparisonEdgeCases) {
+    DualVar<double> zero(0.0, 1.0);
+    DualVar<double> neg_zero(0.0, -1.0);
+    DualVar<double> negative(-1.0, 2.0);
+    DualVar<double> small(1e-15, 1.0);
+
+    // Test with zero values
+    EXPECT_TRUE(zero == neg_zero);  // Both have real part 0
+    EXPECT_FALSE(zero != neg_zero); // Both have real part 0
+    EXPECT_TRUE(negative < zero);        // -1 < 0
+    EXPECT_TRUE(zero > negative);        // 0 > -1
+
+    // Test with very small numbers
+    EXPECT_TRUE(small > zero);           // 1e-15 > 0
+    EXPECT_TRUE(zero < small);           // 0 < 1e-15
+
+    // Test boundary conditions
+    DualVar<double> almost_equal1(1.0000000001, 1.0);
+    DualVar<double> almost_equal2(1.0000000000, 2.0);
+    EXPECT_TRUE(almost_equal1 > almost_equal2);  // Slight difference in real part
+
+}
+

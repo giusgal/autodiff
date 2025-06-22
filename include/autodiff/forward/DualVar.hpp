@@ -78,6 +78,19 @@ public:
         return DualVar<T>(real_ + rhs, inf_);
     }
 
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator+=(DualVar<T> const & rhs) {
+        real_ = real_ + rhs.real_;
+        inf_ = inf_ + rhs.inf_;
+        return *this;
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator+=(T const & rhs) {
+        real_ = real_ + rhs;
+        return *this;
+    }
+
     /***************************************************************/
     /* SUB */
     /***************************************************************/
@@ -89,6 +102,19 @@ public:
     CUDA_HOST_DEVICE \
     DualVar<T> operator-(T const & rhs) const {
         return DualVar<T>(real_ - rhs, inf_);
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator-=(DualVar<T> const & rhs) {
+        real_ = real_ - rhs.real_;
+        inf_ = inf_ - rhs.inf_;
+        return *this;
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator-=(T const & rhs) {
+        real_ = real_ - rhs;
+        return *this;
     }
 
     /***************************************************************/
@@ -103,6 +129,19 @@ public:
     CUDA_HOST_DEVICE \
     DualVar<T> operator*(T const & rhs) const {
         return DualVar<T>(real_ * rhs, rhs * inf_);
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator*=(DualVar<T> const & rhs) {
+        inf_ = real_ * rhs.inf_ + inf_ * rhs.real_;
+        real_ = real_ * rhs.real_;
+        return *this;
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator*=(T const & rhs) {
+        real_ = real_ * rhs;
+        return *this;
     }
 
     /***************************************************************/
@@ -121,6 +160,20 @@ public:
 
     template <typename U> CUDA_HOST_DEVICE \
     friend DualVar<U> operator/(U const & lhs, DualVar<U> const & rhs);
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator/=(DualVar<T> const & rhs) {
+        inf_ = (inf_ * rhs.real_ + real_ * rhs.inf_) / (rhs.real_ * rhs.real_);
+        real_ = real_ / rhs.real_;
+        return *this;
+    }
+
+    CUDA_HOST_DEVICE \
+    DualVar<T> & operator/=(T const & rhs) {
+        inf_ = inf_ * rhs / (rhs * rhs);
+        real_ = real_ / rhs;
+        return *this;
+    }
 
     /***************************************************************/
     /* MISC                                                        */

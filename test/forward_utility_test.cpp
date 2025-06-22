@@ -21,14 +21,14 @@ protected:
 };
 
 template <typename T>
-DualVar<T> testf(DualVar<T> x) {
-  return 3.0 * x;
+DualVar<T> poly_test(DualVar<T> x) {
+  return 12.0 * x * x + 3.0 * x + 4;
 }
 
 TEST_F(fwdiff, simple) {
     // DualVar / DualVar
     
-    DualVar<double> res = testf(x);
-    EXPECT_EQ(res.getReal(), 9.0);
-    EXPECT_EQ(res.getInf(), 3.0);
+    DualVar<double> res = poly_test(x);
+    EXPECT_EQ(res.getReal(), 121.0);
+    EXPECT_EQ(res.getInf(), 75.0);
 }
