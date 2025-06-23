@@ -27,33 +27,33 @@ int main() {
 ```
 
 ### Reverse Mode
-To use the reverse mode module, it is advised to proceed as follows in order to avoid possible runtime problems:
+Unlike forward mode, reverse mode builds a computational graph in memory at runtime. In order to let the library manage this computational graph it is advised to follow the examples below.
 #### Gradient computation
+The `gradient` function accepts a free function/lambda with the following constraints:
+- InputType: `Eigen::Vector<Var<double>, Eigen::Dynamic> const &`
+- OutputType: `Var<double>`
 ```c++
 #include <iostream>
 #include <Eigen/Core>
-#include "Var.hpp"                // Var
-#include "ReverseUtility.hpp"     // gradient, jacobian
+#include "Var.hpp"
+#include "ReverseUtility.hpp"
 
 // Define some useful type aliases
-using Var = autodiff::reverse::Var<double>;
-using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
-using Vec = Eigen::Vector<double, Eigen::Dynamic>;
 using autodiff::reverse::gradient;
+using Var    = autodiff::reverse::Var<double>;
+using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
+using Vec    = Eigen::Vector<double, Eigen::Dynamic>;
 
 int main() {
     constexpr size_t N = 10;
 
-    // Define your function as a free function/lambda that:
-    //  - Returns a Var
-    //  - Accepts a reference to a constant VecVar
-    auto f = [](VecVar const & x) -> Var {
+    auto f = [N](VecVar const & x) -> Var {
         return x.norm();
     };
 
-    Vec x = 2*Vec::Ones(N); // input vector
-    double f_x;             // function evaluated in x
-    Vec grad;               // gradient
+    Vec x = 2*Vec::Ones(N);
+    double f_x;
+    Vec grad;
     
     gradient(f, x, f_x, grad);
 
@@ -66,26 +66,26 @@ int main() {
 Compile with `g++ -o test -I/path/to/eigen3 test.cpp`
 
 #### Jacobian computation
+The `jacobian` function accepts a free function/lambda with the following constraints:
+- InputType: `Eigen::Vector<Var<double>, Eigen::Dynamic> const &`
+- OutputType: `Eigen::Vector<Var<double>, Eigen::Dynamic>`
 ```c++
 #include <iostream>
 #include <Eigen/Core>
-#include "Var.hpp"                // Var
-#include "ReverseUtility.hpp"     // gradient, jacobian
+#include "Var.hpp"
+#include "ReverseUtility.hpp"
 
 // Define some useful type aliases
+using autodiff::reverse::jacobian;
 using Var = autodiff::reverse::Var<double>;
 using VecVar = Eigen::Vector<Var, Eigen::Dynamic>;
 using Vec = Eigen::Vector<double, Eigen::Dynamic>;
 using Mat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-using autodiff::reverse::jacobian;
 
 int main() {
     constexpr size_t M = 3;
     constexpr size_t N = 2;
 
-    // Define your function as a free function/lambda that:
-    //  - Returns a VecVar
-    //  - Accepts a reference to a constant VecVar
     auto f = [M,N](VecVar const & x) -> VecVar {
         VecVar res(M);
 
@@ -97,9 +97,9 @@ int main() {
         return res;
     };
 
-    Vec x = 2*Vec::Ones(N);   // input vector
-    Vec f_x;                  // function evaluated in x
-    Mat jac;                  // jacobian
+    Vec x = 2*Vec::Ones(N);
+    Vec f_x;
+    Mat jac;
     
     jacobian(f, x, f_x, jac);
 
