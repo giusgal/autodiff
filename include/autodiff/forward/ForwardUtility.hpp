@@ -221,7 +221,7 @@ void jacobian_cuda(
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x.data(), input_dim * sizeof(T), cudaMemcpyHostToDevice));
 
     // Reserve space on the device for the real function evaluation
-    CUDA_CHECK_ERROR(cudaMalloc(&f_x_device, f_x.data(), outout_dim * sizeof(T), cudaMemcpyHostToDevice));
+    CUDA_CHECK_ERROR(cudaMalloc(&f_x_device, f_x.data(), output_dim * sizeof(T), cudaMemcpyHostToDevice));
 
     // Reserve space on the device for the non linear system
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, output_dim * sizeof(CudaFunctionWrapper<T>)));
@@ -244,13 +244,20 @@ void jacobian_cuda(
         (input_dim + blockDim.x - 1) / blockDim.x,
         (output_dim + blockDim.y - 1) / blockDim.y
     );
+
+    // launch kernel and synchronize
     jacobian_kernel<T><<<gridDim, blockDim>>>(input_dim, output_dim, x0_device, f_x_device, jac_device, f);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
+
+    // copy real eval and jacobian onto host
     CUDA_CHECK_ERROR(cudaMemcpy(jac.data(), jac_device, output_dim * input_dim * sizeof(T), cudaMemcpyDeviceToHost));
     CUDA_CHECK_ERROR(cudaMemcpy(f_x.data(), f_x_device, output_dim * sizeof(T), cudaMemcpyDeviceToHost));
 
+    // free space
+    CUDA_CHECK_ERROR(cudaFree(f_x_device));
     CUDA_CHECK_ERROR(cudaFree(jac_device));
+    
 }
 
 
