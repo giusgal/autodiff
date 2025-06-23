@@ -25,7 +25,7 @@ int main() {
     RealVec<double> grad = gradient(f_grad, point);
 
     // jacobian computation
-    std::function<DualVec<double>(DualVec<double>)> f_jac
+    std::function<DualVec<double>(DualVec<double>)> f_jac = ...;
 
     RealVec<double> f_x(2);  
     JacType<double> jac(2, 2);
