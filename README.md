@@ -1,4 +1,4 @@
-# C++ Automatic Differentiation Library
+# Automatic Differentiation in C++
 
 ## Prerequisites
 * A C++20 compliant compiler
