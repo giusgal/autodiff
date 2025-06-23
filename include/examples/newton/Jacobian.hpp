@@ -72,49 +72,18 @@ protected:
 
 #ifdef __CUDACC__
 
-// template <typename T>
-// using dv = typename JacobianTraits<T>::dv;
-
-// template <typename T>
-// using CudaArgType = typename JacobianTraits<T>::CudaArgType;
-// template <typename T>
-// using CudaRetType = typename JacobianTraits<T>::CudaRetType;
-// template <typename T>
-// using CudaDeviceFn = typename JacobianTraits<T>::CudaDeviceFn;
-
-// template <typename T>
-// using RealVec = typename JacobianTraits<T>::RealVec;
-// template <typename T>
-// using JacType = typename JacobianTraits<T>::JacType;
-
-
-class CudaJac final : 
-public JacobianBase
+class CudaJac final : public JacobianBase
 {
 public:
-  CudaJac(
-    std::size_t M, std::size_t N, CudaFunctionWrapper<double> cuda_fn
-  ): JacobianBase(M, N),
-    _cuda_fn(cuda_fn)
-  {
-    this->_J = JacType(M, N);
-  };
+  CudaJac(CudaFunctionWrapper<double> cuda_fn): _cuda_fn(cuda_fn) {}
 
-  void compute(const RealVec &x0) {
-    RealVec eval(M);
-    jacobian_cuda<double>(_cuda_fn, x0, eval, this->_J)
+  RealVec solve(const RealVec &x, RealVec &resid) override {
+    JacType J;
+    // update the jacobian
+    autodiff::forward::jacobian_cuda<double>(_cuda_fn, x0, resid, J)
+    return J.fullPivLu().solve(resid);
   }
 
-  RealVec solve(const RealVec &x, RealVec &resid) {
-    compute(x, resid);
-    return this->_J.fullPivLu().solve(resid);
-  }
-
-  JacType getJacobian() {
-    return this->_J;
-  }
-
-  
 protected:
   CudaFunctionWrapper<double> _cuda_fn;
 };

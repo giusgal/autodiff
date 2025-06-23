@@ -111,8 +111,8 @@ inline void jacobian(
       }
       x0d[i].setInf(0.0);
     }
+
     // write the value of fn in f_x pointer
-    
     for (int i = 0; i < output_dim; i++) {
       f_x[i] = eval[i].getReal();
     }
@@ -158,6 +158,7 @@ void jacobian_kernel(
   std::size_t input_dim,
   std::size_t output_dim,
   const T *x0, 
+  T *f_x,
   double *jac, 
   CudaFunctionWrapper<T> cuda_fn
 ) {
@@ -182,6 +183,10 @@ void jacobian_kernel(
   y_dual = cuda_fn(x0_dual, tid_y);
   jac[tid_x * output_dim + tid_y] = y_dual.getInf();
 
+  // save real function eval
+  if (tid_x == 0) {
+    f_x[tid_y] = y_dual.getReal();
+  }
 }
 
 /**
@@ -205,17 +210,24 @@ void jacobian_cuda(
 
     double *jac_device;
     T *x0_device;
+    T *f_x_device;
     CudaFunctionWrapper<T> *cudafn_device;
 
+    // Reserve space on the device for the Jacobian
     CUDA_CHECK_ERROR(cudaMalloc(&jac_device, output_dim * input_dim * sizeof(T)));
 
+    // Reserve space and copy input on the device
     CUDA_CHECK_ERROR(cudaMalloc(&x0_device, input_dim * sizeof(T)));
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x.data(), input_dim * sizeof(T), cudaMemcpyHostToDevice));
+
+    // Reserve space on the device for the real function evaluation
+    CUDA_CHECK_ERROR(cudaMalloc(&f_x_device, f_x.data(), outout_dim * sizeof(T), cudaMemcpyHostToDevice));
+
+    // Reserve space on the device for the non linear system
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, output_dim * sizeof(CudaFunctionWrapper<T>)));
 
     // Since all threads which write in the same column of the jacobian are executing the same functions
     // place them in the same block
-    // cap threads per block at 256?
     dim3 blockDim;
     if (output_dim >= 256) {
         blockDim = dim3(256, 1);
@@ -232,10 +244,12 @@ void jacobian_cuda(
         (input_dim + blockDim.x - 1) / blockDim.x,
         (output_dim + blockDim.y - 1) / blockDim.y
     );
-    jacobian_kernel<T><<<gridDim, blockDim>>>(input_dim, output_dim, x0_device, jac_device, f);
+    jacobian_kernel<T><<<gridDim, blockDim>>>(input_dim, output_dim, x0_device, f_x_device, jac_device, f);
     CUDA_CHECK_ERROR(cudaGetLastError());
     CUDA_CHECK_ERROR(cudaDeviceSynchronize());
     CUDA_CHECK_ERROR(cudaMemcpy(jac.data(), jac_device, output_dim * input_dim * sizeof(T), cudaMemcpyDeviceToHost));
+    CUDA_CHECK_ERROR(cudaMemcpy(f_x.data(), f_x_device, output_dim * sizeof(T), cudaMemcpyDeviceToHost));
+
     CUDA_CHECK_ERROR(cudaFree(jac_device));
 }
 
