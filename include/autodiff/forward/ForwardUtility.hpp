@@ -221,7 +221,7 @@ void jacobian_cuda(
     CUDA_CHECK_ERROR(cudaMemcpy(x0_device, x.data(), input_dim * sizeof(T), cudaMemcpyHostToDevice));
 
     // Reserve space on the device for the real function evaluation
-    CUDA_CHECK_ERROR(cudaMalloc(&f_x_device, f_x.data(), output_dim * sizeof(T), cudaMemcpyHostToDevice));
+    CUDA_CHECK_ERROR(cudaMalloc(&f_x_device, output_dim * sizeof(T)));
 
     // Reserve space on the device for the non linear system
     CUDA_CHECK_ERROR(cudaMalloc(&cudafn_device, output_dim * sizeof(CudaFunctionWrapper<T>)));
