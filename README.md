@@ -183,3 +183,7 @@ pip install matplotlib pandas
 python plot_models.py
 deactivate
 ```
+
+## Resources
+- [The Stan Math Library: Reverse-Mode Automatic Differentiation in C++](https://arxiv.org/abs/1509.07164)
+- [autodiff](https://github.com/autodiff/autodiff)
