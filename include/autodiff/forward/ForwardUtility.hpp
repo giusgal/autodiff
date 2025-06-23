@@ -184,6 +184,15 @@ void jacobian_kernel(
 
 }
 
+/**
+ * Computes the jacobian of a function along with the value of that
+ * function at the given point offloading function evalutation to a CUDA device.
+ * 
+ * @param f Function whose jacobian is to be computed
+ * @param x The point where the function and the jacobian must be evaluated
+ * @param f_x (OUT) The value of the function at the given point
+ * @param jac (OUT) The jacobian of the function at the given point
+ */
 template <typename T>
 void jacobian_cuda(
     CudaFunctionWrapper<T> f,
