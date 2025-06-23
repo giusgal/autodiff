@@ -18,9 +18,20 @@ using namespace autodiff::forward;
 using DualVar = DualVar<double>;
 
 int main() {
-    // gradient computation
+    // Gradient computation
+    std::function<DualVar<double>(DualVec<double>)> f_grad = ...;
+    Eigen::VectorXd<double> point(2);
+    point << 2.0, 3.0;
+    RealVec<double> grad = gradient(f_grad, point);
 
     // jacobian computation
+    std::function<DualVec<double>(DualVec<double>)> f_jac = ...;
+
+    RealVec<double> f_x(2);  
+    JacType<double> jac(2, 2);
+
+    // Jacobian is saved in jac
+    jacobian(f, point, f_x, jac); 
 
     return 0;
 }
