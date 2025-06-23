@@ -145,15 +145,11 @@ Compile with `g++ -o test -I/path/to/eigen3 test.cpp`
 This will compile the library, examples, and tests.
 
 ### Build using Docker
-If you don't have all the dependencies already installed, and you want to create a separate virtual env, you can check the following:
-If you are using Linux, run_interactive.sh will help to build a Docker environment. 
-1. Make sure you are in the root folder of this project, autodiff
+If you don't have all the dependencies already installed, and you want to create a separate virtual env, you can use Docker.
+```bash
+$ docker build -t autodiff-test .
+$ docker run -it autodiff-test
 ```
-chmod u+x run_interactive.sh
-./run_interactive
-```
-2. Then you can take a break. After some minutes, you will find yourself inside the Docker container!
-   You can either run the tests or create the build folder in the project folder and start developing.
 
 ## Running Examples
 Navigate to the build directory and run the examples:
