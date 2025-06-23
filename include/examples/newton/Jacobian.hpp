@@ -72,20 +72,18 @@ protected:
 
 #ifdef __CUDACC__
 
-class CudaJac final : public JacobianBase
-{
+class CudaJac final : public JacobianBase {
 public:
-  CudaJac(CudaFunctionWrapper<double> cuda_fn): _cuda_fn(cuda_fn) {}
+    CudaJac(CudaFunctionWrapper<double> cuda_fn): cuda_fn_(cuda_fn) {}
 
-  RealVec solve(const RealVec &x, RealVec &resid) override {
-    JacType J;
-    // update the jacobian
-    autodiff::forward::jacobian_cuda<double>(_cuda_fn, x0, resid, J, eval=1)
-    return J.fullPivLu().solve(resid);
-  }
-
+    RealVec solve(const RealVec &x, RealVec &resid) override {
+        JacType J;
+        // update the jacobian
+        autodiff::forward::jacobian_cuda<double>(cuda_fn_, x, resid, J, eval=1);
+        return J.fullPivLu().solve(resid);
+    }
 protected:
-  CudaFunctionWrapper<double> _cuda_fn;
+    CudaFunctionWrapper<double> cuda_fn_;
 };
 #endif // __CUDACC__
 }; // namespace newton
