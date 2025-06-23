@@ -50,8 +50,8 @@ struct NumTraits<dv>
   };
 };
 
-const dv& conj(const dv &x) { return x; }
-const dv& real(const dv &x) { return x; }
-dv abs2(const dv &x) { return x*x; }
+inline const dv& conj(const dv &x) { return x; }
+inline const dv& real(const dv &x) { return x; }
+inline dv abs2(const dv &x) { return x*x; }
 
 }

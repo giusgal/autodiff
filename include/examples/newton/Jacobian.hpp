@@ -29,7 +29,6 @@ public:
     virtual RealVec solve(const RealVec &, RealVec &) = 0;
 };
 
-
 /**
  * @class ForwardJacobian 
  * @brief ForwardJacobian allows to solve systems involving
@@ -38,14 +37,10 @@ public:
  */
 class ForwardJac final : public JacobianBase {
 public:
-    ForwardJac(FwNLSType const & fn): fn_{fn} {}
+    ForwardJac(FwNLSType const & fn);
 
-    RealVec solve(const RealVec & x, RealVec & resid) override {
-        JacType J;
-        // update the jacobian
-        autodiff::forward::jacobian<double>(fn_, x, resid, J);
-        return J.fullPivLu().solve(resid);
-    }
+    RealVec solve(const RealVec & x, RealVec & resid) override;
+
 protected:
     FwNLSType const & fn_;
 };
@@ -58,32 +53,24 @@ protected:
  */
 class ReverseJac final : public JacobianBase {
 public:
-    ReverseJac(RvNLSType const & fn): fn_{fn} {}
+    ReverseJac(RvNLSType const & fn);
 
-    RealVec solve(const RealVec & x, RealVec & resid) override {
-        JacType J;
-        // update the jacobian
-        autodiff::reverse::jacobian(fn_, x, resid, J);
-        return J.fullPivLu().solve(resid);
-    }
+    RealVec solve(const RealVec & x, RealVec & resid) override;
+
 protected:
     RvNLSType const & fn_;
 };
 
 #ifdef __CUDACC__
-
 class CudaJac final : public JacobianBase {
 public:
-    CudaJac(CudaFunctionWrapper<double> cuda_fn): cuda_fn_(cuda_fn) {}
+    CudaJac(CudaFunctionWrapper<double> cuda_fn);
 
-    RealVec solve(const RealVec &x, RealVec &resid) override {
-        JacType J;
-        // update the jacobian
-        autodiff::forward::jacobian_cuda<double>(cuda_fn_, x, resid, J, eval=1);
-        return J.fullPivLu().solve(resid);
-    }
+    RealVec solve(const RealVec &x, RealVec &resid) override;
+
 protected:
     CudaFunctionWrapper<double> cuda_fn_;
 };
 #endif // __CUDACC__
-}; // namespace newton
+
+} // namespace newton

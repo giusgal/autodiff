@@ -90,16 +90,20 @@ inline void jacobian(
 ) {
 
     std::size_t input_dim = x.size();
-    std::size_t output_dim = f_x.size();
+    std::size_t output_dim;
 
     // create dual vector to feed the function as input
     DualVec<T> x0d(input_dim);
-    DualVec<T> eval(output_dim);
-
+    DualVec<T> eval;
 
     for(int i = 0; i < input_dim; i++) {
       x0d[i] = DualVar<T>(x[i], 0.0);
     }
+
+    eval = f(x0d);
+    output_dim = eval.size();
+    jac.resize(output_dim, input_dim);
+    f_x.resize(output_dim);
 
     #pragma omp parallel for \
       firstprivate(x0d) lastprivate(eval) shared(jac)

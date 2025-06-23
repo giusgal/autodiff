@@ -109,22 +109,23 @@ target_sources(ml_components PRIVATE ${ML_COMPONENT_SOURCES})
 target_link_libraries(ml_components INTERFACE autodiff Eigen3::Eigen)
 
 # --- Build a library for newton solver ---
-add_library(newton INTERFACE)
+add_library(newton STATIC)
 
 # Link their include directories
-target_include_directories(newton INTERFACE
+target_include_directories(newton PUBLIC
         ${CMAKE_SOURCE_DIR}/include/examples/newton
 )
 
-# Add any source files for newton if they exist outside includes
+# Add specific source files for newton
 set(NEWTON_SOURCES
-        ${CMAKE_SOURCE_DIR}/src/examples/newton
+        ${CMAKE_SOURCE_DIR}/src/examples/newton/Newton.cpp
+        ${CMAKE_SOURCE_DIR}/src/examples/newton/Jacobian.cpp
 )
 
 target_sources(newton PRIVATE ${NEWTON_SOURCES})
 
 # Link newton to autodiff as it likely depends on it
-target_link_libraries(newton INTERFACE autodiff Eigen3::Eigen)
+target_link_libraries(newton PUBLIC autodiff Eigen3::Eigen)
 
 
 # --- Add ML example executables ---
@@ -150,11 +151,6 @@ add_executable(span_modelsize_test src/examples/ml/models/spanModelSizeTest.cpp)
 target_link_libraries(span_modelsize_test PRIVATE ml_components autodiff Eigen3::Eigen)
 
 
-# --- Add Newton example executables ---
-add_executable(newton_test src/examples/newton/test-newton.cpp)
-target_link_libraries(newton_test PRIVATE newton autodiff Eigen3::Eigen) # Link to components and core autodif
-
-
 # --- Add forward example executables --- 
 add_executable(forward_jacobian_test src/autodiff/forward/test-jacobian.cpp)
 target_link_libraries(forward_jacobian_test PRIVATE autodiff Eigen3::Eigen)
@@ -163,7 +159,6 @@ target_link_libraries(forward_jacobian_test PRIVATE autodiff Eigen3::Eigen)
 if(OpenMP_FOUND)
     target_link_libraries(span_modelsize_test PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(span_test PUBLIC OpenMP::OpenMP_CXX)
-    target_link_libraries(newton_test PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(forward_jacobian_test PUBLIC OpenMP::OpenMP_CXX)
     message(STATUS "OpenMP found and linked for CXX.") # Optional: for confirmation
 else()
@@ -206,12 +201,17 @@ target_link_libraries(reverse_utility_test autodiff GTest::gtest_main Eigen3::Ei
 add_executable(arena_allocator_test test/arena_allocator_test.cpp)
 target_link_libraries(arena_allocator_test autodiff GTest::gtest_main)
 
+# --- Newton tests ---
+add_executable(newton_test test/newton_test.cpp)
+target_link_libraries(newton_test autodiff newton GTest::gtest_main)
+
 include(GoogleTest)
 gtest_discover_tests(dualvar_test)
 gtest_discover_tests(fw_diff_test)
 gtest_discover_tests(var_test)
 gtest_discover_tests(reverse_utility_test)
 gtest_discover_tests(arena_allocator_test)
+gtest_discover_tests(newton_test)
 
 # Note: CLion will automatically handle creating the cmake-build-debug directory
 # and running CMake when you open the project.

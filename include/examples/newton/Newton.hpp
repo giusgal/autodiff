@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <Eigen/Dense>
-#include "Jacobian.hpp"
+#include "Jacobian.hpp"  // Changed from .cpp to .hpp
 
 namespace newton {
 
@@ -29,49 +29,15 @@ public:
      * @param J An instance of `JacobianBase`
      * @param opts Options for the newton method
      */
-    Newton(JacobianBase & J, NewtonOpts opts):
-        opts_{opts}, J_{J} {}
-
+    Newton(JacobianBase & J, NewtonOpts opts);
 
     /**
      * Solves the system with initial guess `x0`
      *
      * @param x0 initial guess
      */
-    RealVec solve(RealVec const & x0) {
-        RealVec x(x0.size());
-        RealVec delta(x0.size());
-        RealVec resid;
+    RealVec solve(RealVec const & x0);
 
-        x = x0;
-
-        size_t iter = 0;
-        for(; iter < opts_.maxit; ++iter) {
-            delta = J_.solve(x, resid);
-
-            x = x - delta;
-
-            delta = delta.cwiseAbs();
-            resid = resid.cwiseAbs();
-
-            double step_size =
-                std::accumulate(delta.data(), delta.data() + delta.size(), 0.0);
-            double resid_sum =
-                std::accumulate(resid.data(), resid.data() + resid.size(), 0.0);
-
-            if((step_size < opts_.tol) && (resid_sum < opts_.tol)) {
-                break;
-            }
-        }
-
-        if (iter == opts_.maxit) {
-            std::cout << "Unable to converge" << std::endl;
-        } else {
-            std::cout << "Converged in " << iter << " iterations." << std::endl;
-        }
-
-        return x;
-    }
 private:
     JacobianBase & J_;
     NewtonOpts opts_;
