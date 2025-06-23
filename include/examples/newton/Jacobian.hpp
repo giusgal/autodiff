@@ -80,7 +80,7 @@ public:
   RealVec solve(const RealVec &x, RealVec &resid) override {
     JacType J;
     // update the jacobian
-    autodiff::forward::jacobian_cuda<double>(_cuda_fn, x0, resid, J)
+    autodiff::forward::jacobian_cuda<double>(_cuda_fn, x0, resid, J, eval=1)
     return J.fullPivLu().solve(resid);
   }
 
