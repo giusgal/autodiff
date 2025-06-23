@@ -120,13 +120,33 @@ inline void jacobian(
 
 #ifdef __CUDACC__
 
+/**
+ * @brief Registers a device function pointer with a specified CUDA device function.
+ *
+ * Assigns the provided device function pointer to the function to be registered. 
+ * It is templated on the return type and the device function.
+ *
+ * @tparam T The underlying scalar type of the function
+ * @tparam fn_to_be_registered The device function to be registered.
+ * @param device_fn Pointer to the device function pointer to be set.
+ */
 template<typename T, CudaDeviceFn<T> fn_to_be_registered>
 CUDA_GLOBAL \
 void register_fn_device(CudaDeviceFn<T> *device_fn) {
     *device_fn = fn_to_be_registered;
 }
 
-
+/**
+ * @class CudaFunctionWrapper
+ * @brief A wrapper for passingCUDA device functions to the kernel.
+ *
+ * This class manages a pointer to a device function that computes a value and its derivative
+ * using dual numbers. It provides methods to register a device function and to invoke it
+ * from both host and device code.
+ *
+ * @tparam T The scalar type (e.g., float or double) for the computation.
+ *
+ */
 template <typename T>
 CUDA_HOST_DEVICE \
 struct CudaFunctionWrapper {
@@ -152,6 +172,17 @@ struct CudaFunctionWrapper {
   
 };
 
+/**
+ * Cuda Kernel that calculates a function's jacobian and the function's evaluation
+ * at a point x0.
+ * 
+ * @param input_dim The function's input dimension
+ * @param output_dim The function's input dimension
+ * @param x0 The point where the function and the jacobian must be evaluated
+ * @param f_x (OUT) The value of the function at the given point
+ * @param jac (OUT) The jacobian of the function at the given point
+ * @param cuda_fn the wrapper containing the non linear system
+ */
 template <typename T>
 CUDA_GLOBAL 
 void jacobian_kernel(
@@ -187,6 +218,48 @@ void jacobian_kernel(
   if (tid_x == 0) {
     f_x[tid_y] = y_dual.getReal();
   }
+}
+
+
+/**
+ * Cuda Kernel that calculates a function's jacobian at a point x0.
+ * Does not save the function evaluation.
+ * 
+ * @param input_dim The function's input dimension
+ * @param output_dim The function's input dimension
+ * @param x0 The point where the function and the jacobian must be evaluated
+ * @param jac (OUT) The jacobian of the function at the given point
+ * @param cuda_fn the wrapper containing the non linear system
+ */
+template <typename T>
+CUDA_GLOBAL 
+void jacobian_kernel_noeval(
+  std::size_t input_dim,
+  std::size_t output_dim,
+  const T *x0, 
+  double *jac, 
+  CudaFunctionWrapper<T> cuda_fn
+) {
+  int tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid_x >= input_dim) return;
+  int tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+  if (tid_y >= output_dim) return;
+
+  // create local (dualvar) copy of input vector
+  DualVec<T> x0_dual(input_dim);
+  DualVar<T> y_dual;
+
+  // prep local input
+  for(int i = 0; i < input_dim; i++) {
+    x0_dual[i] = DualVar<T>(x0[i]);
+  }
+
+  // seed the input
+  x0_dual[tid_x].setInf(1.0);
+
+  // evaluate function tid_y with seeded input
+  y_dual = cuda_fn(x0_dual, tid_y);
+  jac[tid_x * output_dim + tid_y] = y_dual.getInf();
 }
 
 /**
