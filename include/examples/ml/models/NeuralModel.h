@@ -65,7 +65,7 @@ struct MLPParams
 
 };
 
-class NeuralModel : public IModel
+class NeuralModel1 : public IModel
 {
     protected:
     int epochs, batch_size, hidden_size;
@@ -119,7 +119,7 @@ class NeuralModel : public IModel
 
 public:
 
-    NeuralModel(Optimizer* optimizer,
+    NeuralModel1(Optimizer* optimizer,
                     const int hidden_size,
                     const int epochs = 50,
                     const int batch_size = 10):
