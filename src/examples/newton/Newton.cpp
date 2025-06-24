@@ -7,7 +7,7 @@ namespace newton {
 Newton::Newton(JacobianBase & J, NewtonOpts opts)
     : opts_{opts}, J_{J} {}
 
-ForwardJac::RealVec Newton::solve(RealVec const & x0) {
+JacobianTraits::RealVec Newton::solve(RealVec const & x0) {
     RealVec x(x0.size());
     RealVec delta(x0.size());
     RealVec resid;

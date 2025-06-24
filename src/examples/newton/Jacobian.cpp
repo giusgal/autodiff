@@ -4,7 +4,7 @@ namespace newton {
 
 ForwardJac::ForwardJac(FwNLSType const & fn): fn_{fn} {}
 
-ForwardJac::RealVec ForwardJac::solve(const RealVec & x, RealVec & resid) {
+JacobianTraits::RealVec ForwardJac::solve(const RealVec & x, RealVec & resid) {
     JacType J;
     // update the jacobian
     autodiff::forward::jacobian<double>(fn_, x, resid, J);
@@ -13,7 +13,7 @@ ForwardJac::RealVec ForwardJac::solve(const RealVec & x, RealVec & resid) {
 
 ReverseJac::ReverseJac(RvNLSType const & fn): fn_{fn} {}
 
-ForwardJac::RealVec ReverseJac::solve(const RealVec & x, RealVec & resid) {
+JacobianTraits::RealVec ReverseJac::solve(const RealVec & x, RealVec & resid) {
     JacType J;
     // update the jacobian
     autodiff::reverse::jacobian(fn_, x, resid, J);
@@ -23,7 +23,7 @@ ForwardJac::RealVec ReverseJac::solve(const RealVec & x, RealVec & resid) {
 #ifdef __CUDACC__
 CudaJac::CudaJac(CudaFunctionWrapper<double> cuda_fn): cuda_fn_(cuda_fn) {}
 
-RealVec CudaJac::solve(const RealVec &x, RealVec &resid) {
+JacobianTraits::RealVec CudaJac::solve(const RealVec &x, RealVec &resid) {
     JacType J;
     // update the jacobian
     autodiff::forward::jacobian_cuda<double>(cuda_fn_, x, resid, J, eval=1);
