@@ -1,6 +1,15 @@
 # Automatic Differentiation in C++
 
-## Prerequisites
+This project provides a C++ library for automatic differentiation, supporting both forward mode and reverse mode.
+
+### Features
+- Forward Mode AD: Efficiently computes gradients and Jacobians for functions with a number of outputs larger than the number of inputs.
+- Reverse Mode AD: Ideal for computing gradients of functions where the number of inputs is much larger than the number of outputs.
+  - Arena allocator: An arena allocator is employed to speed up the computation of gradients and jacobians 
+- Eigen Integration: The library specializes certain Eigen classes in order to let the user use Eigen's Vectors and Matrices of `Var` and `DualVar`.
+- Cuda Support: The forward mode implementation supports Cuda in order to accelerate the computation of gradients and jacobians.
+
+### Prerequisites
 * A C++20 compliant compiler
 * CMake (>=3.28)
 * The Eigen library (>=3.4.0)
